@@ -135,14 +135,22 @@ and the affected screens say so.
 2. Add two **repository variables** (Settings → Secrets and variables → Actions → Variables):
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
-3. Under **Authentication → URL Configuration**, add your Pages URL to the redirect allow-list so
-   magic links come back to the app.
+3. Under **Authentication → URL Configuration**, set both fields to your deployed app — this is
+   what decides where confirmation and magic-link emails land:
+   - **Site URL**: `https://<user>.github.io/<repo>/`
+   - **Redirect URLs**: add `https://<user>.github.io/<repo>/**`, plus `http://localhost:4200/**`
+     if you also sign in while developing.
 
-> **Seeing `permission denied for table bac_status`?** An early version of `schema.sql` created the
-> tables and RLS policies but never granted table privileges to the `authenticated` role. RLS only
-> filters rows _after_ Postgres checks those privileges, so every query was refused outright.
-> Re-running the current `schema.sql` is safe and fixes it, or apply just the two `grant` lines it
-> now contains.
+> **Auth emails pointing at `localhost`?** Supabase validates `emailRedirectTo` against the
+> Redirect URLs allow-list and silently falls back to **Site URL** when it does not match — and
+> Site URL defaults to `http://localhost:3000`. Both fields in step 3 have to be set; a link that
+> lands on localhost means one of them is still at its default.
+>
+> > **Seeing `permission denied for table bac_status`?** An early version of `schema.sql` created the
+> > tables and RLS policies but never granted table privileges to the `authenticated` role. RLS only
+> > filters rows _after_ Postgres checks those privileges, so every query was refused outright.
+> > Re-running the current `schema.sql` is safe and fixes it, or apply just the two `grant` lines it
+> > now contains.
 
 Variables rather than secrets, deliberately: the anon key is a public client credential protected
 by row-level security, and it has to reach the browser to be useful. It is kept out of the

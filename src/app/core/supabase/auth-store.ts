@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { appBaseUrl } from '../config/app-config';
 import { SupabaseService } from './supabase.service';
 
 export interface AuthUser {
@@ -38,7 +39,11 @@ export class AuthStore {
     await this.#run(async (client) => {
       const { error } =
         mode === 'sign-up'
-          ? await client.auth.signUp({ email, password })
+          ? await client.auth.signUp({
+              email,
+              password,
+              options: { emailRedirectTo: appBaseUrl() },
+            })
           : await client.auth.signInWithPassword({ email, password });
       if (error) throw new Error(error.message);
     });
@@ -49,7 +54,7 @@ export class AuthStore {
     await this.#run(async (client) => {
       const { error } = await client.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: location.href.split('?')[0] },
+        options: { emailRedirectTo: appBaseUrl() },
       });
       if (error) throw new Error(error.message);
     });

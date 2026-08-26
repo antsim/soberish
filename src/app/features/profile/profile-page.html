@@ -58,7 +58,7 @@
   <div class="field">
     <label for="burn">
       Burn-off rate —
-      <span class="tabular">{{ profiles.profile().eliminationRate.toFixed(3) }}</span> % per hour
+      <span class="tabular">{{ profiles.profile().eliminationRate | permille }}</span> ‰ per hour
     </label>
     <input
       id="burn"
@@ -71,7 +71,7 @@
       (ngModelChange)="patch({ eliminationRate: +$event })"
     />
     <p class="hint">
-      Most people sit around 0.015. Regular drinkers clear alcohol slightly faster.
+      Most people sit around 0.15 ‰. Regular drinkers clear alcohol slightly faster.
     </p>
   </div>
 
@@ -131,7 +131,7 @@
       />
       <span>
         <strong>Share my BAC</strong>
-        <small>Publishes your name and current BAC while you're above 0.00%.</small>
+        <small>Publishes your name and current level while you're above 0.00 ‰.</small>
       </span>
     </label>
   } @else {
@@ -166,7 +166,7 @@
         @if (session.msUntilWipe(); as remaining) {
           Auto-clears in {{ remaining | duration }} — 24 h after you sobered up.
         } @else {
-          History clears automatically 24 h after your BAC hits 0.00%.
+          History clears automatically 24 h after you hit 0.00 ‰.
         }
       </p>
     </div>

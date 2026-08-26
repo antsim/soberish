@@ -10,7 +10,7 @@ export interface Profile {
   readonly displayName: string;
   readonly weightKg: number;
   readonly bodyType: BodyType;
-  /** BAC percentage points burned off per hour. Typical range 0.010–0.020. */
+  /** BAC percentage points burned off per hour (0.015 % = 0.15 ‰). */
   readonly eliminationRate: number;
   /** Minutes for a drink to be ~95% absorbed. Lower on an empty stomach. */
   readonly absorptionMinutes: number;

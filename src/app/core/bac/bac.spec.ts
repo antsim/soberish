@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Drink } from '../models/drink.model';
 import { DEFAULT_PROFILE, Profile } from '../models/profile.model';
+import { formatPermille, toPermille } from '../../shared/util/format';
 import {
   HOUR,
   MINUTE,
@@ -165,5 +166,27 @@ describe('statusFor', () => {
     expect(statusFor(0.05)).toBe('merry');
     expect(statusFor(0.09)).toBe('drunk');
     expect(statusFor(0.2)).toBe('wasted');
+  });
+});
+
+describe('promille presentation', () => {
+  it('is ten times the BAC percentage', () => {
+    expect(toPermille(0.05)).toBeCloseTo(0.5, 6);
+    expect(toPermille(0.1)).toBeCloseTo(1, 6);
+    expect(toPermille(0)).toBe(0);
+  });
+
+  it('renders two decimals, matching the engine’s three decimals of a percent', () => {
+    expect(formatPermille(0.082)).toBe('0.82');
+    expect(formatPermille(0.1)).toBe('1.00');
+    expect(formatPermille(0.001)).toBe('0.01');
+    expect(formatPermille(0)).toBe('0.00');
+  });
+
+  it('loses nothing the engine actually resolves', () => {
+    // bacAt() rounds to 0.001% — exactly one unit in the last displayed place.
+    const drinks = [drink(0, 500, 5)];
+    const bac = bacAt(drinks, profile, T0 + 90 * MINUTE);
+    expect(formatPermille(bac)).toBe((bac * 10).toFixed(2));
   });
 });

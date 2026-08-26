@@ -44,7 +44,7 @@ export class SessionStore {
   readonly status = computed(() => statusFor(this.bac()));
   /**
    * Copy for the current band, with one special case: alcohol that has been
-   * drunk but not yet absorbed reads as 0.00%, and calling that "sober" would
+   * drunk but not yet absorbed reads as 0.00 ‰, and calling that "sober" would
    * be actively misleading.
    */
   readonly statusCopy = computed(() =>
@@ -53,7 +53,7 @@ export class SessionStore {
       : STATUS_COPY[this.status()],
   );
 
-  /** Projected moment of returning to 0.00%, or `null` when already sober. */
+  /** Projected moment of returning to 0.00 ‰, or `null` when already sober. */
   readonly soberAt = computed(() => this.timeline().soberAt);
 
   /** Milliseconds until sober, floored at zero. */

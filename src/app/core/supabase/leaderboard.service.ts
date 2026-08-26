@@ -11,7 +11,7 @@ const REFRESH_MS = 30_000;
 const MAX_ROWS = 50;
 
 /**
- * The live "currently above 0.00%" board.
+ * The live "currently above 0.00 ‰" board.
  *
  * Published rows are a snapshot (`bac` at `measuredAt`, dropping to zero at
  * `soberAt`), so every client extrapolates the value forward against its own
@@ -108,7 +108,7 @@ export class LeaderboardService {
 }
 
 /**
- * Straight-line decay from the published BAC to 0.00% at `soberAt`, which is
+ * Straight-line decay from the published level to zero at `soberAt`, which is
  * exactly how the Widmark tail behaves once absorption has finished.
  */
 export function projectBac(entry: LeaderboardEntry, now: number): number {

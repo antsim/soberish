@@ -12,14 +12,14 @@ import { RankedEntry } from '../../core/models/leaderboard.model';
 import { Connectivity } from '../../core/platform/connectivity';
 import { AuthStore } from '../../core/supabase/auth-store';
 import { LeaderboardService } from '../../core/supabase/leaderboard.service';
-import { BacPipe } from '../../shared/util/pipes';
+import { PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
-/** Who is still above 0.00% right now, ranked. */
+/** Who is still above 0.00 ‰ right now, ranked. */
 @Component({
   selector: 'app-leaderboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AuthCard, BacPipe, DatePipe],
+  imports: [AuthCard, DatePipe, PermillePipe],
   templateUrl: './leaderboard-page.html',
   styleUrl: './leaderboard-page.scss',
 })

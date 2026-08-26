@@ -4,9 +4,26 @@ import { UnitSystem } from '../../core/models/profile.model';
 const ML_PER_OZ = 29.5735;
 const KG_PER_LB = 0.453_592_37;
 
-/** BAC always reads with three decimals — "0.042", never "0.04". */
-export function formatBac(bac: number): string {
-  return bac.toFixed(3);
+/**
+ * Promille (‰) is grams of alcohol per litre of blood — ten times the BAC
+ * percentage (g/100 ml). Soberish computes and stores the percentage, because
+ * that is the unit the Widmark equation and the `bac_status` table are written
+ * in, and converts here at the presentation boundary.
+ */
+export const PERMILLE_PER_PERCENT = 10;
+
+export function toPermille(bacPercent: number): number {
+  return bacPercent * PERMILLE_PER_PERCENT;
+}
+
+/**
+ * Promille always reads with two decimals — "1.20 ‰", never "1.2 ‰".
+ *
+ * The engine rounds BAC to three decimals of a percent, which is exactly two
+ * decimals of a promille, so nothing is lost or invented by this conversion.
+ */
+export function formatPermille(bacPercent: number): string {
+  return toPermille(bacPercent).toFixed(2);
 }
 
 /** "2h 15m", "45m", "just now". */

@@ -1,7 +1,7 @@
 {
-  "name": "Soberish — BAC Tracker",
+  "name": "Soberish — Blood Alcohol Tracker",
   "short_name": "Soberish",
-  "description": "Track your blood alcohol content in real time, online or off.",
+  "description": "Track your blood alcohol level in promille, in real time, online or off.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -26,6 +26,6 @@
   ],
   "shortcuts": [
     { "name": "Add a drink", "short_name": "Add drink", "url": "./?add=1", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Top BAC leaderboard", "short_name": "Leaderboard", "url": "./leaderboard", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Top promille leaderboard", "short_name": "Leaderboard", "url": "./leaderboard", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

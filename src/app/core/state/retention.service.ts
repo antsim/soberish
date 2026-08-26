@@ -5,7 +5,7 @@ import { DrinksStore } from './drinks-store';
 import { SessionStore } from './session-store';
 
 /**
- * Enforces the 24-hour rule: once BAC has been back at 0.00% for a full day the
+ * Enforces the 24-hour rule: once the level has been back at 0.00 ‰ for a full day the
  * session — drinks and graph — is wiped.
  *
  * Drinking again before the deadline simply moves the projected sober time

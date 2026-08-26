@@ -12,7 +12,7 @@ export const routes: Routes = [
   },
   {
     path: 'leaderboard',
-    title: 'Soberish — top BAC',
+    title: 'Soberish — top ‰',
     loadComponent: () =>
       import('./features/leaderboard/leaderboard-page').then((m) => m.LeaderboardPage),
   },

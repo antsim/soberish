@@ -12,6 +12,7 @@ import { MINUTE, alcoholGrams, standardDrinks } from '../../../core/bac/bac';
 import { Drink, DrinkDraft } from '../../../core/models/drink.model';
 import { Profile, WIDMARK_R } from '../../../core/models/profile.model';
 import { Sheet } from '../../../shared/ui/sheet';
+import { PermillePipe } from '../../../shared/util/pipes';
 import { mlToOz, ozToMl } from '../../../shared/util/format';
 
 const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
@@ -28,7 +29,7 @@ const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
 @Component({
   selector: 'app-drink-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Sheet],
+  imports: [FormsModule, PermillePipe, Sheet],
   templateUrl: './drink-editor.html',
   styleUrl: './drink-editor.scss',
 })
@@ -69,7 +70,7 @@ export class DrinkEditor implements OnInit {
   protected readonly grams = computed(() => alcoholGrams(this.volumeMl(), this.abv()));
   protected readonly units = computed(() => standardDrinks(this.volumeMl(), this.abv()));
 
-  /** Peak BAC this drink alone adds, once fully absorbed. */
+  /** Peak blood alcohol this drink alone adds, once fully absorbed. */
   protected readonly bacImpact = computed(() => {
     const profile = this.profile();
     return (this.grams() / (profile.weightKg * 1000 * WIDMARK_R[profile.bodyType])) * 100;

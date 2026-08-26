@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One in-flight deploy at a time; a newer push supersedes a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Build
+        env:
+          # Optional. Without them Soberish still builds and runs, just
+          # offline-only: no accounts, no sync, no leaderboard.
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          # Project pages live under /<repo>/; a user, org, or custom-domain
+          # site is served from the root instead.
+          BASE_HREF: /${{ github.event.repository.name }}/
+        run: npm run build:pages
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/soberish/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

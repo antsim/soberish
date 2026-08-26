@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  text-align: center;
+}
+
+.status {
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.15rem;
+  font-size: clamp(3.6rem, 20vw, 5.2rem);
+  font-weight: 750;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  background: linear-gradient(160deg, #ffffff 20%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.unit {
+  font-size: 0.32em;
+  font-weight: 700;
+  letter-spacing: 0;
+  -webkit-text-fill-color: var(--text-faint);
+}
+
+.trend {
+  margin-top: 0.6rem;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+
+  &--rising {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--accent);
+  }
+}
+
+.sober {
+  margin-top: 0.55rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+
+  strong {
+    color: var(--text);
+  }
+}

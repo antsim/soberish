@@ -1,0 +1,76 @@
+<section class="hero card">
+  <app-bac-readout
+    [bac]="session.bac()"
+    [status]="session.status()"
+    [statusTitle]="session.statusCopy().title"
+    [blurb]="session.statusCopy().blurb"
+    [rising]="session.rising()"
+    [soberAt]="session.soberAt()"
+    [now]="clock.now()"
+  />
+
+  <app-bac-chart [timeline]="session.timeline()" [drinks]="drinks.drinks()" [now]="clock.now()" />
+
+  <dl class="stats">
+    @for (stat of stats(); track stat.label) {
+      <div class="stat">
+        <dt>{{ stat.label }}</dt>
+        <dd class="tabular">{{ stat.value }}</dd>
+      </div>
+    }
+  </dl>
+</section>
+
+@if (profiles.needsSetup()) {
+  <a class="notice notice--action" routerLink="/you">
+    <span aria-hidden="true">⚖️</span>
+    <span>
+      <strong>Set your weight for an accurate curve.</strong>
+      Soberish is using {{ profiles.profile().weightKg }} kg right now.
+    </span>
+    <span class="notice__chevron" aria-hidden="true">›</span>
+  </a>
+}
+
+<section class="add">
+  <h2 class="section-title">Log a drink</h2>
+  <app-quick-add
+    [units]="profiles.profile().units"
+    (picked)="quickAdd($event)"
+    (customised)="openCustom()"
+  />
+</section>
+
+<section class="history">
+  <header class="history__head">
+    <h2 class="section-title">Tonight</h2>
+    @if (session.msUntilWipe(); as remaining) {
+      <span class="wipe tabular" title="History clears 24 hours after you sober up">
+        clears in {{ remaining | duration }}
+      </span>
+    }
+  </header>
+
+  <app-drink-list
+    [drinks]="drinks.drinks()"
+    [units]="profiles.profile().units"
+    (edit)="openEdit($event)"
+    (remove)="remove($event)"
+  />
+</section>
+
+<p class="disclaimer">
+  Estimates only. Widmark maths cannot account for food, medication, or your liver's mood — never
+  use Soberish to decide whether to drive.
+</p>
+
+@if (editor().mode !== 'closed') {
+  <app-drink-editor
+    [drink]="editing()"
+    [seed]="seed()"
+    [profile]="profiles.profile()"
+    (saved)="save($event)"
+    (removed)="removeById($event)"
+    (dismissed)="close()"
+  />
+}

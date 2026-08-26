@@ -9,7 +9,7 @@
       </p>
     </div>
     <div class="preview__impact">
-      <span class="tabular">+{{ bacImpact().toFixed(3) }}%</span>
+      <span class="tabular">+{{ bacImpact() | permille }} ‰</span>
       <small class="tabular">{{ units().toFixed(1) }} units</small>
     </div>
   </div>

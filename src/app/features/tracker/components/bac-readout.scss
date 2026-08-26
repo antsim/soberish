@@ -24,7 +24,10 @@
 }
 
 .unit {
-  font-size: 0.32em;
+  /* ‰ is a wider glyph than %, so it needs a little less size and a little
+     more breathing room to sit right against the number. */
+  margin-left: 0.06em;
+  font-size: 0.26em;
   font-weight: 700;
   letter-spacing: 0;
   -webkit-text-fill-color: var(--text-faint);

@@ -14,13 +14,20 @@ import {
 } from '@angular/core';
 import { BacTimeline, HOUR, MINUTE } from '../../../core/bac/bac';
 import { Drink } from '../../../core/models/drink.model';
+import { toPermille } from '../../../shared/util/format';
 
 const HEIGHT = 240;
 /** Bottom padding holds two rows: drink markers, then the time axis. */
 const PAD = { top: 18, right: 14, bottom: 48, left: 40 };
 const TWEEN_MS = 720;
 
-/** One animatable snapshot of the curve. All fields interpolate linearly. */
+/**
+ * One animatable snapshot of the curve. All fields interpolate linearly.
+ *
+ * Values are promille, converted once in `toFrame()`, so every measurement in
+ * this component — axis ticks, grid steps, the plotted geometry — is in the
+ * unit the axis is labelled with.
+ */
 interface Frame {
   readonly ys: readonly number[];
   readonly from: number;
@@ -151,7 +158,7 @@ export class BacChart {
     const frame = this.#displayed();
     const plot = this.plot();
     const step = gridStep(frame.max);
-    const decimals = step < 0.05 ? 3 : 2;
+    const decimals = step < 1 ? 2 : 1;
     const lines: { y: number; label: string }[] = [];
     for (let value = 0; value <= frame.max + 1e-9; value += step) {
       lines.push({
@@ -198,8 +205,9 @@ export class BacChart {
 
   protected readonly description = computed(() => {
     const timeline = this.timeline();
-    const peak = timeline.peak.toFixed(3);
-    return `Blood alcohol curve. Currently ${timeline.current.toFixed(3)} percent, session peak ${peak} percent.`;
+    const current = toPermille(timeline.current).toFixed(2);
+    const peak = toPermille(timeline.peak).toFixed(2);
+    return `Blood alcohol curve. Currently ${current} promille, session peak ${peak} promille.`;
   });
 
   #toX(t: number, frame: Frame, plot: Plot): number {
@@ -232,22 +240,22 @@ export class BacChart {
 
 function toFrame(timeline: BacTimeline): Frame {
   return {
-    ys: timeline.points.map((point) => point.bac),
+    ys: timeline.points.map((point) => toPermille(point.bac)),
     from: timeline.from,
     to: timeline.to,
-    max: niceMax(Math.max(timeline.peak, timeline.current)),
+    max: niceMax(toPermille(Math.max(timeline.peak, timeline.current))),
   };
 }
 
 /** Rounds the axis up to a readable ceiling so the curve never touches the top. */
-function niceMax(peak: number): number {
-  const target = Math.max(0.04, peak * 1.25);
-  const step = target <= 0.1 ? 0.02 : target <= 0.3 ? 0.05 : 0.1;
+function niceMax(peakPermille: number): number {
+  const target = Math.max(0.4, peakPermille * 1.25);
+  const step = target <= 1 ? 0.2 : target <= 3 ? 0.5 : 1;
   return Math.ceil(target / step) * step;
 }
 
-function gridStep(max: number): number {
-  return max <= 0.08 ? 0.02 : max <= 0.2 ? 0.05 : 0.1;
+function gridStep(maxPermille: number): number {
+  return maxPermille <= 0.8 ? 0.2 : maxPermille <= 2 ? 0.5 : 1;
 }
 
 function lerp(a: number, b: number, t: number): number {

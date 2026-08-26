@@ -1,7 +1,7 @@
 <header class="head">
   <div>
-    <h1>Top BAC</h1>
-    <p class="sub">Everyone currently above 0.00%.</p>
+    <h1>Top ‰</h1>
+    <p class="sub">Everyone currently above 0.00 ‰.</p>
   </div>
   <button
     type="button"
@@ -50,7 +50,7 @@
         >
           <span class="podium__medal" aria-hidden="true">{{ medals[entry.rank - 1] }}</span>
           <span class="podium__name">{{ entry.displayName }}</span>
-          <span class="podium__bac tabular">{{ entry.liveBac | bac }}<small>%</small></span>
+          <span class="podium__bac tabular">{{ entry.liveBac | permille }}<small>‰</small></span>
           <span class="podium__meta tabular">{{ entry.drinks }} units</span>
         </li>
       }
@@ -63,7 +63,7 @@
             <span class="row__rank tabular">{{ entry.rank }}</span>
             <span class="row__name">{{ entry.displayName }}</span>
             <span class="row__meta tabular">{{ entry.drinks }} units</span>
-            <span class="row__bac tabular">{{ entry.liveBac | bac }}</span>
+            <span class="row__bac tabular">{{ entry.liveBac | permille }}</span>
           </li>
         }
       </ul>

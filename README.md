@@ -1,6 +1,6 @@
 # 🍺 Soberish
 
-Track your blood alcohol content in real time — on the bar stool, with or without a signal.
+Track your blood alcohol level in promille — on the bar stool, with or without a signal.
 
 Soberish is an offline-first Angular PWA. Log what you drink in one tap, watch the curve rise and
 fall, and see who else is still above 0.00% on the live leaderboard.
@@ -13,17 +13,17 @@ fall, and see who else is still above 0.00% on the live leaderboard.
 ## What it does
 
 - **One-tap logging.** Preset chips for beer, pint, wine, shots and more; a full editor for
-  anything unusual, with a live "+0.026%" preview before you commit.
+  anything unusual, with a live "+0.26 ‰" preview before you commit.
 - **A curve that animates.** Adding, editing, or deleting a drink morphs the graph instead of
   redrawing it — the line, the axis, and the hero number all tween to the new shape.
 - **Works with no connection.** Everything lives in IndexedDB. The service worker serves the app
   shell, so a dead signal in the basement bar changes nothing.
 - **Optional cloud.** Point it at a Supabase project and you get accounts, cross-device sync, and
   the shared leaderboard. Leave it unconfigured and the same build runs fully local.
-- **Live Top BAC board.** Published rows carry a snapshot plus a projected sober time, so every
+- **Live Top ‰ board.** Published rows carry a snapshot plus a projected sober time, so every
   client ticks the numbers down against its own clock between refreshes.
 - **Edit and delete anything.** Every logged drink stays editable, with undo on deletion.
-- **A session that cleans up after itself.** Once your BAC has been back at 0.00% for 24 hours the
+- **A session that cleans up after itself.** Once you have been back at 0.00 ‰ for 24 hours the
   history is wiped. Keep drinking before then and the whole night — drinks and graph — stays.
 - **Installable.** Add to Home Screen on iOS and Android, standalone display, maskable icons.
 
@@ -46,14 +46,25 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
 1. **Dose.** `volume × ABV × 0.789` gives grams of ethanol.
 2. **Absorption.** Each drink enters the blood as a first-order curve —
    `1 − e^(−3t/T)`, where `T` is the profile's _absorption minutes_ (time to ~95%).
-   This is why a fresh drink reads 0.000% and the app says "kicking in" rather than "sober".
+   This is why a fresh drink reads 0.00 ‰ and the app says "kicking in" rather than "sober".
 3. **Distribution.** Widmark: `BAC% = grams / (weight_g × r) × 100`, with
    `r` = 0.68 (male), 0.55 (female), or 0.615 (average).
 4. **Elimination.** A flat %/hour, integrated forward one minute at a time so it stops at exactly
-   0.00% instead of going negative.
+   zero instead of going negative.
 
 The simulation runs forward from the first drink and always emits a fixed number of samples, which
 is what lets the chart interpolate between two curves index-for-index.
+
+### Percent inside, promille outside
+
+The engine computes and the `bac_status` table stores BAC as a **percentage** (g/100 ml), because
+that is the unit the Widmark equation is written in and the unit already on the wire. Every screen
+displays **promille** (‰, g/L) — exactly ten times that — converted at the presentation boundary in
+`shared/util/format.ts`.
+
+Keeping the split means the tested maths never changes units and rows published by older clients
+stay readable. `bacAt()` rounds to three decimals of a percent, which is precisely two decimals of
+a promille, so the conversion neither loses nor invents precision.
 
 All four inputs — weight, body composition, burn-off rate, absorption time — are adjustable under
 **You**.
@@ -126,6 +137,12 @@ and the affected screens say so.
    - `SUPABASE_ANON_KEY`
 3. Under **Authentication → URL Configuration**, add your Pages URL to the redirect allow-list so
    magic links come back to the app.
+
+> **Seeing `permission denied for table bac_status`?** An early version of `schema.sql` created the
+> tables and RLS policies but never granted table privileges to the `authenticated` role. RLS only
+> filters rows _after_ Postgres checks those privileges, so every query was refused outright.
+> Re-running the current `schema.sql` is safe and fixes it, or apply just the two `grant` lines it
+> now contains.
 
 Variables rather than secrets, deliberately: the anon key is a public client credential protected
 by row-level security, and it has to reach the browser to be useful. It is kept out of the

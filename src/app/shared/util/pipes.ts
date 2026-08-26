@@ -1,11 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { UnitSystem } from '../../core/models/profile.model';
-import { formatBac, formatDuration, formatVolume } from './format';
+import { formatDuration, formatPermille, formatVolume } from './format';
 
-@Pipe({ name: 'bac' })
-export class BacPipe implements PipeTransform {
-  transform(value: number): string {
-    return formatBac(value);
+/** Renders a BAC percentage as promille, e.g. `0.082` → `0.82`. */
+@Pipe({ name: 'permille' })
+export class PermillePipe implements PipeTransform {
+  transform(bacPercent: number): string {
+    return formatPermille(bacPercent);
   }
 }
 

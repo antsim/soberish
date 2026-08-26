@@ -12,7 +12,7 @@ const MIN_INTERVAL_MS = 20_000;
 const BAC_EPSILON = 0.002;
 
 /**
- * Publishes this drinker's BAC to the shared board while they are above 0.00%.
+ * Publishes this drinker's level to the shared board while they are above 0.00 ‰.
  *
  * Sobering up (or opting out, or signing out) removes the row, so the board
  * only ever contains people who are actually still drunk.

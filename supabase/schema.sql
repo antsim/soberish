@@ -3,6 +3,13 @@
 -- Run once in the Supabase SQL editor. Everything is protected by row level
 -- security: a drinker can only touch their own rows, and the leaderboard is
 -- readable by anyone signed in.
+--
+-- Two layers have to line up, and they are easy to confuse. Table GRANTs are
+-- the coarse gate: without them Postgres refuses the query outright with
+-- "permission denied for table …", before any policy is consulted. RLS
+-- policies are the fine gate, deciding which rows that role may then see or
+-- write. Both are spelled out below rather than left to Supabase's default
+-- privileges, which do not always reach objects created from the SQL editor.
 
 -- ---------------------------------------------------------------------------
 -- drinks — the synced copy of each user's log
@@ -31,6 +38,8 @@ create policy "drinks are private" on public.drinks
   to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+grant select, insert, update, delete on table public.drinks to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- bac_status — one row per drinker who is currently above 0.00%
@@ -64,12 +73,21 @@ create policy "publish only your own status" on public.bac_status
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+grant select, insert, update, delete on table public.bac_status to authenticated;
+
 -- Live leaderboard updates (the app also polls, so this is an optimisation).
 alter publication supabase_realtime add table public.bac_status;
 
 -- ---------------------------------------------------------------------------
 -- Housekeeping
 -- ---------------------------------------------------------------------------
+
+-- Already ran an earlier version of this file and hit "permission denied for
+-- table bac_status"? The tables and policies are fine — only the grants above
+-- were missing. Running this whole file again is safe and fixes it, or apply
+-- just these two lines:
+--   grant select, insert, update, delete on table public.drinks to authenticated;
+--   grant select, insert, update, delete on table public.bac_status to authenticated;
 
 -- Optional: schedule with pg_cron to drop replicated tombstones and stale rows.
 --   select cron.schedule('soberish-cleanup', '0 5 * * *', $$

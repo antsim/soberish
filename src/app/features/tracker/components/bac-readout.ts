@@ -10,7 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { SoberStatus } from '../../../core/bac/bac';
-import { formatDuration } from '../../../shared/util/format';
+import { formatDuration, toPermille } from '../../../shared/util/format';
 import { DurationPipe } from '../../../shared/util/pipes';
 
 const COUNT_MS = 720;
@@ -22,8 +22,8 @@ const COUNT_MS = 720;
   template: `
     <p class="status section-title">{{ statusTitle() }}</p>
     <p class="value tabular" [attr.aria-label]="ariaLabel()">
-      <span aria-hidden="true">{{ shown().toFixed(3) }}</span>
-      <span class="unit" aria-hidden="true">%</span>
+      <span aria-hidden="true">{{ shown().toFixed(2) }}</span>
+      <span class="unit" aria-hidden="true">‰</span>
     </p>
     <p class="trend">
       <span class="chip" [class.chip--rising]="rising()">
@@ -72,13 +72,13 @@ export class BacReadout {
   protected readonly ariaLabel = computed(() => {
     const remaining = this.msUntilSober();
     const suffix = remaining === null ? '' : `, sober in ${formatDuration(remaining)}`;
-    return `Blood alcohol content ${this.bac().toFixed(3)} percent${suffix}`;
+    return `Blood alcohol ${toPermille(this.bac()).toFixed(2)} promille${suffix}`;
   });
 
   constructor() {
     // Count towards the new value so the number rolls instead of snapping.
     effect(() => {
-      const target = this.bac();
+      const target = toPermille(this.bac());
       untracked(() => this.#countTo(target));
     });
     inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.#raf));

@@ -10,14 +10,14 @@ import { SessionStore } from '../../core/state/session-store';
 import { DrinkSyncService } from '../../core/sync/drink-sync.service';
 import { AuthStore } from '../../core/supabase/auth-store';
 import { kgToLb, lbToKg } from '../../shared/util/format';
-import { DurationPipe } from '../../shared/util/pipes';
+import { DurationPipe, PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
 /** Body profile, account, install, and data controls. */
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AuthCard, DurationPipe, FormsModule],
+  imports: [AuthCard, DurationPipe, FormsModule, PermillePipe],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })

@@ -121,7 +121,13 @@ function walk(
   return { bac, eliminated, t };
 }
 
-/** BAC (as a percentage, e.g. `0.042`) at an arbitrary moment. */
+/**
+ * BAC as a percentage (g/100 ml), e.g. `0.042`, at an arbitrary moment.
+ *
+ * The engine works in percent throughout because that is the unit the Widmark
+ * equation is written in. Promille — ten times this — is a presentation
+ * concern; see `shared/util/format.ts`.
+ */
 export function bacAt(drinks: readonly Drink[], profile: Profile, at: number): number {
   const doses = toDoses(drinks);
   if (!doses.length || at <= doses[0].at) return 0;

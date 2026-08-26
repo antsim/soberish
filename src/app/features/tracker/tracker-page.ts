@@ -15,6 +15,7 @@ import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
+import { formatPermille } from '../../shared/util/format';
 import { BacChart } from './components/bac-chart';
 import { BacReadout } from './components/bac-readout';
 import { DrinkEditor } from './components/drink-editor';
@@ -58,7 +59,7 @@ export class TrackerPage implements OnInit {
   protected readonly stats = computed(() => [
     { label: 'Units', value: this.session.totalStandardDrinks().toFixed(1) },
     { label: 'Drinks', value: `${this.drinks.count()}` },
-    { label: 'Peak', value: this.session.peak().toFixed(3) },
+    { label: 'Peak', value: formatPermille(this.session.peak()) },
     {
       label: 'Session',
       value: this.session.elapsedMs() ? formatShort(this.session.elapsedMs()) : '—',

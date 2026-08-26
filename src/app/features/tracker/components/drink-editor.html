@@ -70,14 +70,12 @@
     />
     <div class="field">
       <label for="drink-volume">Exact volume</label>
-      <input
-        id="drink-volume"
-        type="number"
-        inputmode="decimal"
-        min="1"
-        step="any"
-        [ngModel]="volumeInput()"
-        (ngModelChange)="setVolumeFromInput(+$event)"
+      <app-decimal-field
+        fieldId="drink-volume"
+        [ariaLabel]="imperial() ? 'Exact volume in ounces' : 'Exact volume in millilitres'"
+        [value]="volumeInput()"
+        [maximumFractionDigits]="imperial() ? 1 : 0"
+        (valueChange)="setVolumeFromInput($event)"
       />
     </div>
   </div>
@@ -108,15 +106,12 @@
     />
     <div class="field">
       <label for="drink-abv">Exact ABV</label>
-      <input
-        id="drink-abv"
-        type="number"
-        inputmode="decimal"
-        min="0"
-        max="96"
-        step="0.1"
-        [ngModel]="abv()"
-        (ngModelChange)="setAbv(+$event)"
+      <app-decimal-field
+        fieldId="drink-abv"
+        ariaLabel="Exact alcohol by volume percentage"
+        [value]="abv()"
+        [maximumFractionDigits]="2"
+        (valueChange)="setAbv($event)"
       />
     </div>
   </div>

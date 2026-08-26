@@ -16,6 +16,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Needed by configure-pages below to turn Pages on if it is still off.
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +28,15 @@ jobs:
         with:
           node-version: 24
           cache: npm
+
+      # `enablement: true` creates the Pages site (source: GitHub Actions) on
+      # the first run, so a fresh clone of this repo deploys without anyone
+      # visiting Settings → Pages first.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - run: npm ci
 
@@ -35,9 +49,11 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           # Project pages live under /<repo>/; a user, org, or custom-domain
-          # site is served from the root instead.
-          BASE_HREF: /${{ github.event.repository.name }}/
-        run: npm run build:pages
+          # site is served from the root. configure-pages knows which.
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          base="/${PAGES_BASE_PATH#/}"
+          BASE_HREF="${base%/}/" npm run build:pages
 
       - uses: actions/upload-pages-artifact@v3
         with:

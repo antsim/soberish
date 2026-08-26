@@ -94,13 +94,19 @@ Some conventions worth knowing:
 
 ## Deploying to GitHub Pages
 
-`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`. Push, and the site
+lands at `https://<user>.github.io/<repo>/` — there is nothing to click first.
 
-1. **Settings → Pages → Source: GitHub Actions.**
-2. Push to `main`. The site lands at `https://<user>.github.io/<repo>/`.
+The workflow's `configure-pages` step runs with `enablement: true`, so the first run turns Pages on
+itself (source: GitHub Actions) rather than failing with `Ensure GitHub Pages has been enabled`. It
+also reports the site's base path, which becomes Angular's `--base-href` — correct for a project
+site under `/<repo>/`, a user or org site at the root, or a custom domain, without hardcoding
+anything. The build then copies `index.html` to `404.html` (how Pages hands deep links to the
+router) and writes `.nojekyll`.
 
-The workflow sets `--base-href` from the repository name, copies `index.html` to `404.html` (which
-is how Pages hands deep links to the router), and writes `.nojekyll`.
+If a run still fails on enablement, the repository's own settings are blocking API creation — some
+orgs restrict it. Flip **Settings → Pages → Source: GitHub Actions** once by hand and re-run; the
+step is a no-op from then on.
 
 ### Turning on Supabase (optional)
 

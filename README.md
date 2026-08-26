@@ -104,9 +104,14 @@ site under `/<repo>/`, a user or org site at the root, or a custom domain, witho
 anything. The build then copies `index.html` to `404.html` (how Pages hands deep links to the
 router) and writes `.nojekyll`.
 
-If a run still fails on enablement, the repository's own settings are blocking API creation — some
-orgs restrict it. Flip **Settings → Pages → Source: GitHub Actions** once by hand and re-run; the
-step is a no-op from then on.
+That enablement is best-effort. Creating a Pages site over the REST API needs admin rights the
+workflow token does not always have, and organisations can block it outright; when that happens the
+step logs `Resource not accessible by integration` and is skipped rather than failing the build.
+The fix is a one-time click:
+
+**Settings → Pages → Source: GitHub Actions**, then re-run the workflow.
+
+From then on the step succeeds and reports the base path as normal.
 
 ### Turning on Supabase (optional)
 

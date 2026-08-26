@@ -29,12 +29,17 @@ jobs:
           node-version: 24
           cache: npm
 
-      # `enablement: true` creates the Pages site (source: GitHub Actions) on
-      # the first run, so a fresh clone of this repo deploys without anyone
-      # visiting Settings → Pages first.
+      # Reports the site's real base path, which handles custom domains and
+      # user/org sites. `enablement: true` also tries to create the Pages site
+      # on a first run, but the workflow token is not always allowed to —
+      # creating a site needs admin rights the GITHUB_TOKEN may not have, and
+      # orgs can block it outright. That is a reason to fall back to the
+      # project-site convention below, not to fail the build: let the deploy
+      # job report the real problem.
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
+        continue-on-error: true
         with:
           enablement: true
 
@@ -49,10 +54,15 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           # Project pages live under /<repo>/; a user, org, or custom-domain
-          # site is served from the root. configure-pages knows which.
+          # site is served from the root. configure-pages knows which — and
+          # when it could not ask, the repository name is the right guess.
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          base="/${PAGES_BASE_PATH#/}"
+          fallback="/$REPO_NAME"
+          case "$REPO_NAME" in *.github.io) fallback="/" ;; esac
+          base="${PAGES_BASE_PATH:-$fallback}"
+          base="/${base#/}"
           BASE_HREF="${base%/}/" npm run build:pages
 
       - uses: actions/upload-pages-artifact@v3

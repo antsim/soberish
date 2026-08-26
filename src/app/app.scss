@@ -1,0 +1,126 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  padding-bottom: calc(84px + var(--safe-bottom));
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+
+  &:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 100;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+  }
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: calc(0.7rem + var(--safe-top)) 1.15rem 0.7rem;
+  background: linear-gradient(180deg, var(--bg) 62%, transparent);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand__mark {
+  border-radius: 9px;
+}
+
+.brand__name {
+  font-size: 1.02rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+
+.topbar__end {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pill {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--text-muted);
+
+  &--offline {
+    border-color: rgba(250, 204, 21, 0.35);
+    color: var(--buzzed);
+  }
+
+  &--install {
+    border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+    color: var(--amber-soft);
+  }
+}
+
+.main {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 0.3rem 1.15rem 1.5rem;
+}
+
+.tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 0.4rem 0.75rem calc(0.4rem + var(--safe-bottom));
+  border-top: 1px solid var(--border);
+  background: rgba(8, 11, 18, 0.86);
+  backdrop-filter: blur(18px);
+
+  a {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0.45rem 0.25rem;
+    border-radius: var(--radius);
+    color: var(--text-faint);
+    text-decoration: none;
+    transition:
+      color 160ms ease,
+      background 160ms ease;
+
+    &.active {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+  }
+}
+
+.tabbar__icon {
+  font-size: 1.15rem;
+  line-height: 1.1;
+}
+
+.tabbar__label {
+  font-size: 0.68rem;
+  font-weight: 650;
+}

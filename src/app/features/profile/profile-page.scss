@@ -1,0 +1,121 @@
+:host {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.head {
+  h1 {
+    font-size: 1.45rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+  }
+}
+
+.sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.block {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem;
+}
+
+.slider {
+  width: 100%;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--amber);
+}
+
+.hint {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.3);
+
+  button {
+    padding: 0.55rem 0.4rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: var(--text-muted);
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+
+    &.active {
+      background: var(--surface-strong);
+      color: var(--text);
+    }
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.row__title {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.toggle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.7rem;
+  cursor: pointer;
+
+  input {
+    width: 22px;
+    height: 22px;
+    margin-top: 0.15rem;
+    accent-color: var(--amber);
+  }
+
+  strong {
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  small {
+    color: var(--text-faint);
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 0.6rem;
+
+  .btn {
+    flex: 1;
+  }
+}
+
+.disclaimer {
+  padding: 0 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+  text-align: center;
+}

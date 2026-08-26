@@ -1,0 +1,152 @@
+<app-sheet [title]="isEdit() ? 'Edit drink' : 'Add a drink'" (dismissed)="dismissed.emit()">
+  <div class="preview card">
+    <span class="preview__icon" aria-hidden="true">{{ icon() }}</span>
+    <div>
+      <p class="preview__name">{{ label() || 'Drink' }}</p>
+      <p class="preview__meta tabular">
+        {{ imperial() ? volumeInput() + ' oz' : volumeMl() + ' ml' }} · {{ abv() }}% ·
+        {{ grams().toFixed(1) }} g alcohol
+      </p>
+    </div>
+    <div class="preview__impact">
+      <span class="tabular">+{{ bacImpact().toFixed(3) }}%</span>
+      <small class="tabular">{{ units().toFixed(1) }} units</small>
+    </div>
+  </div>
+
+  <div class="group">
+    <p class="section-title">What is it?</p>
+    <div class="name-row">
+      <div class="icons" role="group" aria-label="Drink icon">
+        @for (option of icons; track option) {
+          <button
+            type="button"
+            class="icon-btn"
+            [class.icon-btn--active]="icon() === option"
+            [attr.aria-pressed]="icon() === option"
+            (click)="icon.set(option)"
+          >
+            {{ option }}
+          </button>
+        }
+      </div>
+      <div class="field">
+        <label for="drink-label">Name</label>
+        <input
+          id="drink-label"
+          type="text"
+          maxlength="24"
+          autocomplete="off"
+          [ngModel]="label()"
+          (ngModelChange)="label.set($event)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="group">
+    <p class="section-title">How much? ({{ imperial() ? 'oz' : 'ml' }})</p>
+    <div class="chips">
+      @for (chip of volumeChips(); track chip.ml) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="volumeMl() === chip.ml"
+          (click)="volumeMl.set(chip.ml)"
+        >
+          {{ chip.text }}
+        </button>
+      }
+    </div>
+    <input
+      class="slider"
+      type="range"
+      min="10"
+      max="1000"
+      step="10"
+      aria-label="Volume in millilitres"
+      [ngModel]="volumeMl()"
+      (ngModelChange)="volumeMl.set(+$event)"
+    />
+    <div class="field">
+      <label for="drink-volume">Exact volume</label>
+      <input
+        id="drink-volume"
+        type="number"
+        inputmode="decimal"
+        min="1"
+        step="any"
+        [ngModel]="volumeInput()"
+        (ngModelChange)="setVolumeFromInput(+$event)"
+      />
+    </div>
+  </div>
+
+  <div class="group">
+    <p class="section-title">How strong? (% ABV)</p>
+    <div class="chips">
+      @for (preset of abvPresets; track preset) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="abv() === preset"
+          (click)="setAbv(preset)"
+        >
+          {{ preset }}%
+        </button>
+      }
+    </div>
+    <input
+      class="slider"
+      type="range"
+      min="0"
+      max="60"
+      step="0.1"
+      aria-label="Alcohol by volume percentage"
+      [ngModel]="abv()"
+      (ngModelChange)="setAbv(+$event)"
+    />
+    <div class="field">
+      <label for="drink-abv">Exact ABV</label>
+      <input
+        id="drink-abv"
+        type="number"
+        inputmode="decimal"
+        min="0"
+        max="96"
+        step="0.1"
+        [ngModel]="abv()"
+        (ngModelChange)="setAbv(+$event)"
+      />
+    </div>
+  </div>
+
+  <div class="group">
+    <p class="section-title">When?</p>
+    <div class="chips">
+      <button type="button" class="chip" (click)="resetTime()">Now</button>
+      <button type="button" class="chip" (click)="shiftTime(-15)">−15 min</button>
+      <button type="button" class="chip" (click)="shiftTime(-30)">−30 min</button>
+      <button type="button" class="chip" (click)="shiftTime(-60)">−1 h</button>
+      <button type="button" class="chip" (click)="shiftTime(15)">+15 min</button>
+    </div>
+    <div class="field">
+      <label for="drink-time">{{ minutesAgo() }} minutes ago</label>
+      <input
+        id="drink-time"
+        type="datetime-local"
+        [ngModel]="timeLocal()"
+        (ngModelChange)="setTimeFromInput($event)"
+      />
+    </div>
+  </div>
+
+  <div class="actions">
+    @if (isEdit()) {
+      <button type="button" class="btn btn--danger" (click)="remove()">Delete</button>
+    }
+    <button type="button" class="btn btn--primary btn--block" (click)="save()">
+      {{ isEdit() ? 'Save changes' : 'Add drink' }}
+    </button>
+  </div>
+</app-sheet>

@@ -1,0 +1,229 @@
+/* Soberish design system — a single dark theme tuned for a dim bar. */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #080b12;
+  --bg-elevated: #0f1420;
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-strong: rgba(255, 255, 255, 0.08);
+  --surface-hover: rgba(255, 255, 255, 0.11);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --text: #f2f5fb;
+  --text-muted: #96a0b5;
+  --text-faint: #626d84;
+
+  --amber: #ffb020;
+  --amber-soft: #ffd27a;
+  --amber-dim: rgba(255, 176, 32, 0.14);
+
+  --sober: #38bdf8;
+  --buzzed: #facc15;
+  --merry: #fb923c;
+  --drunk: #f4586e;
+  --wasted: #d946ef;
+  --danger: #f4586e;
+  --ok: #34d399;
+
+  /* Set by the tracker page so the whole shell reacts to the current band. */
+  --accent: var(--amber);
+  --accent-dim: rgba(255, 176, 32, 0.16);
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, var(--accent-dim), transparent 60%),
+    radial-gradient(90% 50% at 100% 100%, rgba(56, 189, 248, 0.06), transparent 70%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-image 600ms var(--ease-out);
+  overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Numbers that should not jitter as they tick. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+}
+
+.section-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-strong);
+  font-weight: 600;
+  transition:
+    transform 120ms var(--ease-out),
+    background 160ms ease,
+    opacity 160ms ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--amber), #ff8a3d);
+    color: #1a1204;
+  }
+
+  &--ghost {
+    background: transparent;
+    border-color: var(--border);
+  }
+
+  &--danger {
+    background: transparent;
+    border-color: rgba(244, 88, 110, 0.4);
+    color: var(--danger);
+  }
+
+  &--block {
+    width: 100%;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  input,
+  select {
+    min-height: 48px;
+    padding: 0 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(0, 0, 0, 0.28);
+    transition: border-color 160ms ease;
+
+    &:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+  }
+}
+
+.boot-splash {
+  display: grid;
+  place-items: center;
+  height: 100dvh;
+
+  &__logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--amber), #ff8a3d);
+    animation: boot-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes boot-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,88 @@
+<header class="head">
+  <div>
+    <h1>Top BAC</h1>
+    <p class="sub">Everyone currently above 0.00%.</p>
+  </div>
+  <button
+    type="button"
+    class="refresh"
+    (click)="board.refresh()"
+    [disabled]="board.loading() || !network.online()"
+    aria-label="Refresh leaderboard"
+  >
+    {{ board.loading() ? '…' : '↻' }}
+  </button>
+</header>
+
+@if (!board.available) {
+  <div class="card state">
+    <p class="state__title">Leaderboard is offline-only here</p>
+    <p class="state__body">
+      This deployment was built without Supabase credentials, so Soberish runs entirely on your
+      device. Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> to the repository
+      variables and redeploy to switch the board on.
+    </p>
+  </div>
+} @else if (!network.online()) {
+  <div class="card state">
+    <p class="state__title">You're offline</p>
+    <p class="state__body">
+      Your own BAC keeps tracking. The board will catch up when you reconnect.
+    </p>
+  </div>
+} @else if (!auth.signedIn()) {
+  <app-auth-card />
+} @else {
+  @if (board.error(); as error) {
+    <div class="card state state--error">
+      <p class="state__title">Couldn't load the board</p>
+      <p class="state__body">{{ error }}</p>
+    </div>
+  }
+
+  @if (board.ranked().length) {
+    <ol class="podium">
+      @for (entry of podium(); track entry.userId) {
+        <li
+          class="podium__slot"
+          [class.podium__slot--self]="entry.isSelf"
+          [class]="statusClass(entry)"
+        >
+          <span class="podium__medal" aria-hidden="true">{{ medals[entry.rank - 1] }}</span>
+          <span class="podium__name">{{ entry.displayName }}</span>
+          <span class="podium__bac tabular">{{ entry.liveBac | bac }}<small>%</small></span>
+          <span class="podium__meta tabular">{{ entry.drinks }} units</span>
+        </li>
+      }
+    </ol>
+
+    @if (rest().length) {
+      <ul class="list">
+        @for (entry of rest(); track entry.userId) {
+          <li class="row" [class.row--self]="entry.isSelf" [class]="statusClass(entry)">
+            <span class="row__rank tabular">{{ entry.rank }}</span>
+            <span class="row__name">{{ entry.displayName }}</span>
+            <span class="row__meta tabular">{{ entry.drinks }} units</span>
+            <span class="row__bac tabular">{{ entry.liveBac | bac }}</span>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <div class="card state">
+      <p class="state__title">Nobody is drinking</p>
+      <p class="state__body">The board fills up as soon as someone logs a drink.</p>
+    </div>
+  }
+
+  <p class="foot">
+    @if (board.selfRank(); as rank) {
+      You're currently ranked #{{ rank }}.
+    } @else {
+      You're not on the board — log a drink to appear.
+    }
+    @if (board.fetchedAt(); as at) {
+      <span class="foot__time"> Updated {{ at | date: 'HH:mm:ss' }}.</span>
+    }
+  </p>
+}

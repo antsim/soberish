@@ -1,0 +1,183 @@
+<header class="head">
+  <h1>You</h1>
+  <p class="sub">These numbers shape the curve. Honest input, honest estimate.</p>
+</header>
+
+<section class="card block">
+  <h2 class="section-title">Body</h2>
+
+  <div class="field">
+    <label for="weight">Weight — {{ weightShown() }} {{ imperial() ? 'lb' : 'kg' }}</label>
+    <input
+      id="weight"
+      type="range"
+      class="slider"
+      [min]="weightRange().min"
+      [max]="weightRange().max"
+      step="1"
+      [ngModel]="weightShown()"
+      (ngModelChange)="setWeight(+$event)"
+    />
+  </div>
+
+  <div class="field">
+    <label>Body composition</label>
+    <div class="segmented" role="group" aria-label="Body composition">
+      @for (option of bodyTypes; track option.value) {
+        <button
+          type="button"
+          [class.active]="profiles.profile().bodyType === option.value"
+          (click)="patch({ bodyType: option.value })"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+    <p class="hint">Sets the Widmark distribution ratio. "Average" sits between the two.</p>
+  </div>
+
+  <div class="field">
+    <label>Units</label>
+    <div class="segmented" role="group" aria-label="Units">
+      @for (option of unitOptions; track option.value) {
+        <button
+          type="button"
+          [class.active]="profiles.profile().units === option.value"
+          (click)="patch({ units: option.value })"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="card block">
+  <h2 class="section-title">Metabolism</h2>
+
+  <div class="field">
+    <label for="burn">
+      Burn-off rate —
+      <span class="tabular">{{ profiles.profile().eliminationRate.toFixed(3) }}</span> % per hour
+    </label>
+    <input
+      id="burn"
+      type="range"
+      class="slider"
+      [min]="limits.eliminationRate.min"
+      [max]="limits.eliminationRate.max"
+      [step]="limits.eliminationRate.step"
+      [ngModel]="profiles.profile().eliminationRate"
+      (ngModelChange)="patch({ eliminationRate: +$event })"
+    />
+    <p class="hint">
+      Most people sit around 0.015. Regular drinkers clear alcohol slightly faster.
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="absorb">
+      Absorption — <span class="tabular">{{ profiles.profile().absorptionMinutes }}</span> min to
+      full effect
+    </label>
+    <input
+      id="absorb"
+      type="range"
+      class="slider"
+      [min]="limits.absorptionMinutes.min"
+      [max]="limits.absorptionMinutes.max"
+      [step]="limits.absorptionMinutes.step"
+      [ngModel]="profiles.profile().absorptionMinutes"
+      (ngModelChange)="patch({ absorptionMinutes: +$event })"
+    />
+    <p class="hint">Shorter on an empty stomach, longer after a big meal.</p>
+  </div>
+</section>
+
+<section class="card block">
+  <h2 class="section-title">Account &amp; leaderboard</h2>
+
+  @if (!auth.available) {
+    <p class="hint">
+      This deployment has no Supabase configuration, so Soberish is running fully offline.
+      Everything still works — it just stays on this device.
+    </p>
+  } @else if (auth.signedIn()) {
+    <div class="row">
+      <div>
+        <p class="row__title">{{ auth.user()?.email }}</p>
+        <p class="hint">{{ syncLabel() }}{{ network.online() ? '' : ' · offline' }}</p>
+      </div>
+      <button type="button" class="btn btn--ghost" (click)="signOut()">Sign out</button>
+    </div>
+
+    <div class="field">
+      <label for="display-name">Leaderboard name</label>
+      <input
+        id="display-name"
+        type="text"
+        maxlength="24"
+        placeholder="Anonymous"
+        [ngModel]="profiles.profile().displayName"
+        (ngModelChange)="patch({ displayName: $event })"
+      />
+    </div>
+
+    <label class="toggle">
+      <input
+        type="checkbox"
+        [ngModel]="profiles.profile().shareToLeaderboard"
+        (ngModelChange)="patch({ shareToLeaderboard: $event })"
+      />
+      <span>
+        <strong>Share my BAC</strong>
+        <small>Publishes your name and current BAC while you're above 0.00%.</small>
+      </span>
+    </label>
+  } @else {
+    <app-auth-card />
+  }
+</section>
+
+<section class="card block">
+  <h2 class="section-title">App</h2>
+
+  @if (pwa.installed()) {
+    <p class="hint">✅ Installed. Soberish runs offline from your home screen.</p>
+  } @else if (pwa.canInstall()) {
+    <button type="button" class="btn btn--primary btn--block" (click)="install()">
+      Add Soberish to Home Screen
+    </button>
+  } @else if (pwa.isIos) {
+    <p class="hint">
+      To install: tap <strong>Share</strong> in Safari, then <strong>Add to Home Screen</strong>.
+    </p>
+  } @else {
+    <p class="hint">Use your browser's "Install app" or "Add to Home Screen" menu item.</p>
+  }
+</section>
+
+<section class="card block">
+  <h2 class="section-title">Data</h2>
+  <div class="row">
+    <div>
+      <p class="row__title">{{ drinks.count() }} drinks stored</p>
+      <p class="hint">
+        @if (session.msUntilWipe(); as remaining) {
+          Auto-clears in {{ remaining | duration }} — 24 h after you sobered up.
+        } @else {
+          History clears automatically 24 h after your BAC hits 0.00%.
+        }
+      </p>
+    </div>
+  </div>
+  <div class="buttons">
+    <button type="button" class="btn btn--ghost" (click)="exportJson()">Export JSON</button>
+    <button type="button" class="btn btn--danger" (click)="clearHistory()">Clear session</button>
+  </div>
+</section>
+
+<p class="disclaimer">
+  Soberish estimates BAC with the Widmark equation. Real blood alcohol depends on food, hydration,
+  medication, genetics, and more. It is not a breathalyser and never a reason to drive.
+</p>

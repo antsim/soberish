@@ -1,0 +1,91 @@
+:host {
+  display: grid;
+  /* minmax(0,…) keeps the horizontally scrollable preset row from stretching
+     the page instead of scrolling inside itself. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.hero {
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem 1rem 1rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.stat {
+  display: grid;
+  gap: 0.15rem;
+  text-align: center;
+
+  dt {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+  }
+}
+
+.notice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--amber) 32%, transparent);
+  border-radius: var(--radius);
+  background: var(--amber-dim);
+  color: inherit;
+  font-size: 0.86rem;
+  text-decoration: none;
+
+  strong {
+    display: block;
+  }
+}
+
+.notice__chevron {
+  font-size: 1.3rem;
+  color: var(--text-faint);
+}
+
+.add,
+.history {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.history__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wipe {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.disclaimer {
+  padding: 0 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+  text-align: center;
+}

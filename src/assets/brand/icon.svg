@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Soberish">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#232b40"/>
+      <stop offset="0.55" stop-color="#141a29"/>
+      <stop offset="1" stop-color="#0a0d15"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.62" r="0.55">
+      <stop offset="0" stop-color="#ffb020" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#ffb020" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beer" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset="0.35" stop-color="#ffc247"/>
+      <stop offset="0.72" stop-color="#f79b1a"/>
+      <stop offset="1" stop-color="#d9720b"/>
+    </linearGradient>
+    <linearGradient id="foam" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.6" stop-color="#fdf6e6"/>
+      <stop offset="1" stop-color="#eadfc6"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <g id="soberish-icon-bg">
+    <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+    <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  </g>
+
+  <g id="soberish-icon-mark" transform="translate(-14 4)">
+    <!-- handle -->
+    <path d="M344 240 h30 a54 54 0 0 1 0 108 h-30"
+          fill="none" stroke="#f5c877" stroke-opacity="0.62" stroke-width="26" stroke-linecap="round"/>
+    <!-- glass body -->
+    <path d="M156 196 h176 a12 12 0 0 1 12 12 v168 a44 44 0 0 1 -44 44 h-112 a44 44 0 0 1 -44 -44 v-168 a12 12 0 0 1 12 -12 z"
+          fill="#ffffff" fill-opacity="0.10"/>
+    <!-- beer -->
+    <path d="M170 214 h148 v162 a30 30 0 0 1 -30 30 h-88 a30 30 0 0 1 -30 -30 z"
+          fill="url(#beer)"/>
+    <!-- bubbles -->
+    <g fill="#fff8e6" fill-opacity="0.75">
+      <circle cx="205" cy="300" r="9"/>
+      <circle cx="248" cy="262" r="6"/>
+      <circle cx="285" cy="322" r="7.5"/>
+      <circle cx="222" cy="360" r="5"/>
+      <circle cx="276" cy="245" r="4.5"/>
+    </g>
+    <!-- glass shine -->
+    <rect x="186" y="228" width="18" height="150" rx="9" fill="url(#shine)"/>
+    <!-- foam -->
+    <path d="M148 200 a34 34 0 0 1 12 -60 a40 40 0 0 1 44 -34 a44 44 0 0 1 82 -6 a38 38 0 0 1 56 30 a34 34 0 0 1 8 70 z"
+          fill="url(#foam)"/>
+    <path d="M152 196 c-8 14 -9 34 -1 48 c9 15 26 9 26 -8 c0 -12 -9 -26 -25 -40 z" fill="url(#foam)"/>
+    <circle cx="196" cy="128" r="6" fill="#ffffff" fill-opacity="0.9"/>
+    <circle cx="300" cy="116" r="5" fill="#ffffff" fill-opacity="0.75"/>
+    <!-- glass outline -->
+    <path d="M156 196 h176 a12 12 0 0 1 12 12 v168 a44 44 0 0 1 -44 44 h-112 a44 44 0 0 1 -44 -44 v-168 a12 12 0 0 1 12 -12 z"
+          fill="none" stroke="#ffe6ac" stroke-opacity="0.5" stroke-width="8"/>
+  </g>
+</svg>

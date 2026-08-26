@@ -23,11 +23,26 @@ export function hasSupabaseConfig(config: AppConfig): boolean {
   return /^https?:\/\//.test(config.supabaseUrl) && config.supabaseAnonKey.length > 20;
 }
 
+/**
+ * Resolves the app's `<base href>` against the current location.
+ *
+ * On GitHub Pages this is `https://user.github.io/repo/` rather than the
+ * origin, which matters for anything that has to name the app by absolute URL
+ * from outside the browser — auth emails above all.
+ */
+export function resolveBaseUrl(baseHref: string, currentHref: string): string {
+  return new URL(baseHref, currentHref).href;
+}
+
+/** The deployed app's root URL, e.g. `https://antsim.github.io/soberish/`. */
+export function appBaseUrl(): string {
+  return resolveBaseUrl(document.querySelector('base')?.getAttribute('href') ?? '/', location.href);
+}
+
 /** Loads `config.json` relative to the deployed base href. Never throws. */
 export async function loadAppConfig(): Promise<AppConfig> {
   try {
-    const base = document.querySelector('base')?.getAttribute('href') ?? '/';
-    const response = await fetch(new URL('config.json', new URL(base, location.href)), {
+    const response = await fetch(new URL('config.json', appBaseUrl()), {
       cache: 'no-cache',
     });
     if (!response.ok) return EMPTY_CONFIG;

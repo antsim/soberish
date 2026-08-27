@@ -13,6 +13,7 @@ import { Clock } from '../../core/platform/clock';
 import { Toaster } from '../../core/platform/toaster';
 import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
+import { SpanChoice } from '../../core/state/chart-viewport';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
 import { formatPermille } from '../../shared/util/format';
@@ -56,6 +57,25 @@ export class TrackerPage implements OnInit {
     return state.mode === 'add' ? state.seed : null;
   });
 
+  /** Range chips, narrowed to the ones that actually zoom this session. */
+  protected readonly ranges = computed(() => {
+    const sessionMs = this.session.chartBounds().to - this.session.chartBounds().from;
+    const windowMs = this.session.chartWindow().to - this.session.chartWindow().from;
+    const whole = this.session.showingWholeSession();
+    const options: { label: string; choice: SpanChoice; active: boolean }[] = [];
+    for (const hours of [3, 6, 12]) {
+      const span = hours * HOUR;
+      if (span >= sessionMs) continue;
+      options.push({
+        label: `${hours}h`,
+        choice: span,
+        active: !whole && Math.abs(windowMs - span) < 60_000,
+      });
+    }
+    options.push({ label: 'Session', choice: 'session', active: whole });
+    return options;
+  });
+
   protected readonly stats = computed(() => [
     { label: 'Units', value: this.session.totalStandardDrinks().toFixed(1) },
     { label: 'Drinks', value: `${this.drinks.count()}` },
@@ -72,6 +92,18 @@ export class TrackerPage implements OnInit {
       this.editor.set({ mode: 'add', seed: null });
       void this.#router.navigate([], { queryParams: {}, replaceUrl: true });
     }
+  }
+
+  protected setRange(choice: SpanChoice): void {
+    this.session.setChartSpan(choice);
+  }
+
+  protected onPan(deltaMs: number): void {
+    this.session.panChart(deltaMs);
+  }
+
+  protected onZoom(gesture: { factor: number; focusRatio: number }): void {
+    this.session.zoomChart(gesture.factor, gesture.focusRatio);
   }
 
   protected async quickAdd(preset: DrinkPreset): Promise<void> {

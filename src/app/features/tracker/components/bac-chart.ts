@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   untracked,
   viewChild,
@@ -20,6 +21,8 @@ const HEIGHT = 240;
 /** Bottom padding holds two rows: drink markers, then the time axis. */
 const PAD = { top: 18, right: 14, bottom: 48, left: 40 };
 const TWEEN_MS = 720;
+/** Minimum gap between two drink emoji before one is dropped. */
+const ICON_SPACING = 15;
 
 /**
  * One animatable snapshot of the curve. All fields interpolate linearly.
@@ -55,6 +58,8 @@ interface Marker {
   readonly y: number;
   readonly icon: string;
   readonly label: string;
+  /** False when a neighbour is too close for the emoji to be legible. */
+  readonly showIcon: boolean;
 }
 
 /**
@@ -76,6 +81,13 @@ export class BacChart {
   readonly timeline = input.required<BacTimeline>();
   readonly drinks = input<readonly Drink[]>([]);
   readonly now = input.required<number>();
+  /** Whether drag, pinch, wheel and arrow keys move the window. */
+  readonly interactive = input(false);
+
+  /** Milliseconds to shift the visible window by. */
+  readonly panned = output<number>();
+  /** `factor` > 1 zooms in; `focusRatio` is the fixed point, 0–1 across the plot. */
+  readonly zoomed = output<{ factor: number; focusRatio: number }>();
 
   private readonly host = viewChild.required<ElementRef<HTMLElement>>('frame');
 
@@ -192,15 +204,25 @@ export class BacChart {
   protected readonly markers = computed<readonly Marker[]>(() => {
     const frame = this.#displayed();
     const plot = this.plot();
+    // Zoomed out, a dozen drinks land on top of each other; keep every tick
+    // but only draw an emoji where there is room for it to be read.
+    let lastIconX = Number.NEGATIVE_INFINITY;
     return this.drinks()
       .filter((drink) => drink.consumedAt >= frame.from && drink.consumedAt <= frame.to)
-      .map((drink) => ({
-        id: drink.id,
-        x: this.#toX(drink.consumedAt, frame, plot),
-        y: plot.bottom + 6,
-        icon: drink.icon,
-        label: `${drink.label} at ${clockLabel(drink.consumedAt)}`,
-      }));
+      .sort((a, b) => a.consumedAt - b.consumedAt)
+      .map((drink) => {
+        const x = this.#toX(drink.consumedAt, frame, plot);
+        const showIcon = x - lastIconX >= ICON_SPACING;
+        if (showIcon) lastIconX = x;
+        return {
+          id: drink.id,
+          x,
+          y: plot.bottom + 6,
+          icon: drink.icon,
+          label: `${drink.label} at ${clockLabel(drink.consumedAt)}`,
+          showIcon,
+        };
+      });
   });
 
   protected readonly description = computed(() => {
@@ -209,6 +231,112 @@ export class BacChart {
     const peak = toPermille(timeline.peak).toFixed(2);
     return `Blood alcohol curve. Currently ${current} promille, session peak ${peak} promille.`;
   });
+
+  // --- Gestures ------------------------------------------------------------
+  //
+  // Pointer events cover mouse, touch and pen in one path. `touch-action:
+  // pan-y` on the frame leaves vertical page scrolling to the browser while
+  // handing us horizontal drags and pinches, so panning the chart never traps
+  // the page.
+
+  readonly #pointers = new Map<number, { x: number; y: number }>();
+  #pinchDistance = 0;
+  #gestureEndsAt = 0;
+
+  /** True mid-gesture: the curve snaps rather than tweening, so drags track the finger. */
+  #gesturing(): boolean {
+    return this.#pointers.size > 0 || performance.now() < this.#gestureEndsAt;
+  }
+
+  protected onPointerDown(event: PointerEvent): void {
+    if (!this.interactive()) return;
+    const target = event.currentTarget as HTMLElement;
+    target.setPointerCapture(event.pointerId);
+    this.#pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.#pointers.size === 2) this.#pinchDistance = this.#spread();
+  }
+
+  protected onPointerMove(event: PointerEvent): void {
+    const previous = this.#pointers.get(event.pointerId);
+    if (!previous) return;
+    this.#pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (this.#pointers.size >= 2) {
+      const spread = this.#spread();
+      if (this.#pinchDistance > 0 && spread > 0) {
+        this.zoomed.emit({
+          factor: spread / this.#pinchDistance,
+          focusRatio: this.#ratioAt(this.#midpointX()),
+        });
+      }
+      this.#pinchDistance = spread;
+      return;
+    }
+
+    // Dragging right reveals earlier time, so the window moves back.
+    const dx = event.clientX - previous.x;
+    if (dx) this.panned.emit(-dx * this.#msPerPixel());
+  }
+
+  protected onPointerUp(event: PointerEvent): void {
+    this.#pointers.delete(event.pointerId);
+    this.#pinchDistance = this.#pointers.size === 2 ? this.#spread() : 0;
+    // Keep snapping briefly, so releasing a drag does not kick off a tween.
+    this.#gestureEndsAt = performance.now() + 120;
+  }
+
+  protected onWheel(event: WheelEvent): void {
+    // Only a pinch gesture zooms. A trackpad pinch arrives as a ctrl+wheel
+    // event, so this covers it while leaving a plain scroll to the page —
+    // hijacking the wheel would trap the page whenever the cursor crossed
+    // the chart.
+    if (!this.interactive() || !event.deltaY || !(event.ctrlKey || event.metaKey)) return;
+    event.preventDefault();
+    this.#gestureEndsAt = performance.now() + 120;
+    this.zoomed.emit({
+      factor: Math.exp(-event.deltaY * 0.0015),
+      focusRatio: this.#ratioAt(event.clientX),
+    });
+  }
+
+  protected onKeyDown(event: KeyboardEvent): void {
+    if (!this.interactive()) return;
+    const step = (this.#displayed().to - this.#displayed().from) / 6;
+    const actions: Record<string, () => void> = {
+      ArrowLeft: () => this.panned.emit(-step),
+      ArrowRight: () => this.panned.emit(step),
+      '+': () => this.zoomed.emit({ factor: 1.5, focusRatio: 0.5 }),
+      '=': () => this.zoomed.emit({ factor: 1.5, focusRatio: 0.5 }),
+      '-': () => this.zoomed.emit({ factor: 1 / 1.5, focusRatio: 0.5 }),
+    };
+    const action = actions[event.key];
+    if (!action) return;
+    event.preventDefault();
+    action();
+  }
+
+  #msPerPixel(): number {
+    const frame = this.#displayed();
+    return (frame.to - frame.from) / Math.max(1, this.plot().width);
+  }
+
+  #spread(): number {
+    const [a, b] = [...this.#pointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  #midpointX(): number {
+    const [a, b] = [...this.#pointers.values()];
+    return (a.x + b.x) / 2;
+  }
+
+  /** Turns a client x into a 0–1 position across the plot area. */
+  #ratioAt(clientX: number): number {
+    const box = this.host().nativeElement.getBoundingClientRect();
+    const plot = this.plot();
+    const x = clientX - box.left - plot.left;
+    return Math.min(1, Math.max(0, x / Math.max(1, plot.width)));
+  }
 
   #toX(t: number, frame: Frame, plot: Plot): number {
     const span = frame.to - frame.from || 1;
@@ -222,7 +350,7 @@ export class BacChart {
     const start = this.#displayed();
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (reduced || start.ys.length !== target.ys.length) {
+    if (reduced || this.#gesturing() || start.ys.length !== target.ys.length) {
       this.#displayed.set(target);
       return;
     }

@@ -1,4 +1,18 @@
-<div class="frame" #frame>
+<div
+  class="frame"
+  #frame
+  [class.frame--interactive]="interactive()"
+  [attr.tabindex]="interactive() ? 0 : null"
+  [attr.aria-label]="
+    interactive() ? description() + ' Drag to pan, pinch or scroll to zoom.' : null
+  "
+  (pointerdown)="onPointerDown($event)"
+  (pointermove)="onPointerMove($event)"
+  (pointerup)="onPointerUp($event)"
+  (pointercancel)="onPointerUp($event)"
+  (wheel)="onWheel($event)"
+  (keydown)="onKeyDown($event)"
+>
   <svg
     class="chart"
     [attr.viewBox]="'0 0 ' + width() + ' ' + height"
@@ -67,7 +81,9 @@
         <g [attr.transform]="'translate(' + marker.x + ',' + marker.y + ')'">
           <title>{{ marker.label }}</title>
           <line y1="-6" y2="-1" />
-          <text class="marker-icon" y="12" text-anchor="middle">{{ marker.icon }}</text>
+          @if (marker.showIcon) {
+            <text class="marker-icon" y="12" text-anchor="middle">{{ marker.icon }}</text>
+          }
         </g>
       }
     </g>

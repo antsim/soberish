@@ -101,11 +101,19 @@ export class SessionStore {
 
   readonly startedAt = computed(() => this.#drinks.drinks().at(0)?.consumedAt ?? null);
 
-  /** Elapsed session time in ms, used for the "3h 20m in" caption. */
-  readonly elapsedMs = computed(() => {
-    const started = this.startedAt();
-    return started === null ? 0 : Math.max(0, this.#clock.now() - started);
-  });
+  /**
+   * When the session ended, or `null` while it is still running.
+   *
+   * The session is over the moment BAC returns to 0.00 ‰ — not when the
+   * history is wiped 24 hours later. The two were conflated, so the session
+   * clock kept counting through a day of sobriety.
+   */
+  readonly endedAt = computed(() => sessionEnd(this.sessionSoberAt(), this.#clock.now()));
+
+  /** How long the session ran; frozen once it has ended. */
+  readonly elapsedMs = computed(() =>
+    sessionElapsed(this.startedAt(), this.endedAt(), this.#clock.now()),
+  );
 
   // --- Chart viewport ------------------------------------------------------
   //
@@ -126,7 +134,10 @@ export class SessionStore {
     const started = this.startedAt();
     const sober = this.sessionSoberAt();
     const from = (started ?? now - HOUR) - 10 * MINUTE;
-    const to = Math.max(now, sober ?? now) + 30 * MINUTE;
+    // Once the session has ended the chart stops following the clock, so a
+    // finished night does not shrink into the corner over the next 24 hours.
+    const ended = sessionEnd(sober, now);
+    const to = (ended ?? Math.max(now, sober ?? now)) + 30 * MINUTE;
     return { from, to: Math.max(to, from + MIN_SPAN_MS) };
   });
 
@@ -194,4 +205,24 @@ export class SessionStore {
       },
     ).current;
   }
+}
+
+/**
+ * The instant the session ended, or `null` while it is still running.
+ *
+ * `soberAt` is a projection: it is a future timestamp while there is still
+ * alcohol on board, and only becomes an end once the clock reaches it.
+ */
+export function sessionEnd(soberAt: number | null, now: number): number | null {
+  return soberAt !== null && now >= soberAt ? soberAt : null;
+}
+
+/** Session duration, measured to its end once it has one. */
+export function sessionElapsed(
+  startedAt: number | null,
+  endedAt: number | null,
+  now: number,
+): number {
+  if (startedAt === null) return 0;
+  return Math.max(0, (endedAt ?? now) - startedAt);
 }

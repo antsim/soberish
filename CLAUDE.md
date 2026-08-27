@@ -84,6 +84,10 @@ src/app/
   are tombstoned (`deleted: true`) so they replicate; pending local rows always win a merge.
 - **Chart sample count must stay constant** (`CHART_SAMPLES`). The add/edit/delete morph works by
   interpolating two curves index-for-index; a variable count silently disables the animation.
+- **A session ends when BAC returns to 0; retention is a separate, later thing.** `endedAt` /
+  `elapsedMs` freeze at that moment, and `chartBounds` stops following the clock so a finished
+  night does not shrink over the following day. Do not conflate the two — the session clock once
+  counted through 24 h of sobriety because of exactly that.
 - **Retention:** the session is wiped 24 h after BAC returns to 0. Drinking again before the
   deadline carries the whole night forward. Implemented as a signal effect, not a timer.
 - The chart draws a _window_ onto the session (`core/state/chart-viewport.ts`, pure + tested), and

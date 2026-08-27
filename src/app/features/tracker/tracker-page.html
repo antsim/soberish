@@ -9,7 +9,35 @@
     [now]="clock.now()"
   />
 
-  <app-bac-chart [timeline]="session.timeline()" [drinks]="drinks.drinks()" [now]="clock.now()" />
+  <app-bac-chart
+    [timeline]="session.chartTimeline()"
+    [drinks]="drinks.drinks()"
+    [now]="clock.now()"
+    [interactive]="session.zoomable()"
+    (panned)="onPan($event)"
+    (zoomed)="onZoom($event)"
+  />
+
+  @if (session.zoomable()) {
+    <div class="ranges" role="group" aria-label="Chart time range">
+      @for (range of ranges(); track range.label) {
+        <button
+          type="button"
+          class="range"
+          [class.range--active]="range.active"
+          [attr.aria-pressed]="range.active"
+          (click)="setRange(range.choice)"
+        >
+          {{ range.label }}
+        </button>
+      }
+      @if (!session.following()) {
+        <button type="button" class="range range--now" (click)="session.followNow()">
+          Jump to now
+        </button>
+      }
+    </div>
+  }
 
   <dl class="stats">
     @for (stat of stats(); track stat.label) {

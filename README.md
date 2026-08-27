@@ -16,6 +16,9 @@ fall, and see who else is still above 0.00% on the live leaderboard.
   anything unusual, with a live "+0.26 ‰" preview before you commit.
 - **A curve that animates.** Adding, editing, or deleting a drink morphs the graph instead of
   redrawing it — the line, the axis, and the hero number all tween to the new shape.
+- **A graph you can zoom.** A long night plus its tail can span sixteen hours, which squeezes the
+  part you care about into nothing. The chart shows a window onto the session — drag to pan, pinch
+  to zoom, or tap a range — and a long session opens zoomed in by default.
 - **Works with no connection.** Everything lives in IndexedDB. The service worker serves the app
   shell, so a dead signal in the basement bar changes nothing.
 - **Optional cloud.** Point it at a Supabase project and you get accounts, cross-device sync, and
@@ -54,6 +57,25 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
 
 The simulation runs forward from the first drink and always emits a fixed number of samples, which
 is what lets the chart interpolate between two curves index-for-index.
+
+### Reading the chart
+
+The chart draws a _window_ onto the session rather than all of it, and the timeline is rebuilt for
+that window, so zooming in buys real resolution instead of stretching the same samples.
+
+| Gesture                         | Effect                                     |
+| ------------------------------- | ------------------------------------------ |
+| Drag left/right                 | Pan through the night                      |
+| Pinch, or trackpad pinch        | Zoom in and out                            |
+| `3h` / `6h` / `12h` / `Session` | Jump to a range, and resume tracking "now" |
+| `←` `→` `+` `−` when focused    | Pan and zoom from the keyboard             |
+
+A plain scroll wheel is deliberately left to the page — only a pinch (which reaches the browser as
+`ctrl`+wheel) zooms, so moving the cursor across the chart never traps the page. On touch,
+`touch-action: pan-y` leaves vertical scrolling to the browser and takes only horizontal drags.
+
+The controls appear only once a session is longer than three hours; below that there is nothing to
+zoom into and the chart stays a plain picture.
 
 ### Percent inside, promille outside
 

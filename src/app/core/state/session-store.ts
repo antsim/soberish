@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   HOUR,
   MINUTE,
@@ -9,6 +9,17 @@ import {
   statusFor,
 } from '../bac/bac';
 import { Clock } from '../platform/clock';
+import {
+  MIN_SPAN_MS,
+  SpanChoice,
+  TimeWindow,
+  autoWindow,
+  clampWindow,
+  panWindow,
+  resolveSpan,
+  spanOf,
+  zoomWindow,
+} from './chart-viewport';
 import { DrinksStore } from './drinks-store';
 import { ProfileStore } from './profile-store';
 
@@ -95,6 +106,82 @@ export class SessionStore {
     const started = this.startedAt();
     return started === null ? 0 : Math.max(0, this.#clock.now() - started);
   });
+
+  // --- Chart viewport ------------------------------------------------------
+  //
+  // The full session can run to sixteen hours or more, which squeezes the part
+  // anyone cares about — the last few hours — into a few pixels. The chart
+  // therefore draws a window onto the session rather than all of it, and the
+  // timeline is rebuilt for that window so zooming in buys real resolution
+  // instead of stretching the same samples.
+
+  readonly #viewport = signal<
+    | { readonly mode: 'auto'; readonly span: SpanChoice }
+    | { readonly mode: 'manual'; readonly window: TimeWindow }
+  >({ mode: 'auto', span: 'auto' });
+
+  /** The whole session, plus a little margin either side. */
+  readonly chartBounds = computed<TimeWindow>(() => {
+    const now = this.#clock.now();
+    const started = this.startedAt();
+    const sober = this.sessionSoberAt();
+    const from = (started ?? now - HOUR) - 10 * MINUTE;
+    const to = Math.max(now, sober ?? now) + 30 * MINUTE;
+    return { from, to: Math.max(to, from + MIN_SPAN_MS) };
+  });
+
+  /** The slice currently on screen. */
+  readonly chartWindow = computed<TimeWindow>(() => {
+    const bounds = this.chartBounds();
+    const viewport = this.#viewport();
+    return viewport.mode === 'manual'
+      ? clampWindow(viewport.window, bounds)
+      : autoWindow(resolveSpan(viewport.span, bounds), this.#clock.now(), bounds);
+  });
+
+  /** Timeline for the visible window only — full resolution at any zoom. */
+  readonly chartTimeline = computed(() => {
+    const window = this.chartWindow();
+    return buildTimeline(this.#drinks.drinks(), this.#profiles.profile(), this.#clock.now(), {
+      samples: CHART_SAMPLES,
+      from: window.from,
+      to: window.to,
+    });
+  });
+
+  /** True while the window tracks "now" on its own. */
+  readonly following = computed(() => this.#viewport().mode === 'auto');
+
+  /** True when the session is long enough that zooming is worth offering. */
+  readonly zoomable = computed(() => spanOf(this.chartBounds()) > 3 * HOUR);
+
+  /** Whole session visible, so "Session" is the active range. */
+  readonly showingWholeSession = computed(
+    () => spanOf(this.chartWindow()) >= spanOf(this.chartBounds()) - MINUTE,
+  );
+
+  setChartSpan(span: SpanChoice): void {
+    this.#viewport.set({ mode: 'auto', span });
+  }
+
+  /** Snaps back to tracking "now" without changing the zoom level. */
+  followNow(): void {
+    this.#viewport.set({ mode: 'auto', span: spanOf(this.chartWindow()) });
+  }
+
+  panChart(deltaMs: number): void {
+    this.#viewport.set({
+      mode: 'manual',
+      window: panWindow(this.chartWindow(), deltaMs, this.chartBounds()),
+    });
+  }
+
+  zoomChart(factor: number, focusRatio: number): void {
+    this.#viewport.set({
+      mode: 'manual',
+      window: zoomWindow(this.chartWindow(), factor, focusRatio, this.chartBounds()),
+    });
+  }
 
   /** BAC in `n` minutes — powers the "where this is heading" hint. */
   bacIn(minutes: number): number {

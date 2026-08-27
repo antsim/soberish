@@ -6,6 +6,18 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  border-radius: var(--radius-sm);
+
+  &--interactive {
+    /* Vertical page scrolling stays with the browser; horizontal drags and
+       pinches come to us. Without this the page scrolls instead of panning. */
+    touch-action: pan-y;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
 }
 
 .chart {

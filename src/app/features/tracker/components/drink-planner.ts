@@ -55,18 +55,18 @@ type Tone = 'ok' | 'wait' | 'over';
           [style.--band]="'var(--' + preset.band + ')'"
           (click)="choose(preset.limit)"
         >
-          {{ msg().planner.ceiling(msg().planner.presets[preset.band], permille(preset.limit)) }}
+          {{ msg().planner.ceiling(msg().bands[preset.band], permille(preset.limit)) }}
         </button>
       }
     </div>
 
-    @if (limitPermille(); as active) {
+    @if (hasLimit()) {
       <div class="field">
         <label for="drink-limit">{{ msg().planner.exact }}</label>
         <app-decimal-field
           fieldId="drink-limit"
           [ariaLabel]="msg().planner.exactAria"
-          [value]="active"
+          [value]="limitPermille()"
           [maximumFractionDigits]="2"
           (valueChange)="setFromInput($event)"
         />
@@ -96,11 +96,10 @@ export class DrinkPlanner {
   protected readonly presets = PRESETS;
   protected readonly limit = this.#limits.limit;
 
+  protected readonly hasLimit = computed(() => this.limit() !== null);
+
   /** The active ceiling in the unit the chips and the field speak. */
-  protected readonly limitPermille = computed(() => {
-    const limit = this.limit();
-    return limit === null ? null : toPermille(limit);
-  });
+  protected readonly limitPermille = computed(() => toPermille(this.limit() ?? 0));
 
   protected readonly verdict = computed<{ tone: Tone; icon: string; text: string } | null>(() => {
     const limit = this.limit();
@@ -150,8 +149,9 @@ export class DrinkPlanner {
     void this.#limits.set(limit);
   }
 
+  /** Typing never switches the planner off — clamping keeps the field on screen. */
   protected setFromInput(permille: number): void {
     if (!Number.isFinite(permille)) return;
-    void this.#limits.set(Math.min(fromPermille(permille), MAX_DRINK_LIMIT));
+    void this.#limits.set(Math.min(Math.max(fromPermille(permille), 0), MAX_DRINK_LIMIT));
   }
 }

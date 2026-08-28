@@ -39,6 +39,14 @@ export const en = {
     kickingIn: { title: 'Kicking in', blurb: 'Drinks logged — absorption has just started.' },
   },
 
+  /** Short band names, for the places too narrow for a full status title. */
+  bands: {
+    buzzed: 'Buzzed',
+    merry: 'Merry',
+    drunk: 'Drunk',
+    wasted: 'Wasted',
+  },
+
   readout: {
     rising: '↑ still rising',
     falling: '↓ coming down',
@@ -120,7 +128,6 @@ export const en = {
   planner: {
     title: 'Staying under a limit?',
     off: 'No limit',
-    presets: { buzzed: 'Buzzed', merry: 'Merry', drunk: 'Drunk' },
     ceiling: (name: string, permille: string) => `${name} · ${permille}\u00a0‰`,
     exact: 'Exact limit (‰)',
     exactAria: 'Exact limit in promille',

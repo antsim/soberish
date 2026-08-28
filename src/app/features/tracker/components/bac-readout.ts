@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { SoberStatus } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { formatDuration, toPermille } from '../../../shared/util/format';
+import { formatClock, formatDuration, toPermille } from '../../../shared/util/format';
 import { DurationPipe } from '../../../shared/util/pipes';
 
 const COUNT_MS = 720;
@@ -63,13 +63,7 @@ export class BacReadout {
 
   protected readonly soberClock = computed(() => {
     const target = this.soberAt();
-    return target === null
-      ? ''
-      : new Date(target).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
+    return target === null ? '' : formatClock(target);
   });
 
   protected readonly ariaLabel = computed(() => {

@@ -13,6 +13,12 @@ export const HOUR = 60 * MINUTE;
 const STEP_MS = MINUTE;
 /** Nobody stays drunk for three days; this bounds the "when am I sober" search. */
 const MAX_PROJECTION_MS = 72 * HOUR;
+/**
+ * Multiples of `absorptionMinutes` after which a dose is absorbed to the last
+ * drop — `absorbedFraction` is within 1e-8 of 1 by then, so the curve past this
+ * point can only fall.
+ */
+const ABSORPTION_TAIL = 6;
 
 export interface BacPoint {
   readonly t: number;
@@ -247,11 +253,115 @@ function round(bac: number): number {
 
 export type SoberStatus = 'sober' | 'buzzed' | 'merry' | 'drunk' | 'wasted';
 
+/**
+ * Where each band stops, as a BAC percentage.
+ *
+ * Also the ceilings the drink planner offers as presets: "stay merry" is
+ * exactly "stay under the top of the merry band", so the two can never drift
+ * apart. `wasted` is open-ended and has no entry.
+ */
+export const STATUS_CEILING = { buzzed: 0.03, merry: 0.06, drunk: 0.12 } as const;
+
+/** A band with an upper bound, so it can be used as a limit. */
+export type CappedStatus = keyof typeof STATUS_CEILING;
+
 /** Qualitative band used for colour and copy. */
 export function statusFor(bac: number): SoberStatus {
   if (bac <= 0) return 'sober';
-  if (bac < 0.03) return 'buzzed';
-  if (bac < 0.06) return 'merry';
-  if (bac < 0.12) return 'drunk';
+  if (bac < STATUS_CEILING.buzzed) return 'buzzed';
+  if (bac < STATUS_CEILING.merry) return 'merry';
+  if (bac < STATUS_CEILING.drunk) return 'drunk';
   return 'wasted';
+}
+
+/**
+ * The highest BAC still ahead of you at `from`.
+ *
+ * Not the same as a timeline's `peak`, which looks at the whole session: a
+ * night that already topped out at 1.20 ‰ an hour ago has that behind it, and
+ * what matters when planning the next drink is only what is still to come.
+ */
+export function peakFrom(drinks: readonly Drink[], profile: Profile, from: number): number {
+  const doses = toDoses(drinks);
+  if (!doses.length) return 0;
+
+  const settled = doses[doses.length - 1].at + ABSORPTION_TAIL * profile.absorptionMinutes * MINUTE;
+  let peak = 0;
+  walk(doses, profile, Math.max(from, settled), (t, bac) => {
+    if (t >= from && bac > peak) peak = bac;
+  });
+  return round(peak);
+}
+
+/** What the planner works out about one prospective drink. */
+export interface DrinkPlan {
+  /** The ceiling being planned against, as a BAC percentage. */
+  readonly limit: number;
+  /** Highest BAC still ahead if nothing more is drunk. */
+  readonly currentPeak: number;
+  /** Earliest moment the drink fits under the limit; `now` when it already does. */
+  readonly at: number;
+  /** How far away that is, floored at zero. */
+  readonly waitMs: number;
+  /** Highest BAC still ahead if the drink is had at `at`. */
+  readonly peak: number;
+  /** False when no amount of waiting brings the drink under the limit. */
+  readonly fits: boolean;
+}
+
+/**
+ * Answers "when can I have this and still stay under X ‰?".
+ *
+ * Peaks are measured from `now` rather than from the drink, so a limit already
+ * breached by what is on board reads as breached instead of as a wait that
+ * would not help. Waiting can only ever lower the peak — a later dose lands on
+ * a lower baseline and absorbs no faster, so `peak` is monotonic in `at` —
+ * which is what makes the earliest fitting moment a binary search rather than
+ * a minute-by-minute scan.
+ */
+export function planDrink(
+  drinks: readonly Drink[],
+  profile: Profile,
+  planned: { readonly volumeMl: number; readonly abv: number },
+  limit: number,
+  now: number,
+): DrinkPlan {
+  const peakWith = (at: number) => peakFrom([...drinks, asDrink(planned, at)], profile, now);
+  const shared = { limit, currentPeak: peakFrom(drinks, profile, now) };
+
+  const immediate = peakWith(now);
+  if (immediate <= limit) return { ...shared, at: now, waitMs: 0, peak: immediate, fits: true };
+
+  // Once everything on board has burned off, waiting any longer changes nothing.
+  const latest = Math.max(now, soberAt(drinks, profile) ?? now);
+  const latestPeak = peakWith(latest);
+  if (latestPeak > limit) {
+    return { ...shared, at: latest, waitMs: latest - now, peak: latestPeak, fits: false };
+  }
+
+  let low = 1;
+  let high = Math.ceil((latest - now) / MINUTE);
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (peakWith(now + mid * MINUTE) <= limit) high = mid;
+    else low = mid + 1;
+  }
+  const at = now + low * MINUTE;
+  return { ...shared, at, waitMs: at - now, peak: peakWith(at), fits: true };
+}
+
+/** Dresses a prospective serving up as a `Drink` so the engine can simulate it. */
+function asDrink(planned: { readonly volumeMl: number; readonly abv: number }, at: number): Drink {
+  return {
+    id: 'planned',
+    consumedAt: at,
+    volumeMl: planned.volumeMl,
+    abv: planned.abv,
+    label: '',
+    icon: '',
+    createdAt: at,
+    updatedAt: at,
+    deleted: false,
+    synced: false,
+  };
 }

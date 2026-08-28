@@ -119,6 +119,23 @@ export const fi: Messages = {
     add: 'Lisää juoma',
   },
 
+  planner: {
+    title: 'Pysytkö rajan alla?',
+    off: 'Ei rajaa',
+    presets: { buzzed: 'Nousussa', merry: 'Hiprakassa', drunk: 'Kännissä' },
+    ceiling: (name: string, permille: string) => `${name} · ${permille}\u00a0‰`,
+    exact: 'Tarkka raja (‰)',
+    exactAria: 'Tarkka raja promilleina',
+    goNow: (peak: string) => `Ota vaan — huippu jää noin ${peak} promilleen.`,
+    wait: (duration: string, clock: string, peak: string) =>
+      `Odota ${duration}. Klo ${clock} otettuna huipuksi jää noin ${peak}\u00a0‰.`,
+    alreadyOver: (peak: string) =>
+      `Olet menossa jo ${peak} promilleen — odottaminen ei enää pelasta.`,
+    tooBig: (peak: string) => `Liian iso tähän rajaan — selvinkin päin tästä tulee ${peak}\u00a0‰.`,
+    noAlcohol: 'Ei alkoholia. Ota milloin huvittaa.',
+    fromNow: 'Laskettu tästä hetkestä, riippumatta yllä valitusta ajasta.',
+  },
+
   leaderboard: {
     title: 'Kärki ‰',
     subtitle: 'Kaikki jotka ovat juuri nyt yli 0.00 ‰.',

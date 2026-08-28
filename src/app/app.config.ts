@@ -10,6 +10,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { APP_CONFIG, AppConfig } from './core/config/app-config';
 import { PwaService } from './core/platform/pwa.service';
+import { DrinkLimitStore } from './core/state/drink-limit-store';
 import { DrinksStore } from './core/state/drinks-store';
 import { ProfileStore } from './core/state/profile-store';
 import { RecentDrinksStore } from './core/state/recent-drinks-store';
@@ -43,13 +44,14 @@ export function createAppConfig(config: AppConfig): ApplicationConfig {
         const profiles = inject(ProfileStore);
         const drinks = inject(DrinksStore);
         const recentDrinks = inject(RecentDrinksStore);
+        const drinkLimit = inject(DrinkLimitStore);
         const auth = inject(AuthStore);
         const retention = inject(RetentionService);
         const sync = inject(DrinkSyncService);
         const publisher = inject(StatusPublisherService);
         const pwa = inject(PwaService);
 
-        await Promise.all([profiles.load(), drinks.load(), recentDrinks.load()]);
+        await Promise.all([profiles.load(), drinks.load(), recentDrinks.load(), drinkLimit.load()]);
 
         retention.start();
         sync.start();

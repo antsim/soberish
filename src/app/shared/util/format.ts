@@ -17,6 +17,10 @@ export function toPermille(bacPercent: number): number {
   return bacPercent * PERMILLE_PER_PERCENT;
 }
 
+export function fromPermille(permille: number): number {
+  return permille / PERMILLE_PER_PERCENT;
+}
+
 /**
  * Promille always reads with two decimals — "1.20 ‰", never "1.2 ‰".
  *
@@ -25,6 +29,15 @@ export function toPermille(bacPercent: number): number {
  */
 export function formatPermille(bacPercent: number): string {
   return toPermille(bacPercent).toFixed(2);
+}
+
+/** Time of day, 24-hour, in the browser's own locale — "23:45". */
+export function formatClock(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 }
 
 /** "2h 15m", "45m", "just now" — with the unit suffixes of the active language. */

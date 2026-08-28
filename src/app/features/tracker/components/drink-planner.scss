@@ -1,0 +1,65 @@
+:host {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  /* Falls back to the app accent for "No limit", which names no band. */
+  --band: var(--amber);
+
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+
+  &--active {
+    border-color: var(--band);
+    background: color-mix(in srgb, var(--band) 14%, transparent);
+    color: var(--band);
+  }
+}
+
+.verdict {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.88rem;
+  line-height: 1.35;
+
+  &--ok {
+    border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+  }
+
+  &--wait {
+    border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+  }
+
+  &--over {
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  }
+}
+
+.verdict__icon {
+  font-size: 1.15rem;
+}
+
+.hint {
+  font-size: 0.74rem;
+  color: var(--text-faint);
+}

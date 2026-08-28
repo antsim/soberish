@@ -17,6 +17,7 @@ import { DecimalField } from '../../../shared/ui/decimal-field';
 import { Sheet } from '../../../shared/ui/sheet';
 import { PermillePipe } from '../../../shared/util/pipes';
 import { mlToOz, ozToMl } from '../../../shared/util/format';
+import { DrinkPlanner } from './drink-planner';
 
 const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
 const VOLUME_PRESETS_ML = [40, 330, 400, 440, 500, 568];
@@ -32,7 +33,7 @@ const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
 @Component({
   selector: 'app-drink-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalField, FormsModule, PermillePipe, Sheet],
+  imports: [DecimalField, DrinkPlanner, FormsModule, PermillePipe, Sheet],
   templateUrl: './drink-editor.html',
   styleUrl: './drink-editor.scss',
 })

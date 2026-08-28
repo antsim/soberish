@@ -33,6 +33,31 @@
       </filter>
     </defs>
 
+    <g class="bands" aria-hidden="true">
+      @for (band of bands(); track band.band) {
+        <rect
+          class="band"
+          [attr.x]="plot().left"
+          [attr.y]="band.y"
+          [attr.width]="plot().width"
+          [attr.height]="band.height"
+          [attr.fill]="band.colour"
+          [attr.fill-opacity]="band.opacity"
+        />
+        @if (band.height >= bandLabelHeight) {
+          <text
+            class="band-label"
+            [attr.x]="plot().right - 6"
+            [attr.y]="band.y + 11"
+            [attr.fill]="band.colour"
+            text-anchor="end"
+          >
+            {{ band.label }}
+          </text>
+        }
+      }
+    </g>
+
     <g class="grid">
       @for (line of gridLines(); track line.label) {
         <line

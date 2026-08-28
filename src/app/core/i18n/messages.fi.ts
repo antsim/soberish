@@ -41,6 +41,13 @@ export const fi: Messages = {
     kickingIn: { title: 'Kohta iskee', blurb: 'Juoma kirjattu — imeytyminen käynnistyi juuri.' },
   },
 
+  bands: {
+    buzzed: 'Nousussa',
+    merry: 'Hiprakassa',
+    drunk: 'Kännissä',
+    wasted: 'Umpikännissä',
+  },
+
   readout: {
     rising: '↑ nousee vielä',
     falling: '↓ laskee jo',
@@ -122,7 +129,6 @@ export const fi: Messages = {
   planner: {
     title: 'Pysytkö rajan alla?',
     off: 'Ei rajaa',
-    presets: { buzzed: 'Nousussa', merry: 'Hiprakassa', drunk: 'Kännissä' },
     ceiling: (name: string, permille: string) => `${name} · ${permille}\u00a0‰`,
     exact: 'Tarkka raja (‰)',
     exactAria: 'Tarkka raja promilleina',

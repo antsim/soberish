@@ -30,8 +30,14 @@ export class DrinkLimitStore {
   }
 }
 
-/** Stored values survive app updates, so nothing about their shape is assumed. */
+/**
+ * Stored values survive app updates, so nothing about their shape is assumed.
+ *
+ * Only a non-number reads as "no limit". Zero is a limit like any other, and
+ * clamping it to `null` would switch the planner off mid-keystroke for anyone
+ * typing "0.45" one character at a time.
+ */
 function sanitize(stored: unknown): number | null {
-  if (typeof stored !== 'number' || !Number.isFinite(stored) || stored <= 0) return null;
-  return Math.min(stored, MAX_DRINK_LIMIT);
+  if (typeof stored !== 'number' || !Number.isFinite(stored)) return null;
+  return Math.min(Math.max(stored, 0), MAX_DRINK_LIMIT);
 }

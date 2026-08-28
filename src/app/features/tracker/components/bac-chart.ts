@@ -13,7 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { BacTimeline, HOUR, MINUTE } from '../../../core/bac/bac';
+import { BacTimeline, HOUR, MINUTE, STATUS_CEILING, SoberStatus } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { toPermille } from '../../../shared/util/format';
@@ -24,6 +24,44 @@ const PAD = { top: 18, right: 14, bottom: 48, left: 40 };
 const TWEEN_MS = 720;
 /** Minimum gap between two drink emoji before one is dropped. */
 const ICON_SPACING = 15;
+/** A band has to be this tall, in pixels, before its name fits inside it. */
+const BAND_LABEL_HEIGHT = 16;
+
+/** The bands with alcohol in them — the ones worth shading. */
+type Band = Exclude<SoberStatus, 'sober'>;
+
+/**
+ * The status bands as promille ranges, bottom-up, tinted a little harder the
+ * higher they sit — so the shape of the night reads before the numbers do.
+ *
+ * `wasted` is open-topped: whatever ceiling the axis has settled on is its top.
+ */
+const BANDS: readonly {
+  readonly band: Band;
+  readonly from: number;
+  readonly to: number;
+  readonly opacity: number;
+}[] = [
+  { band: 'buzzed', from: 0, to: toPermille(STATUS_CEILING.buzzed), opacity: 0.06 },
+  {
+    band: 'merry',
+    from: toPermille(STATUS_CEILING.buzzed),
+    to: toPermille(STATUS_CEILING.merry),
+    opacity: 0.08,
+  },
+  {
+    band: 'drunk',
+    from: toPermille(STATUS_CEILING.merry),
+    to: toPermille(STATUS_CEILING.drunk),
+    opacity: 0.1,
+  },
+  {
+    band: 'wasted',
+    from: toPermille(STATUS_CEILING.drunk),
+    to: Number.POSITIVE_INFINITY,
+    opacity: 0.11,
+  },
+];
 
 /**
  * One animatable snapshot of the curve. All fields interpolate linearly.
@@ -97,6 +135,7 @@ export class BacChart {
   protected readonly width = signal(360);
   protected readonly height = HEIGHT;
   protected readonly pad = PAD;
+  protected readonly bandLabelHeight = BAND_LABEL_HEIGHT;
 
   readonly #displayed = signal<Frame>({ ys: [], from: 0, to: 1, max: 0.06 });
   #raf = 0;
@@ -167,6 +206,32 @@ export class BacChart {
       y: plot.bottom - (plot.height * Math.min(bac, frame.max)) / (frame.max || 1),
     }));
     return { x, y: interpolateY(points, x) };
+  });
+
+  /**
+   * Horizontal shading for the status bands, clipped to the visible range.
+   *
+   * Driven by `#displayed()` like everything else, so the bands grow and
+   * shrink with the axis as the curve morphs instead of jumping.
+   */
+  protected readonly bands = computed(() => {
+    const { max } = this.#displayed();
+    const plot = this.plot();
+    const names = this.msg().bands;
+    const toY = (permille: number) =>
+      plot.bottom - (plot.height * Math.min(permille, max)) / (max || 1);
+
+    return BANDS.filter((band) => band.from < max).map((band) => {
+      const top = toY(band.to);
+      return {
+        band: band.band,
+        y: top,
+        height: Math.max(0, toY(band.from) - top),
+        colour: `var(--${band.band})`,
+        opacity: band.opacity,
+        label: names[band.band],
+      };
+    });
   });
 
   protected readonly gridLines = computed(() => {

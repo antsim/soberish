@@ -64,6 +64,7 @@
   <h2 class="section-title">Log a drink</h2>
   <app-quick-add
     [units]="profiles.profile().units"
+    [presets]="recentDrinks.recent()"
     (picked)="quickAdd($event)"
     (customised)="openCustom()"
   />

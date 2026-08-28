@@ -58,16 +58,6 @@
         </button>
       }
     </div>
-    <input
-      class="slider"
-      type="range"
-      min="10"
-      max="1000"
-      step="10"
-      aria-label="Volume in millilitres"
-      [ngModel]="volumeMl()"
-      (ngModelChange)="volumeMl.set(+$event)"
-    />
     <div class="field">
       <label for="drink-volume">Exact volume</label>
       <app-decimal-field
@@ -94,16 +84,6 @@
         </button>
       }
     </div>
-    <input
-      class="slider"
-      type="range"
-      min="0"
-      max="60"
-      step="0.1"
-      aria-label="Alcohol by volume percentage"
-      [ngModel]="abv()"
-      (ngModelChange)="setAbv(+$event)"
-    />
     <div class="field">
       <label for="drink-abv">Exact ABV</label>
       <app-decimal-field

@@ -11,6 +11,7 @@ export const META_KEYS = {
   lastPulledAt: 'lastPulledAt',
   sessionClearedAt: 'sessionClearedAt',
   recentDrinks: 'recentDrinks',
+  drinkLimit: 'drinkLimit',
 } as const;
 
 /**

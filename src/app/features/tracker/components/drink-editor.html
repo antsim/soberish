@@ -127,6 +127,10 @@
     </div>
   </div>
 
+  @if (!isEdit()) {
+    <app-drink-planner [profile]="profile()" [volumeMl]="volumeMl()" [abv]="abv()" />
+  }
+
   <div class="actions">
     @if (isEdit()) {
       <button type="button" class="btn btn--danger" (click)="remove()">

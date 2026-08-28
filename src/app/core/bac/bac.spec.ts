@@ -5,9 +5,12 @@ import { formatPermille, toPermille } from '../../shared/util/format';
 import {
   HOUR,
   MINUTE,
+  STATUS_CEILING,
   alcoholGrams,
   bacAt,
   buildTimeline,
+  peakFrom,
+  planDrink,
   soberAt,
   standardDrinks,
   statusFor,
@@ -188,5 +191,85 @@ describe('promille presentation', () => {
     const drinks = [drink(0, 500, 5)];
     const bac = bacAt(drinks, profile, T0 + 90 * MINUTE);
     expect(formatPermille(bac)).toBe((bac * 10).toFixed(2));
+  });
+});
+
+describe('peakFrom', () => {
+  it('sees a peak that is still ahead', () => {
+    const drinks = [drink(0, 500, 5)];
+    expect(peakFrom(drinks, profile, T0)).toBeGreaterThan(bacAt(drinks, profile, T0 + MINUTE));
+  });
+
+  it('ignores a peak already behind you', () => {
+    const drinks = [drink(0, 500, 5)];
+    const later = T0 + 2 * HOUR;
+    expect(peakFrom(drinks, profile, later)).toBeCloseTo(bacAt(drinks, profile, later), 3);
+  });
+
+  it('is zero with nothing logged', () => {
+    expect(peakFrom([], profile, T0)).toBe(0);
+  });
+});
+
+describe('planDrink', () => {
+  const pint = { volumeMl: 500, abv: 5 };
+
+  it('waves through a drink that stays under the limit', () => {
+    const plan = planDrink([], profile, pint, STATUS_CEILING.merry, T0);
+    expect(plan.fits).toBe(true);
+    expect(plan.waitMs).toBe(0);
+    expect(plan.peak).toBeLessThanOrEqual(STATUS_CEILING.merry);
+  });
+
+  it('names the earliest moment a drink fits, and it really does fit', () => {
+    const drinks = [drink(0, 500, 5), drink(10 * MINUTE, 500, 5)];
+    const now = T0 + 30 * MINUTE;
+    const plan = planDrink(drinks, profile, pint, STATUS_CEILING.merry, now);
+
+    expect(plan.fits).toBe(true);
+    expect(plan.waitMs).toBeGreaterThan(0);
+    expect(plan.peak).toBeLessThanOrEqual(STATUS_CEILING.merry);
+    // A minute earlier would not have fitted, or it was not the earliest.
+    const earlier = peakFrom(
+      [...drinks, { ...drink(0, pint.volumeMl, pint.abv), consumedAt: plan.at - MINUTE }],
+      profile,
+      now,
+    );
+    expect(earlier).toBeGreaterThan(STATUS_CEILING.merry);
+  });
+
+  it('never suggests a peak higher than drinking it right now', () => {
+    const drinks = [drink(0, 500, 5)];
+    const now = T0 + 20 * MINUTE;
+    const limit = STATUS_CEILING.buzzed;
+    const plan = planDrink(drinks, profile, pint, limit, now);
+    const immediate = peakFrom(
+      [...drinks, { ...drink(0, pint.volumeMl, pint.abv), consumedAt: now }],
+      profile,
+      now,
+    );
+    expect(plan.peak).toBeLessThanOrEqual(immediate);
+  });
+
+  it('gives up when the drink alone clears the limit', () => {
+    const plan = planDrink([], profile, { volumeMl: 500, abv: 40 }, STATUS_CEILING.buzzed, T0);
+    expect(plan.fits).toBe(false);
+    expect(plan.currentPeak).toBe(0);
+    expect(plan.peak).toBeGreaterThan(STATUS_CEILING.buzzed);
+  });
+
+  it('gives up when the night is already over the limit', () => {
+    const drinks = [drink(0, 500, 12), drink(15 * MINUTE, 500, 12), drink(30 * MINUTE, 500, 12)];
+    const plan = planDrink(drinks, profile, pint, STATUS_CEILING.buzzed, T0 + 45 * MINUTE);
+    expect(plan.fits).toBe(false);
+    expect(plan.currentPeak).toBeGreaterThan(STATUS_CEILING.buzzed);
+  });
+
+  it('waits no longer than it takes to sober up', () => {
+    const drinks = [drink(0, 500, 5)];
+    const now = T0 + 10 * MINUTE;
+    const plan = planDrink(drinks, profile, pint, STATUS_CEILING.buzzed, now);
+    const sober = soberAt(drinks, profile)!;
+    expect(plan.at).toBeLessThanOrEqual(sober);
   });
 });

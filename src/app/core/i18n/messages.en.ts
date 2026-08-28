@@ -117,6 +117,24 @@ export const en = {
     add: 'Add drink',
   },
 
+  planner: {
+    title: 'Staying under a limit?',
+    off: 'No limit',
+    presets: { buzzed: 'Buzzed', merry: 'Merry', drunk: 'Drunk' },
+    ceiling: (name: string, permille: string) => `${name} · ${permille}\u00a0‰`,
+    exact: 'Exact limit (‰)',
+    exactAria: 'Exact limit in promille',
+    goNow: (peak: string) => `Go for it — this one tops out around ${peak}\u00a0‰.`,
+    wait: (duration: string, clock: string, peak: string) =>
+      `Wait ${duration}. Have it at ${clock} and you top out around ${peak}\u00a0‰.`,
+    alreadyOver: (peak: string) =>
+      `You're already heading for ${peak}\u00a0‰ — waiting won't bring that back under.`,
+    tooBig: (peak: string) =>
+      `Too big for this limit — even stone-cold sober it lands at ${peak}\u00a0‰.`,
+    noAlcohol: 'No alcohol in this one. Have it whenever.',
+    fromNow: 'Worked out from right now, whatever time is set above.',
+  },
+
   leaderboard: {
     title: 'Top ‰',
     subtitle: 'Everyone currently above 0.00 ‰.',

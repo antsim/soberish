@@ -1,19 +1,23 @@
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main">{{ msg().nav.skipToContent }}</a>
 
 <header class="topbar">
-  <a class="brand" routerLink="/" aria-label="Soberish home">
+  <a class="brand" routerLink="/" [attr.aria-label]="msg().nav.home">
     <img class="brand__mark" src="icons/icon-96.png" alt="" width="32" height="32" />
     <span class="brand__name">Soberish</span>
   </a>
 
   <div class="topbar__end">
     @if (!network.online()) {
-      <span class="pill pill--offline" title="Offline — everything still works">Offline</span>
+      <span class="pill pill--offline" [title]="msg().shell.offlineTitle">
+        {{ msg().shell.offline }}
+      </span>
     } @else if (sync.state() === 'syncing') {
-      <span class="pill">Syncing</span>
+      <span class="pill">{{ msg().shell.syncing }}</span>
     }
     @if (pwa.canInstall() && !pwa.installed()) {
-      <button type="button" class="pill pill--install" (click)="install()">Install</button>
+      <button type="button" class="pill pill--install" (click)="install()">
+        {{ msg().shell.install }}
+      </button>
     }
   </div>
 </header>
@@ -22,18 +26,18 @@
   <router-outlet />
 </main>
 
-<nav class="tabbar" aria-label="Primary">
+<nav class="tabbar" [attr.aria-label]="msg().nav.primary">
   <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
     <span class="tabbar__icon" aria-hidden="true">🍺</span>
-    <span class="tabbar__label">Tonight</span>
+    <span class="tabbar__label">{{ msg().nav.tonight }}</span>
   </a>
   <a routerLink="/leaderboard" routerLinkActive="active">
     <span class="tabbar__icon" aria-hidden="true">🏆</span>
-    <span class="tabbar__label">Top ‰</span>
+    <span class="tabbar__label">{{ msg().nav.leaderboard }}</span>
   </a>
   <a routerLink="/you" routerLinkActive="active">
     <span class="tabbar__icon" aria-hidden="true">⚙️</span>
-    <span class="tabbar__label">You</span>
+    <span class="tabbar__label">{{ msg().nav.you }}</span>
   </a>
 </nav>
 

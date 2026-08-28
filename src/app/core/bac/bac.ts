@@ -255,11 +255,3 @@ export function statusFor(bac: number): SoberStatus {
   if (bac < 0.12) return 'drunk';
   return 'wasted';
 }
-
-export const STATUS_COPY: Record<SoberStatus, { title: string; blurb: string }> = {
-  sober: { title: 'Sober', blurb: 'Nothing in the tank.' },
-  buzzed: { title: 'Buzzed', blurb: 'Just getting warm.' },
-  merry: { title: 'Merry', blurb: 'Comfortably social.' },
-  drunk: { title: 'Drunk', blurb: 'Have a glass of water.' },
-  wasted: { title: 'Wasted', blurb: 'Please stop and hydrate.' },
-};

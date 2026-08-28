@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HOUR } from '../../core/bac/bac';
+import { I18n } from '../../core/i18n/i18n.service';
 import { Drink, DrinkDraft, DrinkPreset } from '../../core/models/drink.model';
 import { Clock } from '../../core/platform/clock';
 import { Toaster } from '../../core/platform/toaster';
@@ -17,7 +18,7 @@ import { RecentDrinksStore } from '../../core/state/recent-drinks-store';
 import { SpanChoice } from '../../core/state/chart-viewport';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
-import { formatPermille } from '../../shared/util/format';
+import { formatPermille, formatWeight } from '../../shared/util/format';
 import { BacChart } from './components/bac-chart';
 import { BacReadout } from './components/bac-readout';
 import { DrinkEditor } from './components/drink-editor';
@@ -44,10 +45,18 @@ export class TrackerPage implements OnInit {
   protected readonly recentDrinks = inject(RecentDrinksStore);
   protected readonly clock = inject(Clock);
   readonly #toaster = inject(Toaster);
+  protected readonly msg = inject(I18n).messages;
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
 
   protected readonly editor = signal<EditorState>({ mode: 'closed' });
+
+  protected readonly statusCopy = computed(() => this.msg().status[this.session.statusKey()]);
+
+  /** The weight the curve is using, in the user's own units. */
+  protected readonly weightShown = computed(() =>
+    formatWeight(this.profiles.profile().weightKg, this.profiles.profile().units),
+  );
 
   protected readonly editing = computed(() => {
     const state = this.editor();
@@ -64,29 +73,35 @@ export class TrackerPage implements OnInit {
     const sessionMs = this.session.chartBounds().to - this.session.chartBounds().from;
     const windowMs = this.session.chartWindow().to - this.session.chartWindow().from;
     const whole = this.session.showingWholeSession();
+    const messages = this.msg();
     const options: { label: string; choice: SpanChoice; active: boolean }[] = [];
     for (const hours of [3, 6, 12]) {
       const span = hours * HOUR;
       if (span >= sessionMs) continue;
       options.push({
-        label: `${hours}h`,
+        label: messages.chart.hours(hours),
         choice: span,
         active: !whole && Math.abs(windowMs - span) < 60_000,
       });
     }
-    options.push({ label: 'Session', choice: 'session', active: whole });
+    options.push({ label: messages.chart.wholeSession, choice: 'session', active: whole });
     return options;
   });
 
-  protected readonly stats = computed(() => [
-    { label: 'Units', value: this.session.totalStandardDrinks().toFixed(1) },
-    { label: 'Drinks', value: `${this.drinks.count()}` },
-    { label: 'Peak', value: formatPermille(this.session.peak()) },
-    {
-      label: 'Session',
-      value: this.session.elapsedMs() ? formatShort(this.session.elapsedMs()) : '—',
-    },
-  ]);
+  protected readonly stats = computed(() => {
+    const messages = this.msg();
+    return [
+      { label: messages.tracker.statUnits, value: this.session.totalStandardDrinks().toFixed(1) },
+      { label: messages.tracker.statDrinks, value: `${this.drinks.count()}` },
+      { label: messages.tracker.statPeak, value: formatPermille(this.session.peak()) },
+      {
+        label: messages.tracker.statSession,
+        value: this.session.elapsedMs()
+          ? formatShort(this.session.elapsedMs(), messages.time)
+          : '—',
+      },
+    ];
+  });
 
   ngOnInit(): void {
     // The manifest shortcut deep-links straight into the add sheet.
@@ -117,8 +132,8 @@ export class TrackerPage implements OnInit {
       consumedAt: Date.now(),
     });
     this.clock.sync();
-    this.#toaster.success(`${preset.icon} ${preset.label} logged`, {
-      label: 'Undo',
+    this.#toaster.success(this.msg().toast.logged(preset.icon, preset.label), {
+      label: this.msg().toast.undo,
       run: () => void this.drinks.remove(drink.id),
     });
   }
@@ -139,11 +154,11 @@ export class TrackerPage implements OnInit {
     const state = this.editor();
     if (state.mode === 'edit') {
       await this.drinks.update(state.drink.id, draft);
-      this.#toaster.success('Drink updated');
+      this.#toaster.success(this.msg().toast.drinkUpdated);
     } else {
       await this.drinks.add(draft);
       await this.recentDrinks.remember(draft);
-      this.#toaster.success(`${draft.icon} ${draft.label} logged`);
+      this.#toaster.success(this.msg().toast.logged(draft.icon, draft.label));
     }
     this.clock.sync();
     this.close();
@@ -152,8 +167,8 @@ export class TrackerPage implements OnInit {
   protected async remove(drink: Drink): Promise<void> {
     await this.drinks.remove(drink.id);
     this.close();
-    this.#toaster.show(`${drink.label} deleted`, 'info', {
-      label: 'Undo',
+    this.#toaster.show(this.msg().toast.drinkDeleted(drink.label), 'info', {
+      label: this.msg().toast.undo,
       run: () => void this.drinks.restore(drink.id),
     });
   }
@@ -177,8 +192,9 @@ export class TrackerPage implements OnInit {
   }
 }
 
-function formatShort(ms: number): string {
+function formatShort(ms: number, words: { hourSuffix: string; minuteSuffix: string }): string {
   const hours = Math.floor(ms / HOUR);
   const minutes = Math.round((ms % HOUR) / 60_000);
-  return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
+  const m = `${minutes}${words.minuteSuffix}`;
+  return hours ? `${hours}${words.hourSuffix} ${m}` : m;
 }

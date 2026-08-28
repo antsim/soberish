@@ -3,12 +3,14 @@ import {
   Component,
   OnInit,
   computed,
+  inject,
   input,
   output,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MINUTE, alcoholGrams, standardDrinks } from '../../../core/bac/bac';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink, DrinkDraft } from '../../../core/models/drink.model';
 import { Profile, WIDMARK_R } from '../../../core/models/profile.model';
 import { DecimalField } from '../../../shared/ui/decimal-field';
@@ -44,10 +46,12 @@ export class DrinkEditor implements OnInit {
   readonly removed = output<string>();
   readonly dismissed = output<void>();
 
+  protected readonly msg = inject(I18n).messages;
+
   protected readonly icons = ICONS;
   protected readonly abvPresets = ABV_PRESETS;
 
-  protected readonly label = signal('Beer');
+  protected readonly label = signal(this.msg().editor.defaultName);
   protected readonly icon = signal('🍺');
   protected readonly volumeMl = signal(330);
   protected readonly abv = signal(4.7);
@@ -119,7 +123,7 @@ export class DrinkEditor implements OnInit {
 
   protected save(): void {
     this.saved.emit({
-      label: this.label().trim() || 'Drink',
+      label: this.label().trim() || this.msg().editor.fallbackName,
       icon: this.icon(),
       volumeMl: Math.round(this.volumeMl()),
       abv: round(this.abv(), 2),

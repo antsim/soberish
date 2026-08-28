@@ -1,4 +1,5 @@
 import { MINUTE } from '../../core/bac/bac';
+import { Messages } from '../../core/i18n/messages.en';
 import { UnitSystem } from '../../core/models/profile.model';
 
 const ML_PER_OZ = 29.5735;
@@ -26,14 +27,16 @@ export function formatPermille(bacPercent: number): string {
   return toPermille(bacPercent).toFixed(2);
 }
 
-/** "2h 15m", "45m", "just now". */
-export function formatDuration(ms: number): string {
-  if (ms < MINUTE) return 'just now';
+/** "2h 15m", "45m", "just now" — with the unit suffixes of the active language. */
+export function formatDuration(ms: number, words: Messages['time']): string {
+  if (ms < MINUTE) return words.justNow;
   const totalMinutes = Math.round(ms / MINUTE);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (!hours) return `${minutes}m`;
-  return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+  const h = `${hours}${words.hourSuffix}`;
+  const m = `${minutes}${words.minuteSuffix}`;
+  if (!hours) return m;
+  return minutes ? `${h} ${m}` : h;
 }
 
 export function mlToOz(ml: number): number {

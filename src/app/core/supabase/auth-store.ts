@@ -1,3 +1,4 @@
+import { I18n } from '../i18n/i18n.service';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { appBaseUrl } from '../config/app-config';
 import { SupabaseService } from './supabase.service';
@@ -13,6 +14,7 @@ export type AuthMode = 'sign-in' | 'sign-up';
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   readonly #supabase = inject(SupabaseService);
+  readonly #i18n = inject(I18n);
   readonly #user = signal<AuthUser | null>(null);
   readonly #busy = signal(false);
   readonly #ready = signal(false);
@@ -71,7 +73,7 @@ export class AuthStore {
     work: (client: NonNullable<Awaited<ReturnType<SupabaseService['client']>>>) => Promise<void>,
   ) {
     const client = await this.#supabase.client();
-    if (!client) throw new Error('Cloud sync is not configured for this deployment.');
+    if (!client) throw new Error(this.#i18n.messages().auth.notConfigured);
     this.#busy.set(true);
     try {
       await work(client);

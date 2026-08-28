@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SoberStatus } from './core/bac/bac';
+import { I18n } from './core/i18n/i18n.service';
 import { Connectivity } from './core/platform/connectivity';
 import { PwaService } from './core/platform/pwa.service';
 import { SessionStore } from './core/state/session-store';
@@ -29,6 +30,7 @@ export class App {
   protected readonly network = inject(Connectivity);
   protected readonly pwa = inject(PwaService);
   protected readonly sync = inject(DrinkSyncService);
+  protected readonly msg = inject(I18n).messages;
 
   constructor() {
     // Tint the whole app with the current BAC band.

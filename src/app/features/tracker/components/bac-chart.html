@@ -3,9 +3,7 @@
   #frame
   [class.frame--interactive]="interactive()"
   [attr.tabindex]="interactive() ? 0 : null"
-  [attr.aria-label]="
-    interactive() ? description() + ' Drag to pan, pinch or scroll to zoom.' : null
-  "
+  [attr.aria-label]="interactive() ? description() + ' ' + msg().chart.gestures : null"
   (pointerdown)="onPointerDown($event)"
   (pointermove)="onPointerMove($event)"
   (pointerup)="onPointerUp($event)"

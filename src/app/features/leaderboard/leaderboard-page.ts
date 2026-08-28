@@ -8,6 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { statusFor } from '../../core/bac/bac';
+import { I18n } from '../../core/i18n/i18n.service';
 import { RankedEntry } from '../../core/models/leaderboard.model';
 import { Connectivity } from '../../core/platform/connectivity';
 import { AuthStore } from '../../core/supabase/auth-store';
@@ -27,6 +28,8 @@ export class LeaderboardPage implements OnInit, OnDestroy {
   protected readonly board = inject(LeaderboardService);
   protected readonly auth = inject(AuthStore);
   protected readonly network = inject(Connectivity);
+
+  protected readonly msg = inject(I18n).messages;
 
   protected readonly medals = ['🥇', '🥈', '🥉'];
 

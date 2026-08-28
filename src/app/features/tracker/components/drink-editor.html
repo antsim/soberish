@@ -1,23 +1,26 @@
-<app-sheet [title]="isEdit() ? 'Edit drink' : 'Add a drink'" (dismissed)="dismissed.emit()">
+<app-sheet
+  [title]="isEdit() ? msg().editor.editTitle : msg().editor.addTitle"
+  (dismissed)="dismissed.emit()"
+>
   <div class="preview card">
     <span class="preview__icon" aria-hidden="true">{{ icon() }}</span>
     <div>
-      <p class="preview__name">{{ label() || 'Drink' }}</p>
+      <p class="preview__name">{{ label() || msg().editor.fallbackName }}</p>
       <p class="preview__meta tabular">
         {{ imperial() ? volumeInput() + ' oz' : volumeMl() + ' ml' }} · {{ abv() }}% ·
-        {{ grams().toFixed(1) }} g alcohol
+        {{ msg().editor.gramsAlcohol(grams().toFixed(1)) }}
       </p>
     </div>
     <div class="preview__impact">
       <span class="tabular">+{{ bacImpact() | permille }} ‰</span>
-      <small class="tabular">{{ units().toFixed(1) }} units</small>
+      <small class="tabular">{{ msg().editor.units(units().toFixed(1)) }}</small>
     </div>
   </div>
 
   <div class="group">
-    <p class="section-title">What is it?</p>
+    <p class="section-title">{{ msg().editor.whatIsIt }}</p>
     <div class="name-row">
-      <div class="icons" role="group" aria-label="Drink icon">
+      <div class="icons" role="group" [attr.aria-label]="msg().editor.iconGroup">
         @for (option of icons; track option) {
           <button
             type="button"
@@ -31,7 +34,7 @@
         }
       </div>
       <div class="field">
-        <label for="drink-label">Name</label>
+        <label for="drink-label">{{ msg().editor.name }}</label>
         <input
           id="drink-label"
           type="text"
@@ -45,7 +48,7 @@
   </div>
 
   <div class="group">
-    <p class="section-title">How much? ({{ imperial() ? 'oz' : 'ml' }})</p>
+    <p class="section-title">{{ msg().editor.howMuch(imperial() ? 'oz' : 'ml') }}</p>
     <div class="chips">
       @for (chip of volumeChips(); track chip.ml) {
         <button
@@ -59,10 +62,12 @@
       }
     </div>
     <div class="field">
-      <label for="drink-volume">Exact volume</label>
+      <label for="drink-volume">{{ msg().editor.exactVolume }}</label>
       <app-decimal-field
         fieldId="drink-volume"
-        [ariaLabel]="imperial() ? 'Exact volume in ounces' : 'Exact volume in millilitres'"
+        [ariaLabel]="
+          msg().editor.exactVolumeAria(imperial() ? msg().editor.ounces : msg().editor.millilitres)
+        "
         [value]="volumeInput()"
         [maximumFractionDigits]="imperial() ? 1 : 0"
         (valueChange)="setVolumeFromInput($event)"
@@ -71,7 +76,7 @@
   </div>
 
   <div class="group">
-    <p class="section-title">How strong? (% ABV)</p>
+    <p class="section-title">{{ msg().editor.howStrong }}</p>
     <div class="chips">
       @for (preset of abvPresets; track preset) {
         <button
@@ -85,10 +90,10 @@
       }
     </div>
     <div class="field">
-      <label for="drink-abv">Exact ABV</label>
+      <label for="drink-abv">{{ msg().editor.exactAbv }}</label>
       <app-decimal-field
         fieldId="drink-abv"
-        ariaLabel="Exact alcohol by volume percentage"
+        [ariaLabel]="msg().editor.exactAbvAria"
         [value]="abv()"
         [maximumFractionDigits]="2"
         (valueChange)="setAbv($event)"
@@ -97,16 +102,22 @@
   </div>
 
   <div class="group">
-    <p class="section-title">When?</p>
+    <p class="section-title">{{ msg().editor.when }}</p>
     <div class="chips">
-      <button type="button" class="chip" (click)="resetTime()">Now</button>
-      <button type="button" class="chip" (click)="shiftTime(-15)">−15 min</button>
-      <button type="button" class="chip" (click)="shiftTime(-30)">−30 min</button>
-      <button type="button" class="chip" (click)="shiftTime(-60)">−1 h</button>
-      <button type="button" class="chip" (click)="shiftTime(15)">+15 min</button>
+      <button type="button" class="chip" (click)="resetTime()">{{ msg().editor.now }}</button>
+      <button type="button" class="chip" (click)="shiftTime(-15)">
+        {{ msg().editor.minus15 }}
+      </button>
+      <button type="button" class="chip" (click)="shiftTime(-30)">
+        {{ msg().editor.minus30 }}
+      </button>
+      <button type="button" class="chip" (click)="shiftTime(-60)">
+        {{ msg().editor.minus60 }}
+      </button>
+      <button type="button" class="chip" (click)="shiftTime(15)">{{ msg().editor.plus15 }}</button>
     </div>
     <div class="field">
-      <label for="drink-time">{{ minutesAgo() }} minutes ago</label>
+      <label for="drink-time">{{ msg().editor.minutesAgo(minutesAgo()) }}</label>
       <input
         id="drink-time"
         type="datetime-local"
@@ -118,10 +129,12 @@
 
   <div class="actions">
     @if (isEdit()) {
-      <button type="button" class="btn btn--danger" (click)="remove()">Delete</button>
+      <button type="button" class="btn btn--danger" (click)="remove()">
+        {{ msg().editor.delete }}
+      </button>
     }
     <button type="button" class="btn btn--primary btn--block" (click)="save()">
-      {{ isEdit() ? 'Save changes' : 'Add drink' }}
+      {{ isEdit() ? msg().editor.saveChanges : msg().editor.add }}
     </button>
   </div>
 </app-sheet>

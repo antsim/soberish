@@ -1,3 +1,5 @@
+import { DEFAULT_LOCALE, Locale } from '../i18n/locale';
+
 /** Widmark distribution ratios (litres of body water per kg of body mass). */
 export const WIDMARK_R = { male: 0.68, female: 0.55, unspecified: 0.615 } as const;
 
@@ -15,6 +17,8 @@ export interface Profile {
   /** Minutes for a drink to be ~95% absorbed. Lower on an empty stomach. */
   readonly absorptionMinutes: number;
   readonly units: UnitSystem;
+  /** UI language. Defaults to the browser's until the user picks one. */
+  readonly locale: Locale;
   /** Opt-in: publish live BAC to the leaderboard while signed in. */
   readonly shareToLeaderboard: boolean;
   readonly updatedAt: number;
@@ -27,6 +31,7 @@ export const DEFAULT_PROFILE: Profile = {
   eliminationRate: 0.015,
   absorptionMinutes: 45,
   units: 'metric',
+  locale: DEFAULT_LOCALE,
   shareToLeaderboard: true,
   updatedAt: 0,
 };

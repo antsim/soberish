@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { standardDrinks } from '../../../core/bac/bac';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { UnitSystem } from '../../../core/models/profile.model';
 import { VolumePipe } from '../../../shared/util/pipes';
@@ -18,14 +19,14 @@ import { VolumePipe } from '../../../shared/util/pipes';
             type="button"
             class="row__main"
             (click)="edit.emit(drink)"
-            [attr.aria-label]="'Edit ' + drink.label"
+            [attr.aria-label]="msg().drinkList.edit(drink.label)"
           >
             <span class="row__icon" aria-hidden="true">{{ drink.icon }}</span>
             <span class="row__text">
               <span class="row__title">{{ drink.label }}</span>
               <span class="row__meta tabular">
                 {{ drink.volumeMl | volume: units() }} · {{ drink.abv }}% ·
-                {{ unitsFor(drink).toFixed(1) }} units
+                {{ msg().drinkList.units(unitsFor(drink).toFixed(1)) }}
               </span>
             </span>
             <span class="row__time tabular">{{ drink.consumedAt | date: 'HH:mm' }}</span>
@@ -34,19 +35,21 @@ import { VolumePipe } from '../../../shared/util/pipes';
             type="button"
             class="row__delete"
             (click)="remove.emit(drink)"
-            [attr.aria-label]="'Delete ' + drink.label"
+            [attr.aria-label]="msg().drinkList.delete(drink.label)"
           >
             ✕
           </button>
         </li>
       } @empty {
-        <li class="empty">Nothing logged yet — tap a drink above to start the night.</li>
+        <li class="empty">{{ msg().drinkList.empty }}</li>
       }
     </ul>
   `,
   styleUrl: './drink-list.scss',
 })
 export class DrinkList {
+  protected readonly msg = inject(I18n).messages;
+
   readonly drinks = input.required<readonly Drink[]>();
   readonly units = input.required<UnitSystem>();
   readonly edit = output<Drink>();

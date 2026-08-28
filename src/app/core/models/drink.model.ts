@@ -22,6 +22,7 @@ export interface Drink {
 /** The user-supplied part of a drink; everything else is derived. */
 export type DrinkDraft = Pick<Drink, 'consumedAt' | 'volumeMl' | 'abv' | 'label' | 'icon'>;
 
+/** A one-tap shortcut in the "Log a drink" row. */
 export interface DrinkPreset {
   readonly id: string;
   readonly label: string;
@@ -30,14 +31,10 @@ export interface DrinkPreset {
   readonly abv: number;
 }
 
-/** One-tap presets, ordered by how often a night out needs them. */
-export const DRINK_PRESETS: readonly DrinkPreset[] = [
-  { id: 'beer-bottle', label: 'Beer', icon: '🍺', volumeMl: 330, abv: 4.7 },
-  { id: 'beer-pint', label: 'Pint', icon: '🍻', volumeMl: 568, abv: 5 },
-  { id: 'wine', label: 'Wine', icon: '🍷', volumeMl: 150, abv: 12 },
-  { id: 'shot', label: 'Shot', icon: '🥃', volumeMl: 40, abv: 40 },
-  { id: 'cider', label: 'Cider', icon: '🍎', volumeMl: 330, abv: 4.5 },
-  { id: 'longdrink', label: 'Long drink', icon: '🍹', volumeMl: 330, abv: 5.5 },
-  { id: 'sparkling', label: 'Bubbly', icon: '🥂', volumeMl: 120, abv: 12 },
-  { id: 'nonalc', label: 'Alcohol-free', icon: '💧', volumeMl: 330, abv: 0 },
-];
+/**
+ * Identity of a shortcut, so re-adding the same drink moves it to the front of
+ * the row instead of taking a second slot.
+ */
+export function presetKey(drink: Pick<Drink, 'label' | 'icon' | 'volumeMl' | 'abv'>): string {
+  return [drink.label.trim().toLowerCase(), drink.icon, drink.volumeMl, drink.abv].join('|');
+}

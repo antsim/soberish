@@ -12,6 +12,7 @@ import { APP_CONFIG, AppConfig } from './core/config/app-config';
 import { PwaService } from './core/platform/pwa.service';
 import { DrinksStore } from './core/state/drinks-store';
 import { ProfileStore } from './core/state/profile-store';
+import { RecentDrinksStore } from './core/state/recent-drinks-store';
 import { RetentionService } from './core/state/retention.service';
 import { DrinkSyncService } from './core/sync/drink-sync.service';
 import { AuthStore } from './core/supabase/auth-store';
@@ -41,13 +42,14 @@ export function createAppConfig(config: AppConfig): ApplicationConfig {
       provideAppInitializer(async () => {
         const profiles = inject(ProfileStore);
         const drinks = inject(DrinksStore);
+        const recentDrinks = inject(RecentDrinksStore);
         const auth = inject(AuthStore);
         const retention = inject(RetentionService);
         const sync = inject(DrinkSyncService);
         const publisher = inject(StatusPublisherService);
         const pwa = inject(PwaService);
 
-        await Promise.all([profiles.load(), drinks.load()]);
+        await Promise.all([profiles.load(), drinks.load(), recentDrinks.load()]);
 
         retention.start();
         sync.start();

@@ -17,7 +17,7 @@ import { PermillePipe } from '../../../shared/util/pipes';
 import { mlToOz, ozToMl } from '../../../shared/util/format';
 
 const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
-const VOLUME_PRESETS_ML = [40, 120, 150, 200, 330, 400, 500, 568];
+const VOLUME_PRESETS_ML = [40, 330, 400, 440, 500, 568];
 const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
 
 /**

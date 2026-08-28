@@ -13,6 +13,7 @@ import { Clock } from '../../core/platform/clock';
 import { Toaster } from '../../core/platform/toaster';
 import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
+import { RecentDrinksStore } from '../../core/state/recent-drinks-store';
 import { SpanChoice } from '../../core/state/chart-viewport';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
@@ -40,6 +41,7 @@ export class TrackerPage implements OnInit {
   protected readonly session = inject(SessionStore);
   protected readonly drinks = inject(DrinksStore);
   protected readonly profiles = inject(ProfileStore);
+  protected readonly recentDrinks = inject(RecentDrinksStore);
   protected readonly clock = inject(Clock);
   readonly #toaster = inject(Toaster);
   readonly #route = inject(ActivatedRoute);
@@ -140,6 +142,7 @@ export class TrackerPage implements OnInit {
       this.#toaster.success('Drink updated');
     } else {
       await this.drinks.add(draft);
+      await this.recentDrinks.remember(draft);
       this.#toaster.success(`${draft.icon} ${draft.label} logged`);
     }
     this.clock.sync();

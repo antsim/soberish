@@ -58,3 +58,11 @@
   color: var(--text-faint);
   white-space: nowrap;
 }
+
+.hint {
+  align-self: center;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  text-wrap: balance;
+}

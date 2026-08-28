@@ -1,3 +1,4 @@
+import { I18n } from '../i18n/i18n.service';
 import { Injectable, Injector, effect, inject, untracked } from '@angular/core';
 import { Clock } from '../platform/clock';
 import { Toaster } from '../platform/toaster';
@@ -19,6 +20,7 @@ export class RetentionService {
   readonly #drinks = inject(DrinksStore);
   readonly #clock = inject(Clock);
   readonly #toaster = inject(Toaster);
+  readonly #i18n = inject(I18n);
   readonly #injector = inject(Injector);
   #running = false;
 
@@ -42,9 +44,7 @@ export class RetentionService {
     try {
       const cleared = this.#drinks.count();
       await this.#drinks.clear();
-      this.#toaster.show(
-        `Cleared ${cleared} drink${cleared === 1 ? '' : 's'} — you'd been sober for 24 hours.`,
-      );
+      this.#toaster.show(this.#i18n.messages().toast.retentionWipe(cleared));
     } finally {
       this.#running = false;
     }

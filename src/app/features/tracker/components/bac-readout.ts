@@ -10,6 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { SoberStatus } from '../../../core/bac/bac';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { formatDuration, toPermille } from '../../../shared/util/format';
 import { DurationPipe } from '../../../shared/util/pipes';
 
@@ -27,13 +28,13 @@ const COUNT_MS = 720;
     </p>
     <p class="trend">
       <span class="chip" [class.chip--rising]="rising()">
-        {{ rising() ? '↑ still rising' : bac() > 0 ? '↓ coming down' : '— nothing on board' }}
+        {{
+          rising() ? msg().readout.rising : bac() > 0 ? msg().readout.falling : msg().readout.empty
+        }}
       </span>
     </p>
     @if (msUntilSober(); as remaining) {
-      <p class="sober">
-        Sober in <strong class="tabular">{{ remaining | duration }}</strong> · {{ soberClock() }}
-      </p>
+      <p class="sober">{{ msg().readout.soberIn(remaining | duration: msg(), soberClock()) }}</p>
     } @else {
       <p class="sober">{{ blurb() }}</p>
     }
@@ -49,6 +50,8 @@ export class BacReadout {
   readonly rising = input.required<boolean>();
   readonly soberAt = input.required<number | null>();
   readonly now = input.required<number>();
+
+  protected readonly msg = inject(I18n).messages;
 
   protected readonly shown = signal(0);
   #raf = 0;
@@ -70,9 +73,13 @@ export class BacReadout {
   });
 
   protected readonly ariaLabel = computed(() => {
+    const messages = this.msg();
     const remaining = this.msUntilSober();
-    const suffix = remaining === null ? '' : `, sober in ${formatDuration(remaining)}`;
-    return `Blood alcohol ${toPermille(this.bac()).toFixed(2)} promille${suffix}`;
+    const suffix =
+      remaining === null
+        ? ''
+        : messages.readout.ariaSoberIn(formatDuration(remaining, messages.time));
+    return messages.readout.aria(toPermille(this.bac()).toFixed(2)) + suffix;
   });
 
   constructor() {

@@ -1,13 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import {
-  HOUR,
-  MINUTE,
-  STATUS_COPY,
-  buildTimeline,
-  soberAt,
-  standardDrinks,
-  statusFor,
-} from '../bac/bac';
+import { HOUR, MINUTE, buildTimeline, soberAt, standardDrinks, statusFor } from '../bac/bac';
+import { Messages } from '../i18n/messages.en';
 import { Clock } from '../platform/clock';
 import {
   MIN_SPAN_MS,
@@ -22,6 +15,9 @@ import {
 } from './chart-viewport';
 import { DrinksStore } from './drinks-store';
 import { ProfileStore } from './profile-store';
+
+/** Names a block in `messages.status` — the five bands plus the pre-absorption case. */
+export type StatusKey = keyof Messages['status'];
 
 /** Sample count for the chart. Constant, so two curves can morph point-for-point. */
 export const CHART_SAMPLES = 160;
@@ -54,14 +50,12 @@ export class SessionStore {
   readonly rising = computed(() => this.timeline().rising);
   readonly status = computed(() => statusFor(this.bac()));
   /**
-   * Copy for the current band, with one special case: alcohol that has been
-   * drunk but not yet absorbed reads as 0.00 ‰, and calling that "sober" would
-   * be actively misleading.
+   * Which block of status copy to show, with one special case: alcohol that has
+   * been drunk but not yet absorbed reads as 0.00 ‰, and calling that "sober"
+   * would be actively misleading.
    */
-  readonly statusCopy = computed(() =>
-    this.bac() <= 0 && this.rising()
-      ? { title: 'Kicking in', blurb: 'Drinks logged — absorption has just started.' }
-      : STATUS_COPY[this.status()],
+  readonly statusKey = computed<StatusKey>(() =>
+    this.bac() <= 0 && this.rising() ? 'kickingIn' : this.status(),
   );
 
   /** Projected moment of returning to 0.00 ‰, or `null` when already sober. */

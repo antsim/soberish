@@ -1,3 +1,4 @@
+import { I18n } from '../i18n/i18n.service';
 import { ApplicationRef, DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
 import { first } from 'rxjs/operators';
@@ -14,6 +15,7 @@ export class PwaService {
   readonly #updates = inject(SwUpdate);
   readonly #appRef = inject(ApplicationRef);
   readonly #toaster = inject(Toaster);
+  readonly #i18n = inject(I18n);
 
   readonly #deferred = signal<BeforeInstallPromptEvent | null>(null);
   readonly #installed = signal(isStandalone());
@@ -47,8 +49,8 @@ export class PwaService {
 
     this.#updates.versionUpdates.subscribe((event) => {
       if (event.type !== 'VERSION_READY') return;
-      this.#toaster.show('A new version of Soberish is ready.', 'info', {
-        label: 'Reload',
+      this.#toaster.show(this.#i18n.messages().toast.updateReady, 'info', {
+        label: this.#i18n.messages().toast.reload,
         run: () => void this.#updates.activateUpdate().then(() => location.reload()),
       });
     });

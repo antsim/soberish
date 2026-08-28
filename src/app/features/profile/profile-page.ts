@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../core/i18n/i18n.service';
 import { BodyType, PROFILE_LIMITS, UnitSystem } from '../../core/models/profile.model';
 import { Connectivity } from '../../core/platform/connectivity';
 import { PwaService } from '../../core/platform/pwa.service';
@@ -9,7 +10,7 @@ import { ProfileStore } from '../../core/state/profile-store';
 import { SessionStore } from '../../core/state/session-store';
 import { DrinkSyncService } from '../../core/sync/drink-sync.service';
 import { AuthStore } from '../../core/supabase/auth-store';
-import { kgToLb, lbToKg } from '../../shared/util/format';
+import { formatWeight, kgToLb, lbToKg } from '../../shared/util/format';
 import { DurationPipe, PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
@@ -29,20 +30,22 @@ export class ProfilePage {
   protected readonly sync = inject(DrinkSyncService);
   protected readonly pwa = inject(PwaService);
   protected readonly network = inject(Connectivity);
+  protected readonly i18n = inject(I18n);
+  protected readonly msg = this.i18n.messages;
   readonly #toaster = inject(Toaster);
 
   protected readonly limits = PROFILE_LIMITS;
 
-  protected readonly bodyTypes: readonly { value: BodyType; label: string }[] = [
-    { value: 'female', label: 'Female' },
-    { value: 'male', label: 'Male' },
-    { value: 'unspecified', label: 'Average' },
-  ];
+  protected readonly bodyTypes = computed<readonly { value: BodyType; label: string }[]>(() => [
+    { value: 'female', label: this.msg().profile.female },
+    { value: 'male', label: this.msg().profile.male },
+    { value: 'unspecified', label: this.msg().profile.average },
+  ]);
 
-  protected readonly unitOptions: readonly { value: UnitSystem; label: string }[] = [
-    { value: 'metric', label: 'ml / kg' },
-    { value: 'imperial', label: 'oz / lb' },
-  ];
+  protected readonly unitOptions = computed<readonly { value: UnitSystem; label: string }[]>(() => [
+    { value: 'metric', label: this.msg().profile.metric },
+    { value: 'imperial', label: this.msg().profile.imperial },
+  ]);
 
   protected readonly imperial = computed(() => this.profiles.profile().units === 'imperial');
 
@@ -51,6 +54,11 @@ export class ProfilePage {
     const kg = this.profiles.profile().weightKg;
     return this.imperial() ? Math.round(kgToLb(kg)) : Math.round(kg);
   });
+
+  /** Weight with its unit, for the slider's label. */
+  protected readonly weightLabel = computed(() =>
+    formatWeight(this.profiles.profile().weightKg, this.profiles.profile().units),
+  );
 
   protected readonly weightRange = computed(() =>
     this.imperial()
@@ -62,15 +70,16 @@ export class ProfilePage {
   );
 
   protected readonly syncLabel = computed(() => {
+    const messages = this.msg().profile;
     switch (this.sync.state()) {
       case 'off':
-        return 'Local only';
+        return messages.syncLocalOnly;
       case 'syncing':
-        return 'Syncing…';
+        return messages.syncSyncing;
       case 'error':
-        return 'Retrying…';
+        return messages.syncRetrying;
       default:
-        return this.auth.signedIn() ? 'Synced' : 'Sign in to sync';
+        return this.auth.signedIn() ? messages.syncSynced : messages.syncSignIn;
     }
   });
 
@@ -85,15 +94,15 @@ export class ProfilePage {
 
   protected async signOut(): Promise<void> {
     await this.auth.signOut();
-    this.#toaster.show('Signed out. Your drinks stay on this device.');
+    this.#toaster.show(this.msg().toast.signedOut);
   }
 
   protected async clearHistory(): Promise<void> {
     if (!this.drinks.count()) return;
-    const confirmed = confirm(`Delete all ${this.drinks.count()} drinks from this session?`);
+    const confirmed = confirm(this.msg().profile.clearConfirm(this.drinks.count()));
     if (!confirmed) return;
     await this.drinks.clear();
-    this.#toaster.show('Session cleared.');
+    this.#toaster.show(this.msg().toast.sessionCleared);
   }
 
   protected exportJson(): void {

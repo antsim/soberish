@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { detectLocale, isLocale } from '../i18n/locale';
 import { DEFAULT_PROFILE, PROFILE_LIMITS, Profile } from '../models/profile.model';
 import { SoberishDb } from '../storage/soberish-db';
 
@@ -16,7 +17,11 @@ export class ProfileStore {
 
   async load(): Promise<void> {
     const stored = await this.#db.readProfile();
-    if (stored) this.#profile.set({ ...DEFAULT_PROFILE, ...stored });
+    // A profile saved before languages existed has no choice to honour, so the
+    // browser gets a say until the user picks one in settings.
+    const chosen = stored?.locale;
+    const locale = isLocale(chosen) ? chosen : detectLocale();
+    this.#profile.set({ ...DEFAULT_PROFILE, ...stored, locale });
     this.#loaded.set(true);
   }
 
@@ -39,6 +44,7 @@ function sanitize(profile: Profile): Profile {
   return {
     ...profile,
     displayName: profile.displayName.trim().slice(0, 24),
+    locale: isLocale(profile.locale) ? profile.locale : DEFAULT_PROFILE.locale,
     weightKg: clamp(profile.weightKg, PROFILE_LIMITS.weightKg, DEFAULT_PROFILE.weightKg),
     eliminationRate: clamp(
       profile.eliminationRate,

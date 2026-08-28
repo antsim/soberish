@@ -14,6 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { BacTimeline, HOUR, MINUTE } from '../../../core/bac/bac';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { toPermille } from '../../../shared/util/format';
 
@@ -78,6 +79,8 @@ interface Marker {
   styleUrl: './bac-chart.scss',
 })
 export class BacChart {
+  protected readonly msg = inject(I18n).messages;
+
   readonly timeline = input.required<BacTimeline>();
   readonly drinks = input<readonly Drink[]>([]);
   readonly now = input.required<number>();
@@ -227,9 +230,10 @@ export class BacChart {
 
   protected readonly description = computed(() => {
     const timeline = this.timeline();
-    const current = toPermille(timeline.current).toFixed(2);
-    const peak = toPermille(timeline.peak).toFixed(2);
-    return `Blood alcohol curve. Currently ${current} promille, session peak ${peak} promille.`;
+    return this.msg().chart.aria(
+      toPermille(timeline.current).toFixed(2),
+      toPermille(timeline.peak).toFixed(2),
+    );
   });
 
   // --- Gestures ------------------------------------------------------------

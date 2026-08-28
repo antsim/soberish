@@ -1,4 +1,13 @@
-import { Component, ElementRef, afterNextRender, input, output, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterNextRender,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
+import { I18n } from '../../core/i18n/i18n.service';
 
 /**
  * A modal bottom sheet — the app's only overlay primitive.
@@ -25,7 +34,14 @@ import { Component, ElementRef, afterNextRender, input, output, viewChild } from
       <header class="sheet__head">
         <span class="grabber" aria-hidden="true"></span>
         <h2>{{ title() }}</h2>
-        <button type="button" class="close" (click)="dismissed.emit()" aria-label="Close">✕</button>
+        <button
+          type="button"
+          class="close"
+          (click)="dismissed.emit()"
+          [attr.aria-label]="msg().sheet.close"
+        >
+          ✕
+        </button>
       </header>
       <div class="sheet__body">
         <ng-content />
@@ -35,6 +51,8 @@ import { Component, ElementRef, afterNextRender, input, output, viewChild } from
   styleUrl: './sheet.scss',
 })
 export class Sheet {
+  protected readonly msg = inject(I18n).messages;
+
   readonly title = input.required<string>();
   readonly dismissed = output<void>();
 

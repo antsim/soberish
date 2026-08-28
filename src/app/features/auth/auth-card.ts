@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../core/i18n/i18n.service';
 import { Toaster } from '../../core/platform/toaster';
 import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
 
@@ -11,7 +12,7 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
   template: `
     <form class="card auth" (ngSubmit)="submit()">
       <div class="tabs" role="tablist">
-        @for (option of modes; track option.value) {
+        @for (option of modes(); track option.value) {
           <button
             type="button"
             role="tab"
@@ -25,7 +26,7 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
       </div>
 
       <div class="field">
-        <label for="auth-email">Email</label>
+        <label for="auth-email">{{ msg().auth.email }}</label>
         <input
           id="auth-email"
           type="email"
@@ -38,7 +39,7 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
       </div>
 
       <div class="field">
-        <label for="auth-password">Password</label>
+        <label for="auth-password">{{ msg().auth.password }}</label>
         <input
           id="auth-password"
           type="password"
@@ -51,7 +52,7 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
       </div>
 
       <button type="submit" class="btn btn--primary btn--block" [disabled]="auth.busy()">
-        {{ mode() === 'sign-up' ? 'Create account' : 'Sign in' }}
+        {{ mode() === 'sign-up' ? msg().auth.createAccount : msg().auth.signIn }}
       </button>
       <button
         type="button"
@@ -59,13 +60,10 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
         [disabled]="auth.busy()"
         (click)="magicLink()"
       >
-        Email me a magic link
+        {{ msg().auth.magicLink }}
       </button>
 
-      <p class="fine">
-        Your drinks stay on this device until you sign in. Signing in syncs them and puts you on the
-        leaderboard — you can turn sharing off in <strong>You</strong>.
-      </p>
+      <p class="fine">{{ msg().auth.fine }}</p>
     </form>
   `,
   styleUrl: './auth-card.scss',
@@ -73,11 +71,14 @@ import { AuthMode, AuthStore } from '../../core/supabase/auth-store';
 export class AuthCard {
   protected readonly auth = inject(AuthStore);
   readonly #toaster = inject(Toaster);
+  readonly #i18n = inject(I18n);
 
-  protected readonly modes: readonly { value: AuthMode; label: string }[] = [
-    { value: 'sign-in', label: 'Sign in' },
-    { value: 'sign-up', label: 'Create account' },
-  ];
+  protected readonly msg = this.#i18n.messages;
+
+  protected readonly modes = computed<readonly { value: AuthMode; label: string }[]>(() => [
+    { value: 'sign-in', label: this.msg().auth.signIn },
+    { value: 'sign-up', label: this.msg().auth.createAccount },
+  ]);
 
   protected readonly mode = signal<AuthMode>('sign-in');
   protected readonly email = signal('');
@@ -88,27 +89,28 @@ export class AuthCard {
     try {
       await this.auth.withPassword(this.mode(), this.email().trim(), this.password());
       this.#toaster.success(
-        this.mode() === 'sign-up' ? 'Check your inbox to confirm.' : 'Signed in.',
+        this.mode() === 'sign-up' ? this.msg().toast.confirmInbox : this.msg().toast.signedIn,
       );
     } catch (error) {
-      this.#toaster.error(message(error));
+      this.#toaster.error(this.#message(error));
     }
   }
 
   protected async magicLink(): Promise<void> {
     if (!this.email().trim()) {
-      this.#toaster.error('Enter your email first.');
+      this.#toaster.error(this.msg().toast.emailFirst);
       return;
     }
     try {
       await this.auth.withMagicLink(this.email().trim());
-      this.#toaster.success('Magic link sent — check your inbox.');
+      this.#toaster.success(this.msg().toast.magicLinkSent);
     } catch (error) {
-      this.#toaster.error(message(error));
+      this.#toaster.error(this.#message(error));
     }
   }
-}
 
-function message(error: unknown): string {
-  return error instanceof Error ? error.message : 'Something went wrong.';
+  /** Supabase phrases its own errors in English; only the fallback is ours. */
+  #message(error: unknown): string {
+    return error instanceof Error ? error.message : this.msg().toast.genericError;
+  }
 }

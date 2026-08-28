@@ -1,14 +1,14 @@
 <header class="head">
   <div>
-    <h1>Top ‰</h1>
-    <p class="sub">Everyone currently above 0.00 ‰.</p>
+    <h1>{{ msg().leaderboard.title }}</h1>
+    <p class="sub">{{ msg().leaderboard.subtitle }}</p>
   </div>
   <button
     type="button"
     class="refresh"
     (click)="board.refresh()"
     [disabled]="board.loading() || !network.online()"
-    aria-label="Refresh leaderboard"
+    [attr.aria-label]="msg().leaderboard.refresh"
   >
     {{ board.loading() ? '…' : '↻' }}
   </button>
@@ -16,26 +16,20 @@
 
 @if (!board.available) {
   <div class="card state">
-    <p class="state__title">Leaderboard is offline-only here</p>
-    <p class="state__body">
-      This deployment was built without Supabase credentials, so Soberish runs entirely on your
-      device. Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> to the repository
-      variables and redeploy to switch the board on.
-    </p>
+    <p class="state__title">{{ msg().leaderboard.offlineOnlyTitle }}</p>
+    <p class="state__body">{{ msg().leaderboard.offlineOnlyBody }}</p>
   </div>
 } @else if (!network.online()) {
   <div class="card state">
-    <p class="state__title">You're offline</p>
-    <p class="state__body">
-      Your own BAC keeps tracking. The board will catch up when you reconnect.
-    </p>
+    <p class="state__title">{{ msg().leaderboard.offlineTitle }}</p>
+    <p class="state__body">{{ msg().leaderboard.offlineBody }}</p>
   </div>
 } @else if (!auth.signedIn()) {
   <app-auth-card />
 } @else {
   @if (board.error(); as error) {
     <div class="card state state--error">
-      <p class="state__title">Couldn't load the board</p>
+      <p class="state__title">{{ msg().leaderboard.errorTitle }}</p>
       <p class="state__body">{{ error }}</p>
     </div>
   }
@@ -51,7 +45,7 @@
           <span class="podium__medal" aria-hidden="true">{{ medals[entry.rank - 1] }}</span>
           <span class="podium__name">{{ entry.displayName }}</span>
           <span class="podium__bac tabular">{{ entry.liveBac | permille }}<small>‰</small></span>
-          <span class="podium__meta tabular">{{ entry.drinks }} units</span>
+          <span class="podium__meta tabular">{{ msg().leaderboard.units(entry.drinks) }}</span>
         </li>
       }
     </ol>
@@ -62,7 +56,7 @@
           <li class="row" [class.row--self]="entry.isSelf" [class]="statusClass(entry)">
             <span class="row__rank tabular">{{ entry.rank }}</span>
             <span class="row__name">{{ entry.displayName }}</span>
-            <span class="row__meta tabular">{{ entry.drinks }} units</span>
+            <span class="row__meta tabular">{{ msg().leaderboard.units(entry.drinks) }}</span>
             <span class="row__bac tabular">{{ entry.liveBac | permille }}</span>
           </li>
         }
@@ -70,19 +64,21 @@
     }
   } @else {
     <div class="card state">
-      <p class="state__title">Nobody is drinking</p>
-      <p class="state__body">The board fills up as soon as someone logs a drink.</p>
+      <p class="state__title">{{ msg().leaderboard.emptyTitle }}</p>
+      <p class="state__body">{{ msg().leaderboard.emptyBody }}</p>
     </div>
   }
 
   <p class="foot">
     @if (board.selfRank(); as rank) {
-      You're currently ranked #{{ rank }}.
+      {{ msg().leaderboard.yourRank(rank) }}
     } @else {
-      You're not on the board — log a drink to appear.
+      {{ msg().leaderboard.notRanked }}
     }
     @if (board.fetchedAt(); as at) {
-      <span class="foot__time"> Updated {{ at | date: 'HH:mm:ss' }}.</span>
+      <span class="foot__time">{{
+        msg().leaderboard.updatedAt((at | date: 'HH:mm:ss') ?? '')
+      }}</span>
     }
   </p>
 }

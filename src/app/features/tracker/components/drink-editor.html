@@ -102,6 +102,24 @@
   </div>
 
   <div class="group">
+    <p class="section-title">{{ msg().editor.howLong }}</p>
+    <div class="chips">
+      @for (preset of durationPresets; track preset) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="durationMinutes() === preset"
+          [attr.aria-pressed]="durationMinutes() === preset"
+          (click)="setDuration(preset)"
+        >
+          {{ preset ? msg().editor.minutes(preset) : msg().editor.inOneGo }}
+        </button>
+      }
+    </div>
+    <p class="hint">{{ msg().editor.howLongHint }}</p>
+  </div>
+
+  <div class="group">
     <p class="section-title">{{ msg().editor.when }}</p>
     <div class="chips">
       <button type="button" class="chip" (click)="resetTime()">{{ msg().editor.now }}</button>
@@ -128,7 +146,13 @@
   </div>
 
   @if (!isEdit()) {
-    <app-drink-planner [profile]="profile()" [volumeMl]="volumeMl()" [abv]="abv()" />
+    <app-drink-planner
+      [profile]="profile()"
+      [volumeMl]="volumeMl()"
+      [abv]="abv()"
+      [durationMinutes]="durationMinutes()"
+      (stretched)="setDuration($event)"
+    />
   }
 
   <div class="actions">

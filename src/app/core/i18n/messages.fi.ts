@@ -120,6 +120,16 @@ export const fi: Messages = {
     minus30: '−30 min',
     minus60: '−1 t',
     plus15: '+15 min',
+    howLong: 'Kuinka kauan siihen menee?',
+    howLongHint:
+      'Hitaasti siemailtuna alkoholi jakautuu pidemmälle, joten huippu jää matalammaksi ja tulee myöhemmin.',
+    inOneGo: 'Kertaheitolla',
+    minutes: (n: number) => {
+      const hours = Math.floor(n / 60);
+      const rest = n % 60;
+      if (!hours) return `${rest} min`;
+      return rest ? `${hours} t ${rest} min` : `${hours} t`;
+    },
     minutesAgo: (n: number) => `${n} minuutti${n === 1 ? '' : 'a'} sitten`,
     delete: 'Poista',
     saveChanges: 'Tallenna',
@@ -138,6 +148,7 @@ export const fi: Messages = {
     alreadyOver: (peak: string) =>
       `Olet menossa jo ${peak} promilleen — odottaminen ei enää pelasta.`,
     tooBig: (peak: string) => `Liian iso tähän rajaan — selvinkin päin tästä tulee ${peak}\u00a0‰.`,
+    stretch: (duration: string) => `Tai venytä ${duration} ja ota se heti`,
     noAlcohol: 'Ei alkoholia. Ota milloin huvittaa.',
     fromNow: 'Laskettu tästä hetkestä, riippumatta yllä valitusta ajasta.',
   },

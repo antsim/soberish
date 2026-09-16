@@ -11,7 +11,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MINUTE, alcoholGrams, standardDrinks } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { Drink, DrinkDraft } from '../../../core/models/drink.model';
+import {
+  DEFAULT_DRINK_DURATION,
+  DURATION_PRESETS,
+  Drink,
+  DrinkDraft,
+  MAX_DRINK_DURATION,
+} from '../../../core/models/drink.model';
 import { Profile, WIDMARK_R } from '../../../core/models/profile.model';
 import { DecimalField } from '../../../shared/ui/decimal-field';
 import { Sheet } from '../../../shared/ui/sheet';
@@ -51,11 +57,13 @@ export class DrinkEditor implements OnInit {
 
   protected readonly icons = ICONS;
   protected readonly abvPresets = ABV_PRESETS;
+  protected readonly durationPresets = DURATION_PRESETS;
 
   protected readonly label = signal(this.msg().editor.defaultName);
   protected readonly icon = signal('🍺');
   protected readonly volumeMl = signal(330);
   protected readonly abv = signal(4.7);
+  protected readonly durationMinutes = signal(DEFAULT_DRINK_DURATION);
   protected readonly consumedAt = signal(Date.now());
 
   protected readonly isEdit = computed(() => this.drink() !== null);
@@ -95,6 +103,7 @@ export class DrinkEditor implements OnInit {
       this.icon.set(existing.icon);
       this.volumeMl.set(existing.volumeMl);
       this.abv.set(existing.abv);
+      this.durationMinutes.set(existing.durationMinutes);
       this.consumedAt.set(existing.consumedAt);
     }
   }
@@ -107,6 +116,10 @@ export class DrinkEditor implements OnInit {
   protected setAbv(value: number): void {
     if (!Number.isFinite(value)) return;
     this.abv.set(clamp(value, 0, 96));
+  }
+
+  protected setDuration(minutes: number): void {
+    this.durationMinutes.set(clamp(Math.round(minutes), 0, MAX_DRINK_DURATION));
   }
 
   protected shiftTime(minutes: number): void {
@@ -128,6 +141,7 @@ export class DrinkEditor implements OnInit {
       icon: this.icon(),
       volumeMl: Math.round(this.volumeMl()),
       abv: round(this.abv(), 2),
+      durationMinutes: this.durationMinutes(),
       consumedAt: this.consumedAt(),
     });
   }

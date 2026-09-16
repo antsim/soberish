@@ -8,6 +8,7 @@ function row(id: string, updatedAt: number, patch: Partial<Drink> = {}): Drink {
     consumedAt: updatedAt,
     volumeMl: 330,
     abv: 5,
+    durationMinutes: 0,
     label: 'Beer',
     icon: '🍺',
     createdAt: updatedAt,

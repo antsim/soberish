@@ -27,6 +27,9 @@ import { VolumePipe } from '../../../shared/util/pipes';
               <span class="row__meta tabular">
                 {{ drink.volumeMl | volume: units() }} · {{ drink.abv }}% ·
                 {{ msg().drinkList.units(unitsFor(drink).toFixed(1)) }}
+                @if (drink.durationMinutes > 0) {
+                  · {{ msg().editor.minutes(drink.durationMinutes) }}
+                }
               </span>
             </span>
             <span class="row__time tabular">{{ drink.consumedAt | date: 'HH:mm' }}</span>

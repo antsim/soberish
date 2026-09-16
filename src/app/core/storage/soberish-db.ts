@@ -48,7 +48,7 @@ export class SoberishDb {
     const rows = this.#db
       ? await this.#db.getAll<Drink>(STORES.drinks)
       : [...this.#memory.drinks.values()];
-    return rows.sort((a, b) => a.consumedAt - b.consumedAt);
+    return rows.map(hydrate).sort((a, b) => a.consumedAt - b.consumedAt);
   }
 
   async saveDrinks(drinks: readonly Drink[]): Promise<void> {
@@ -99,4 +99,15 @@ export class SoberishDb {
     if (this.#db) return this.#db.put(STORES.meta, value, key);
     this.#memory.meta.set(key, value);
   }
+}
+
+/**
+ * Fills in fields added after a row was written.
+ *
+ * A drink logged before durations existed was drunk in one go as far as the
+ * engine is concerned — reading it as anything else would silently redraw
+ * history the user already saw.
+ */
+function hydrate(row: Drink): Drink {
+  return { ...row, durationMinutes: row.durationMinutes ?? 0 };
 }

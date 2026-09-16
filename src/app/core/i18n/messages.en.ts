@@ -119,6 +119,16 @@ export const en = {
     minus30: '−30 min',
     minus60: '−1 h',
     plus15: '+15 min',
+    howLong: 'How long over it?',
+    howLongHint:
+      'Sipping the same drink slowly spreads the alcohol out, so it peaks lower and later.',
+    inOneGo: 'In one go',
+    minutes: (n: number) => {
+      const hours = Math.floor(n / 60);
+      const rest = n % 60;
+      if (!hours) return `${rest} min`;
+      return rest ? `${hours} h ${rest} min` : `${hours} h`;
+    },
     minutesAgo: (n: number) => `${n} minutes ago`,
     delete: 'Delete',
     saveChanges: 'Save changes',
@@ -138,6 +148,7 @@ export const en = {
       `You're already heading for ${peak}\u00a0‰ — waiting won't bring that back under.`,
     tooBig: (peak: string) =>
       `Too big for this limit — even stone-cold sober it lands at ${peak}\u00a0‰.`,
+    stretch: (duration: string) => `Or take ${duration} over it and have it now`,
     noAlcohol: 'No alcohol in this one. Have it whenever.',
     fromNow: 'Worked out from right now, whatever time is set above.',
   },

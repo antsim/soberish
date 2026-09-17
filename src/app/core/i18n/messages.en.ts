@@ -177,6 +177,10 @@ export const en = {
 
     bodySection: 'Body',
     weight: (value: string) => `Weight — ${value}`,
+    weightAria: (unit: string) => `Weight in ${unit}`,
+    weightHint: (min: string, max: string) => `Between ${min} and ${max}.`,
+    kilograms: 'kilograms',
+    pounds: 'pounds',
     bodyComposition: 'Body composition',
     female: 'Female',
     male: 'Male',

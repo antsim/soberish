@@ -10,6 +10,7 @@ import { ProfileStore } from '../../core/state/profile-store';
 import { SessionStore } from '../../core/state/session-store';
 import { DrinkSyncService } from '../../core/sync/drink-sync.service';
 import { AuthStore } from '../../core/supabase/auth-store';
+import { DecimalField } from '../../shared/ui/decimal-field';
 import { formatWeight, kgToLb, lbToKg } from '../../shared/util/format';
 import { DurationPipe, PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
@@ -18,7 +19,7 @@ import { AuthCard } from '../auth/auth-card';
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AuthCard, DurationPipe, FormsModule, PermillePipe],
+  imports: [AuthCard, DecimalField, DurationPipe, FormsModule, PermillePipe],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })
@@ -69,6 +70,16 @@ export class ProfilePage {
       : PROFILE_LIMITS.weightKg,
   );
 
+  /** Unit word for the weight field's accessible name — "kilograms" or "pounds". */
+  protected readonly weightUnitWord = computed(() =>
+    this.imperial() ? this.msg().profile.pounds : this.msg().profile.kilograms,
+  );
+
+  protected readonly weightHint = computed(() => {
+    const { min, max } = this.weightRange();
+    return this.msg().profile.weightHint(`${min}`, `${max}`);
+  });
+
   protected readonly syncLabel = computed(() => {
     const messages = this.msg().profile;
     switch (this.sync.state()) {
@@ -85,7 +96,9 @@ export class ProfilePage {
 
   protected setWeight(value: number): void {
     if (!Number.isFinite(value)) return;
-    void this.profiles.patch({ weightKg: this.imperial() ? lbToKg(value) : value });
+    const range = this.weightRange();
+    const clamped = Math.min(range.max, Math.max(range.min, Math.round(value)));
+    void this.profiles.patch({ weightKg: this.imperial() ? lbToKg(clamped) : clamped });
   }
 
   protected patch(changes: Parameters<ProfileStore['patch']>[0]): void {

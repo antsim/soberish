@@ -8,16 +8,14 @@
 
   <div class="field">
     <label for="weight">{{ msg().profile.weight(weightLabel()) }}</label>
-    <input
-      id="weight"
-      type="range"
-      class="slider"
-      [min]="weightRange().min"
-      [max]="weightRange().max"
-      step="1"
-      [ngModel]="weightShown()"
-      (ngModelChange)="setWeight(+$event)"
+    <app-decimal-field
+      fieldId="weight"
+      [ariaLabel]="msg().profile.weightAria(weightUnitWord())"
+      [value]="weightShown()"
+      [maximumFractionDigits]="0"
+      (valueChange)="setWeight($event)"
     />
+    <p class="hint">{{ weightHint() }}</p>
   </div>
 
   <div class="field">

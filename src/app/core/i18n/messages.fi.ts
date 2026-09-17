@@ -177,6 +177,10 @@ export const fi: Messages = {
 
     bodySection: 'Keho',
     weight: (value: string) => `Paino — ${value}`,
+    weightAria: (unit: string) => `Paino, ${unit}`,
+    weightHint: (min: string, max: string) => `Väliltä ${min}–${max}.`,
+    kilograms: 'kilogrammaa',
+    pounds: 'paunaa',
     bodyComposition: 'Kehonkoostumus',
     female: 'Nainen',
     male: 'Mies',

@@ -84,7 +84,27 @@ create policy "publish only your own status" on public.bac_status
 grant select, insert, update, delete on table public.bac_status to authenticated;
 
 -- Live leaderboard updates (the app also polls, so this is an optimisation).
-alter publication supabase_realtime add table public.bac_status;
+--
+-- This is the one statement here with no `if not exists` spelling: run a second
+-- time it fails with "relation is already member of publication", and because
+-- the SQL editor submits the whole file as a single transaction, that failure
+-- rolls back everything above it too. So the guard is not tidiness — without it
+-- the file is a one-shot, and re-running it to pick up a new column silently
+-- leaves the database exactly as it was.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+    and not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'bac_status'
+    )
+  then
+    alter publication supabase_realtime add table public.bac_status;
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Housekeeping
@@ -94,6 +114,14 @@ alter publication supabase_realtime add table public.bac_status;
 -- column and backfills every existing row with 0 — "drunk in one go", which is
 -- how the app read them anyway. Running this whole file again is safe, or apply
 -- just that one statement.
+
+-- Hit "relation bac_status is already member of publication supabase_realtime"
+-- on an older copy of this file? That was the publication line below, which had
+-- no guard; the error aborted the transaction, so nothing that run was meant to
+-- add actually landed. This version is safe to re-run — do that, then check the
+-- column arrived:
+--   select column_name from information_schema.columns
+--   where table_name = 'drinks' and column_name = 'duration_minutes';
 
 -- Already ran an earlier version of this file and hit "permission denied for
 -- table bac_status"? The tables and policies are fine — only the grants above

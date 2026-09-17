@@ -65,23 +65,56 @@ function bacPerGram(profile: Profile): number {
  *
  * First-order absorption: `absorptionMinutes` is the time to ~95% absorbed,
  * which puts the time constant at a third of it.
+ *
+ * A drink with a `durationMs` is not one dose but a steady trickle over that
+ * window, so the answer is that trickle convolved with the same first-order
+ * kernel. Both branches below are the closed form of that integral — they meet
+ * exactly at `elapsedMs === durationMs`, and as the duration goes to zero the
+ * second collapses back to the plain exponential, which is why a drink taken
+ * in one go needs no special case anywhere else.
  */
-function absorbedFraction(elapsedMs: number, absorptionMinutes: number): number {
+function absorbedFraction(
+  elapsedMs: number,
+  absorptionMinutes: number,
+  durationMs: number,
+): number {
   if (elapsedMs <= 0) return 0;
   const tau = Math.max(1, absorptionMinutes / 3) * MINUTE;
-  return 1 - Math.exp(-elapsedMs / tau);
+  if (durationMs <= 0) return 1 - Math.exp(-elapsedMs / tau);
+
+  if (elapsedMs < durationMs) {
+    return (elapsedMs - tau * (1 - Math.exp(-elapsedMs / tau))) / durationMs;
+  }
+  const since = elapsedMs - durationMs;
+  return 1 - (tau / durationMs) * (Math.exp(-since / tau) - Math.exp(-elapsedMs / tau));
 }
 
 interface Dose {
   readonly at: number;
   readonly grams: number;
+  /** How long the drink took; zero for one swallow. */
+  readonly spread: number;
 }
 
 function toDoses(drinks: readonly Drink[]): Dose[] {
   return drinks
     .filter((d) => !d.deleted && d.abv > 0 && d.volumeMl > 0)
-    .map((d) => ({ at: d.consumedAt, grams: alcoholGrams(d.volumeMl, d.abv) }))
+    .map((d) => ({
+      at: d.consumedAt,
+      grams: alcoholGrams(d.volumeMl, d.abv),
+      spread: Math.max(0, d.durationMinutes) * MINUTE,
+    }))
     .sort((a, b) => a.at - b.at);
+}
+
+/**
+ * The moment the last glass is empty.
+ *
+ * Not simply the last dose: a pint started at eight and nursed for an hour
+ * outlasts a shot downed at half past.
+ */
+function lastDoseEnd(doses: readonly Dose[]): number {
+  return doses.reduce((latest, dose) => Math.max(latest, dose.at + dose.spread), -Infinity);
 }
 
 /** Total alcohol absorbed into the blood by time `t`, in grams. */
@@ -89,7 +122,7 @@ function absorbedGrams(doses: readonly Dose[], t: number, absorptionMinutes: num
   let total = 0;
   for (const dose of doses) {
     if (dose.at > t) break;
-    total += dose.grams * absorbedFraction(t - dose.at, absorptionMinutes);
+    total += dose.grams * absorbedFraction(t - dose.at, absorptionMinutes, dose.spread);
   }
   return total;
 }
@@ -148,7 +181,7 @@ export function soberAt(drinks: readonly Drink[], profile: Profile): number | nu
   const doses = toDoses(drinks);
   if (!doses.length) return null;
 
-  const last = doses[doses.length - 1].at;
+  const last = lastDoseEnd(doses);
   const deadline = last + MAX_PROJECTION_MS;
   const perGram = bacPerGram(profile);
   const perStep = (profile.eliminationRate * STEP_MS) / HOUR;
@@ -285,12 +318,19 @@ export function peakFrom(drinks: readonly Drink[], profile: Profile, from: numbe
   const doses = toDoses(drinks);
   if (!doses.length) return 0;
 
-  const settled = doses[doses.length - 1].at + ABSORPTION_TAIL * profile.absorptionMinutes * MINUTE;
+  const settled = lastDoseEnd(doses) + ABSORPTION_TAIL * profile.absorptionMinutes * MINUTE;
   let peak = 0;
   walk(doses, profile, Math.max(from, settled), (t, bac) => {
     if (t >= from && bac > peak) peak = bac;
   });
   return round(peak);
+}
+
+/** A serving being considered but not yet logged. */
+export interface PlannedDrink {
+  readonly volumeMl: number;
+  readonly abv: number;
+  readonly durationMinutes: number;
 }
 
 /** What the planner works out about one prospective drink. */
@@ -322,7 +362,7 @@ export interface DrinkPlan {
 export function planDrink(
   drinks: readonly Drink[],
   profile: Profile,
-  planned: { readonly volumeMl: number; readonly abv: number },
+  planned: PlannedDrink,
   limit: number,
   now: number,
 ): DrinkPlan {
@@ -351,12 +391,13 @@ export function planDrink(
 }
 
 /** Dresses a prospective serving up as a `Drink` so the engine can simulate it. */
-function asDrink(planned: { readonly volumeMl: number; readonly abv: number }, at: number): Drink {
+function asDrink(planned: PlannedDrink, at: number): Drink {
   return {
     id: 'planned',
     consumedAt: at,
     volumeMl: planned.volumeMl,
     abv: planned.abv,
+    durationMinutes: planned.durationMinutes,
     label: '',
     icon: '',
     createdAt: at,
@@ -364,4 +405,30 @@ function asDrink(planned: { readonly volumeMl: number; readonly abv: number }, a
     deleted: false,
     synced: false,
   };
+}
+
+/**
+ * The shortest of `options` that brings the drink under the limit right now,
+ * or `null` when none of them does.
+ *
+ * Taking longer over the same drink genuinely lowers the peak — the alcohol
+ * arrives slower than it is burned off — so when a limit says "wait", drinking
+ * it slowly is the other way to say yes. Candidates are the durations the UI
+ * actually offers rather than a search, so the answer is always something the
+ * user can tap.
+ */
+export function stretchToFit(
+  drinks: readonly Drink[],
+  profile: Profile,
+  planned: PlannedDrink,
+  limit: number,
+  now: number,
+  options: readonly number[],
+): number | null {
+  for (const durationMinutes of options) {
+    if (durationMinutes <= planned.durationMinutes) continue;
+    const stretched = asDrink({ ...planned, durationMinutes }, now);
+    if (peakFrom([...drinks, stretched], profile, now) <= limit) return durationMinutes;
+  }
+  return null;
 }

@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { CappedStatus, STATUS_CEILING, alcoholGrams, planDrink } from '../../../core/bac/bac';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  CappedStatus,
+  STATUS_CEILING,
+  alcoholGrams,
+  planDrink,
+  stretchToFit,
+} from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Profile } from '../../../core/models/profile.model';
 import { Clock } from '../../../core/platform/clock';
 import { DrinkLimitStore, MAX_DRINK_LIMIT } from '../../../core/state/drink-limit-store';
+import { DURATION_PRESETS } from '../../../core/models/drink.model';
 import { DrinksStore } from '../../../core/state/drinks-store';
 import { DecimalField } from '../../../shared/ui/decimal-field';
 import {
@@ -78,6 +85,11 @@ type Tone = 'ok' | 'wait' | 'over';
         <span class="verdict__icon" aria-hidden="true">{{ result.icon }}</span>
         <span>{{ result.text }}</span>
       </p>
+      @if (stretch(); as minutes) {
+        <button type="button" class="stretch" (click)="stretched.emit(minutes)">
+          {{ msg().planner.stretch(msg().editor.minutes(minutes)) }}
+        </button>
+      }
       <p class="hint">{{ msg().planner.fromNow }}</p>
     }
   `,
@@ -87,6 +99,10 @@ export class DrinkPlanner {
   readonly profile = input.required<Profile>();
   readonly volumeMl = input.required<number>();
   readonly abv = input.required<number>();
+  readonly durationMinutes = input.required<number>();
+
+  /** A longer sipping window the user accepted, in minutes. */
+  readonly stretched = output<number>();
 
   readonly #drinks = inject(DrinksStore);
   readonly #clock = inject(Clock);
@@ -101,6 +117,12 @@ export class DrinkPlanner {
   /** The active ceiling in the unit the chips and the field speak. */
   protected readonly limitPermille = computed(() => toPermille(this.limit() ?? 0));
 
+  protected readonly planned = computed(() => ({
+    volumeMl: this.volumeMl(),
+    abv: this.abv(),
+    durationMinutes: this.durationMinutes(),
+  }));
+
   protected readonly verdict = computed<{ tone: Tone; icon: string; text: string } | null>(() => {
     const limit = this.limit();
     if (limit === null) return null;
@@ -111,13 +133,7 @@ export class DrinkPlanner {
     }
 
     const now = this.#clock.now();
-    const plan = planDrink(
-      this.#drinks.drinks(),
-      this.profile(),
-      { volumeMl: this.volumeMl(), abv: this.abv() },
-      limit,
-      now,
-    );
+    const plan = planDrink(this.#drinks.drinks(), this.profile(), this.planned(), limit, now);
     const peak = formatPermille(plan.peak);
 
     if (!plan.fits) {
@@ -139,6 +155,26 @@ export class DrinkPlanner {
         peak,
       ),
     };
+  });
+
+  /**
+   * A longer sipping window that would let the drink pass right now.
+   *
+   * Only offered when the verdict is anything other than "go ahead" — telling
+   * someone to slow down a drink they can already have is noise.
+   */
+  protected readonly stretch = computed(() => {
+    const limit = this.limit();
+    const verdict = this.verdict();
+    if (limit === null || !verdict || verdict.tone === 'ok') return null;
+    return stretchToFit(
+      this.#drinks.drinks(),
+      this.profile(),
+      this.planned(),
+      limit,
+      this.#clock.now(),
+      DURATION_PRESETS,
+    );
   });
 
   protected permille(bacPercent: number): string {

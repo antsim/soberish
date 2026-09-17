@@ -8,6 +8,7 @@ export interface DrinkRow {
   consumed_at: string;
   volume_ml: number;
   abv: number;
+  duration_minutes: number | null;
   label: string;
   icon: string;
   created_at: string;
@@ -34,6 +35,7 @@ export function toDrinkRow(drink: Drink, userId: string): DrinkRow {
     consumed_at: new Date(drink.consumedAt).toISOString(),
     volume_ml: drink.volumeMl,
     abv: drink.abv,
+    duration_minutes: drink.durationMinutes,
     label: drink.label,
     icon: drink.icon,
     created_at: new Date(drink.createdAt).toISOString(),
@@ -48,6 +50,9 @@ export function fromDrinkRow(row: DrinkRow): Drink {
     consumedAt: Date.parse(row.consumed_at),
     volumeMl: Number(row.volume_ml),
     abv: Number(row.abv),
+    // Null for rows written before the column existed, and for a project whose
+    // schema.sql has not been re-run yet.
+    durationMinutes: Number(row.duration_minutes ?? 0),
     label: row.label,
     icon: row.icon,
     createdAt: Date.parse(row.created_at),

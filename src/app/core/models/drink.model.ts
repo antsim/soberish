@@ -7,6 +7,11 @@ export interface Drink {
   readonly volumeMl: number;
   /** Alcohol by volume, as a percentage (5 === 5%). */
   readonly abv: number;
+  /**
+   * Minutes spent drinking it, counted from `consumedAt`. Zero means it went
+   * down in one go, which is how every drink logged before this existed reads.
+   */
+  readonly durationMinutes: number;
   /** Free-text label, usually the preset name ("Beer", "Wine"…). */
   readonly label: string;
   /** Emoji shown in the timeline. */
@@ -20,7 +25,10 @@ export interface Drink {
 }
 
 /** The user-supplied part of a drink; everything else is derived. */
-export type DrinkDraft = Pick<Drink, 'consumedAt' | 'volumeMl' | 'abv' | 'label' | 'icon'>;
+export type DrinkDraft = Pick<
+  Drink,
+  'consumedAt' | 'volumeMl' | 'abv' | 'label' | 'icon' | 'durationMinutes'
+>;
 
 /** A one-tap shortcut in the "Log a drink" row. */
 export interface DrinkPreset {
@@ -29,6 +37,7 @@ export interface DrinkPreset {
   readonly icon: string;
   readonly volumeMl: number;
   readonly abv: number;
+  readonly durationMinutes: number;
 }
 
 /**
@@ -38,3 +47,11 @@ export interface DrinkPreset {
 export function presetKey(drink: Pick<Drink, 'label' | 'icon' | 'volumeMl' | 'abv'>): string {
   return [drink.label.trim().toLowerCase(), drink.icon, drink.volumeMl, drink.abv].join('|');
 }
+
+/** Sipping windows offered as chips, in minutes. Zero is "in one go". */
+export const DURATION_PRESETS = [0, 15, 30, 45, 60, 120];
+
+/** Minutes a custom drink is assumed to take when nothing says otherwise. */
+export const DEFAULT_DRINK_DURATION = 30;
+/** Nobody nurses one drink for half a day; this bounds the stored value. */
+export const MAX_DRINK_DURATION = 240;

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { DrinkDraft, DrinkPreset, presetKey } from '../models/drink.model';
+import { DEFAULT_DRINK_DURATION, DrinkDraft, DrinkPreset, presetKey } from '../models/drink.model';
 import { META_KEYS, SoberishDb } from '../storage/soberish-db';
 
 /** How many custom drinks the quick-add row remembers. */
@@ -43,7 +43,9 @@ function toPreset(draft: DrinkDraft): DrinkPreset {
     volumeMl: Math.round(draft.volumeMl),
     abv: draft.abv,
   };
-  return { ...preset, id: presetKey(preset) };
+  // Duration is deliberately not part of the key: the same pint taken slower is
+  // the same shortcut, updated, not a second one cluttering the row.
+  return { ...preset, id: presetKey(preset), durationMinutes: draft.durationMinutes };
 }
 
 /** Stored rows survive app updates, so nothing about their shape is assumed. */
@@ -52,10 +54,21 @@ function sanitize(stored: unknown): readonly DrinkPreset[] {
   const presets: DrinkPreset[] = [];
   for (const row of stored) {
     if (!row || typeof row !== 'object') continue;
-    const { id, label, icon, volumeMl, abv } = row as Partial<DrinkPreset>;
+    const { id, label, icon, volumeMl, abv, durationMinutes } = row as Partial<DrinkPreset>;
     if (typeof id !== 'string' || typeof label !== 'string' || typeof icon !== 'string') continue;
     if (!Number.isFinite(volumeMl) || !Number.isFinite(abv)) continue;
-    presets.push({ id, label, icon, volumeMl: volumeMl as number, abv: abv as number });
+    presets.push({
+      id,
+      label,
+      icon,
+      volumeMl: volumeMl as number,
+      abv: abv as number,
+      // A shortcut is a template for a drink not yet had, not a record of one,
+      // so an older entry takes the current default rather than "in one go".
+      durationMinutes: Number.isFinite(durationMinutes)
+        ? (durationMinutes as number)
+        : DEFAULT_DRINK_DURATION,
+    });
   }
   return presets.slice(0, RECENT_DRINK_LIMIT);
 }

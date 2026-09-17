@@ -20,6 +20,8 @@ create table if not exists public.drinks (
   consumed_at timestamptz not null,
   volume_ml   numeric(8, 2) not null check (volume_ml > 0),
   abv         numeric(5, 2) not null check (abv >= 0 and abv <= 96),
+  -- Minutes spent drinking it; 0 is one swallow.
+  duration_minutes numeric(6, 2) not null default 0 check (duration_minutes >= 0),
   label       text not null default 'Drink',
   icon        text not null default '🍺',
   created_at  timestamptz not null default now(),
@@ -27,6 +29,12 @@ create table if not exists public.drinks (
   -- Soft delete, so a deletion made offline still replicates.
   deleted     boolean not null default false
 );
+
+-- `create table if not exists` above is a no-op on a project that already has
+-- the table, so a column added later needs saying twice.
+alter table public.drinks
+  add column if not exists duration_minutes numeric(6, 2) not null default 0
+  check (duration_minutes >= 0);
 
 create index if not exists drinks_user_updated_idx on public.drinks (user_id, updated_at);
 
@@ -81,6 +89,11 @@ alter publication supabase_realtime add table public.bac_status;
 -- ---------------------------------------------------------------------------
 -- Housekeeping
 -- ---------------------------------------------------------------------------
+
+-- Upgrading from a version without drink durations? The alter above adds the
+-- column and backfills every existing row with 0 — "drunk in one go", which is
+-- how the app read them anyway. Running this whole file again is safe, or apply
+-- just that one statement.
 
 -- Already ran an earlier version of this file and hit "permission denied for
 -- table bac_status"? The tables and policies are fine — only the grants above

@@ -11,6 +11,7 @@ import {
   buildTimeline,
   peakFrom,
   planDrink,
+  stretchToFit,
   soberAt,
   standardDrinks,
   statusFor,
@@ -26,12 +27,13 @@ const profile: Profile = {
   absorptionMinutes: 45,
 };
 
-function drink(offsetMs: number, volumeMl: number, abv: number): Drink {
+function drink(offsetMs: number, volumeMl: number, abv: number, durationMinutes = 0): Drink {
   return {
     id: `d${offsetMs}-${volumeMl}`,
     consumedAt: T0 + offsetMs,
     volumeMl,
     abv,
+    durationMinutes,
     label: 'Test',
     icon: '🍺',
     createdAt: T0 + offsetMs,
@@ -212,7 +214,7 @@ describe('peakFrom', () => {
 });
 
 describe('planDrink', () => {
-  const pint = { volumeMl: 500, abv: 5 };
+  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0 };
 
   it('waves through a drink that stays under the limit', () => {
     const plan = planDrink([], profile, pint, STATUS_CEILING.merry, T0);
@@ -252,7 +254,13 @@ describe('planDrink', () => {
   });
 
   it('gives up when the drink alone clears the limit', () => {
-    const plan = planDrink([], profile, { volumeMl: 500, abv: 40 }, STATUS_CEILING.buzzed, T0);
+    const plan = planDrink(
+      [],
+      profile,
+      { volumeMl: 500, abv: 40, durationMinutes: 0 },
+      STATUS_CEILING.buzzed,
+      T0,
+    );
     expect(plan.fits).toBe(false);
     expect(plan.currentPeak).toBe(0);
     expect(plan.peak).toBeGreaterThan(STATUS_CEILING.buzzed);
@@ -271,5 +279,113 @@ describe('planDrink', () => {
     const plan = planDrink(drinks, profile, pint, STATUS_CEILING.buzzed, now);
     const sober = soberAt(drinks, profile)!;
     expect(plan.at).toBeLessThanOrEqual(sober);
+  });
+});
+
+describe('drink duration', () => {
+  const instant = [drink(0, 500, 5)];
+  const sipped = [drink(0, 500, 5, 30)];
+
+  it('spreads the same alcohol to a lower, later peak', () => {
+    expect(peakFrom(sipped, profile, T0)).toBeLessThan(peakFrom(instant, profile, T0));
+
+    const fast = buildTimeline(instant, profile, T0, { samples: 400 });
+    const slow = buildTimeline(sipped, profile, T0, { samples: 400 });
+    expect(slow.peakAt).toBeGreaterThan(fast.peakAt);
+  });
+
+  it('is behind the instant curve while the glass is still full', () => {
+    // Ten minutes in, two thirds of a sipped pint is still in the glass.
+    expect(bacAt(sipped, profile, T0 + 10 * MINUTE)).toBeLessThan(
+      bacAt(instant, profile, T0 + 10 * MINUTE),
+    );
+  });
+
+  it('has no kink where the last sip lands', () => {
+    // The two halves of the closed form have to meet exactly at t = duration,
+    // or the curve steps and the chart shows a notch.
+    const around = [-2, -1, 0, 1, 2].map((offset) =>
+      bacAt(sipped, profile, T0 + (30 + offset) * MINUTE),
+    );
+    const steps = around.slice(1).map((value, index) => value - around[index]);
+    for (const step of steps) expect(Math.abs(step)).toBeLessThan(0.0015);
+  });
+
+  it('rises the whole time the drink is being drunk', () => {
+    let previous = 0;
+    for (let minute = 1; minute <= 30; minute++) {
+      const bac = bacAt(sipped, profile, T0 + minute * MINUTE);
+      expect(bac).toBeGreaterThanOrEqual(previous);
+      previous = bac;
+    }
+  });
+
+  it('never sobers up mid-sip', () => {
+    const marathon = [drink(0, 500, 5, 180)];
+    expect(soberAt(marathon, profile)!).toBeGreaterThan(T0 + 180 * MINUTE);
+  });
+
+  it('barely moves when you sober up — the total decides that, not the pace', () => {
+    // Both curves absorb the same alcohol and burn it at the same flat rate, so
+    // the finish line hardly shifts. The few minutes it does slip are the ones
+    // at the very start, where there is not yet enough in the blood to burn.
+    const delay = soberAt(sipped, profile)! - soberAt(instant, profile)!;
+    expect(delay).toBeGreaterThanOrEqual(0);
+    expect(delay).toBeLessThan(10 * MINUTE);
+  });
+
+  it('leaves a drink taken in one go exactly as it was', () => {
+    expect(peakFrom([drink(0, 500, 5, 0)], profile, T0)).toBe(peakFrom(instant, profile, T0));
+    expect(soberAt([drink(0, 500, 5, 0)], profile)).toBe(soberAt(instant, profile));
+  });
+});
+
+describe('stretchToFit', () => {
+  const options = [0, 15, 30, 45, 60, 120];
+  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0 };
+
+  it('finds a window that really does bring the peak under the limit', () => {
+    const minutes = stretchToFit([], profile, pint, 0.025, T0, options);
+    expect(minutes).not.toBeNull();
+    expect(peakFrom([drink(0, 500, 5, minutes!)], profile, T0)).toBeLessThanOrEqual(0.025);
+  });
+
+  it('returns the shortest window that works', () => {
+    const minutes = stretchToFit([], profile, pint, 0.025, T0, options)!;
+    const shorter = options.filter((option) => option > 0 && option < minutes);
+    for (const option of shorter) {
+      expect(peakFrom([drink(0, 500, 5, option)], profile, T0)).toBeGreaterThan(0.025);
+    }
+  });
+
+  it('gives up when no offered window is slow enough', () => {
+    expect(stretchToFit([], profile, pint, 0.001, T0, options)).toBeNull();
+  });
+
+  it('never suggests a window at or below the one already chosen', () => {
+    const slow = { ...pint, durationMinutes: 120 };
+    expect(stretchToFit([], profile, slow, 0.025, T0, options)).toBeNull();
+  });
+});
+
+describe('planDrink with a duration', () => {
+  it('asks for less of a wait than the same drink taken in one go', () => {
+    const drinks = [drink(0, 500, 5), drink(10 * MINUTE, 500, 5)];
+    const now = T0 + 30 * MINUTE;
+    const fast = planDrink(
+      drinks,
+      profile,
+      { volumeMl: 500, abv: 5, durationMinutes: 0 },
+      STATUS_CEILING.merry,
+      now,
+    );
+    const slow = planDrink(
+      drinks,
+      profile,
+      { volumeMl: 500, abv: 5, durationMinutes: 60 },
+      STATUS_CEILING.merry,
+      now,
+    );
+    expect(slow.waitMs).toBeLessThan(fast.waitMs);
   });
 });

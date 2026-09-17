@@ -129,6 +129,7 @@ export class TrackerPage implements OnInit {
       icon: preset.icon,
       volumeMl: preset.volumeMl,
       abv: preset.abv,
+      durationMinutes: preset.durationMinutes,
       consumedAt: Date.now(),
     });
     this.clock.sync();
@@ -187,6 +188,7 @@ export class TrackerPage implements OnInit {
       icon: last.icon,
       volumeMl: last.volumeMl,
       abv: last.abv,
+      durationMinutes: last.durationMinutes,
       consumedAt: Date.now(),
     };
   }

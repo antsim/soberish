@@ -63,3 +63,20 @@
   font-size: 0.74rem;
   color: var(--text-faint);
 }
+
+.stretch {
+  /* Dashed, because it is the other way to say yes rather than the verdict. */
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--amber-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 140ms ease;
+
+  &:active {
+    background: var(--amber-dim);
+  }
+}

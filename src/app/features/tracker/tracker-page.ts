@@ -23,6 +23,7 @@ import { BacChart } from './components/bac-chart';
 import { BacReadout } from './components/bac-readout';
 import { DrinkEditor } from './components/drink-editor';
 import { DrinkList } from './components/drink-list';
+import { PaceNote } from './components/pace-note';
 import { QuickAdd } from './components/quick-add';
 import { StomachPicker } from './components/stomach-picker';
 
@@ -41,6 +42,7 @@ type EditorState =
     DrinkEditor,
     DrinkList,
     DurationPipe,
+    PaceNote,
     QuickAdd,
     RouterLink,
     StomachPicker,

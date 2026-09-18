@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HOUR, MINUTE, buildTimeline, soberAt, standardDrinks, statusFor } from '../bac/bac';
+import { PaceProjection, projectAtPace } from '../bac/pace';
 import { Messages } from '../i18n/messages.en';
 import { withStomach } from '../models/profile.model';
 import { Clock } from '../platform/clock';
@@ -14,6 +15,7 @@ import {
   spanOf,
   zoomWindow,
 } from './chart-viewport';
+import { DrinkLimitStore } from './drink-limit-store';
 import { DrinksStore } from './drinks-store';
 import { ProfileStore } from './profile-store';
 import { StomachStore } from './stomach-store';
@@ -39,6 +41,7 @@ export class SessionStore {
   readonly #profiles = inject(ProfileStore);
   readonly #clock = inject(Clock);
   readonly #stomach = inject(StomachStore);
+  readonly #limits = inject(DrinkLimitStore);
 
   readonly ready = computed(() => this.#drinks.loaded() && this.#profiles.loaded());
 
@@ -105,6 +108,19 @@ export class SessionStore {
     if (deadline === null || this.bac() > 0 || this.rising()) return null;
     return Math.max(0, deadline - this.#clock.now());
   });
+
+  /**
+   * Where tonight ends up if the last hour and a half repeats itself.
+   *
+   * The counterpart to `soberAt`, which assumes you stop now. `null` far more
+   * often than not — too few drinks to read a pace from, or a trajectory that
+   * goes nowhere worth mentioning.
+   */
+  readonly pace = computed<PaceProjection | null>(() =>
+    projectAtPace(this.#drinks.drinks(), this.curveProfile(), this.#clock.now(), {
+      limit: this.#limits.limit(),
+    }),
+  );
 
   readonly startedAt = computed(() => this.#drinks.drinks().at(0)?.consumedAt ?? null);
 

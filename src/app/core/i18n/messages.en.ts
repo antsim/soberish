@@ -81,6 +81,27 @@ export const en = {
       "Estimates only. Even with food accounted for, Widmark maths cannot know your medication, hydration, or your liver's mood — never use Soberish to decide whether to drive.",
   },
 
+  /**
+   * Where the night is heading if nothing changes.
+   *
+   * The numbers are straight; the framing is not. This is an app with a
+   * leaderboard called "Top ‰" — a line that nags would be ignored by exactly
+   * the people reading it.
+   */
+  pace: {
+    evidence: (drinks: number, minutes: number) => `${drinks} drinks in the last ${minutes} min`,
+    buzzed: (permille: string, clock: string) =>
+      `Keep this up and you're at ${permille}\u00a0‰ by ${clock}. Barely counts.`,
+    merry: (permille: string, clock: string) =>
+      `Stay on this pace and it's ${permille}\u00a0‰ by ${clock}. Prime form.`,
+    drunk: (permille: string, clock: string) =>
+      `Carry on like this and it's ${permille}\u00a0‰ by ${clock}. You'll feel that one.`,
+    wasted: (permille: string, clock: string) =>
+      `At this rate, ${permille}\u00a0‰ by ${clock}. Someone hide your phone.`,
+    crossing: (permille: string, clock: string) =>
+      `On this trajectory you sail past ${permille}\u00a0‰ around ${clock}.`,
+  },
+
   stomach: {
     title: 'Eaten tonight',
     empty: 'Nothing',

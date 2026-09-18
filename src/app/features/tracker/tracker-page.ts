@@ -24,6 +24,7 @@ import { BacReadout } from './components/bac-readout';
 import { DrinkEditor } from './components/drink-editor';
 import { DrinkList } from './components/drink-list';
 import { QuickAdd } from './components/quick-add';
+import { StomachPicker } from './components/stomach-picker';
 
 type EditorState =
   | { readonly mode: 'closed' }
@@ -34,7 +35,16 @@ type EditorState =
 @Component({
   selector: 'app-tracker-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BacChart, BacReadout, DrinkEditor, DrinkList, DurationPipe, QuickAdd, RouterLink],
+  imports: [
+    BacChart,
+    BacReadout,
+    DrinkEditor,
+    DrinkList,
+    DurationPipe,
+    QuickAdd,
+    RouterLink,
+    StomachPicker,
+  ],
   templateUrl: './tracker-page.html',
   styleUrl: './tracker-page.scss',
 })

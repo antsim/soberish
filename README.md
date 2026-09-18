@@ -25,6 +25,9 @@ fall, and see who else is still above 0.00% on the live leaderboard.
   the shared leaderboard. Leave it unconfigured and the same build runs fully local.
 - **Live Top ‰ board.** Published rows carry a snapshot plus a projected sober time, so every
   client ticks the numbers down against its own clock between refreshes.
+- **Tells the curve what you have eaten.** Food is the biggest thing a body profile cannot see, so
+  "Eaten tonight" — nothing, a snack, or a meal — scales how fast each drink is absorbed. It is a
+  property of the night, not of you: it resets when the session does.
 - **Edit and delete anything.** Every logged drink stays editable, with undo on deletion.
 - **A session that cleans up after itself.** Once you have been back at 0.00 ‰ for 24 hours the
   history is wiped. Keep drinking before then and the whole night — drinks and graph — stays.
@@ -50,6 +53,18 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
 2. **Absorption.** Each drink enters the blood as a first-order curve —
    `1 − e^(−3t/T)`, where `T` is the profile's _absorption minutes_ (time to ~95%).
    This is why a fresh drink reads 0.00 ‰ and the app says "kicking in" rather than "sober".
+
+   `T` is not a fixed number. The profile slider sets your **baseline on a normal stomach**, and
+   tonight's **"Eaten tonight"** choice scales it: `×0.6` on an empty stomach, `×1` after a snack,
+   `×2` after a full meal, clamped to 15–180 minutes. A 45-minute baseline therefore runs 27, 45
+   or 90 minutes depending on the night. Scaling rather than replacing means anyone who has
+   calibrated that slider keeps their calibration, and `snack` being exactly `×1` means a profile
+   that never touches the setting keeps the curve it always had.
+
+   Food does not change the _dose_ — the same grams of ethanol still reach the blood. It changes
+   the _shape_: a full stomach spreads the same alcohol over a longer rise, so the peak lands later
+   and lower. Thirty minutes after one beer, the same drinker reads roughly 0.09 ‰ on an empty
+   stomach and 0.04 ‰ after dinner.
 3. **Distribution.** Widmark: `BAC% = grams / (weight_g × r) × 100`, with
    `r` = 0.68 (male), 0.55 (female), or 0.615 (average).
 4. **Elimination.** A flat %/hour, integrated forward one minute at a time so it stops at exactly

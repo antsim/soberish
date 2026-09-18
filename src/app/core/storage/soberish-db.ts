@@ -12,6 +12,7 @@ export const META_KEYS = {
   sessionClearedAt: 'sessionClearedAt',
   recentDrinks: 'recentDrinks',
   drinkLimit: 'drinkLimit',
+  stomach: 'stomach',
 } as const;
 
 /**

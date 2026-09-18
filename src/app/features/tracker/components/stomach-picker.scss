@@ -1,0 +1,60 @@
+:host {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.effect {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--amber-soft);
+}
+
+.segmented {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.3);
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0.5rem 0.3rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: var(--text-muted);
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+
+    &.active {
+      background: var(--surface-strong);
+      color: var(--text);
+    }
+  }
+}
+
+.icon {
+  font-size: 0.95rem;
+}
+
+.hint {
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+}

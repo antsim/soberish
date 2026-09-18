@@ -60,6 +60,10 @@
   </a>
 }
 
+<section class="card block">
+  <app-stomach-picker />
+</section>
+
 <section class="add">
   <h2 class="section-title">{{ msg().tracker.logADrink }}</h2>
   <app-quick-add
@@ -94,7 +98,7 @@
   <app-drink-editor
     [drink]="editing()"
     [seed]="seed()"
-    [profile]="profiles.profile()"
+    [profile]="session.curveProfile()"
     (saved)="save($event)"
     (removed)="removeById($event)"
     (dismissed)="close()"

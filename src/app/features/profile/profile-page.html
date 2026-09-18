@@ -98,7 +98,7 @@
       [ngModel]="profiles.profile().absorptionMinutes"
       (ngModelChange)="patch({ absorptionMinutes: +$event })"
     />
-    <p class="hint">{{ msg().profile.absorptionHint }}</p>
+    <p class="hint">{{ msg().profile.absorptionHint(tonightAbsorption()) }}</p>
   </div>
 </section>
 

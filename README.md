@@ -25,6 +25,10 @@ fall, and see who else is still above 0.00% on the live leaderboard.
   the shared leaderboard. Leave it unconfigured and the same build runs fully local.
 - **Live Top ‰ board.** Published rows carry a snapshot plus a projected sober time, so every
   client ticks the numbers down against its own clock between refreshes.
+- **Tells you where the night is heading.** Once there is a pace to read — two drinks or more in
+  the last 90 minutes — the hero shows where you land in two hours if you keep it up, which is the
+  opposite question to "when am I sober". It is a projection, so it is drawn dashed and tinted by
+  the band it predicts, and it says nothing at all when the trajectory goes nowhere.
 - **Tells the curve what you have eaten.** Food is the biggest thing a body profile cannot see, so
   "Eaten tonight" — nothing, a snack, or a meal — scales how fast each drink is absorbed. It is a
   property of the night, not of you: it resets when the session does.
@@ -72,6 +76,19 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
 
 The simulation runs forward from the first drink and always emits a fixed number of samples, which
 is what lets the chart interpolate between two curves index-for-index.
+
+### Pacing
+
+`src/app/core/bac/pace.ts` answers "what if you carry on?", which the rest of the engine cannot:
+every other projection assumes you stop now.
+
+It reads a rate from a trailing 90-minute window, then synthesises the drinks you have not had yet
+— spaced at that rate, each one your own recent average — and runs the *real* drinks plus the
+imagined ones back through `buildTimeline`. Absorption, sipping windows and tonight's stomach state
+therefore apply to the imagined half of the night exactly as they do to the real half.
+
+The measurement period has a 45-minute floor. Without it, two drinks ten minutes apart reads as
+twelve an hour and the app would open every night by predicting catastrophe.
 
 ### Reading the chart
 

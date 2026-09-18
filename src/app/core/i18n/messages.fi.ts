@@ -82,6 +82,21 @@ export const fi: Messages = {
       'Pelkkä arvio. Vaikka ruoka otetaan huomioon, Widmarkin kaava ei tiedä lääkkeistäsi, nesteytyksestä eikä maksasi mielialasta — älä ikinä päätä ajamisesta Soberishin perusteella.',
   },
 
+  pace: {
+    evidence: (drinks: number, minutes: number) =>
+      `${drinks} juomaa viimeisen ${minutes} min aikana`,
+    buzzed: (permille: string, clock: string) =>
+      `Tällä tahdilla ${permille}\u00a0‰ klo ${clock}. Tuskin huomaat.`,
+    merry: (permille: string, clock: string) =>
+      `Tätä tahtia ${permille}\u00a0‰ klo ${clock}. Hyvä fiilis tulossa.`,
+    drunk: (permille: string, clock: string) =>
+      `Jos jatkat näin, ${permille}\u00a0‰ klo ${clock}. Tämän kyllä tuntee.`,
+    wasted: (permille: string, clock: string) =>
+      `Tällä menolla ${permille}\u00a0‰ klo ${clock}. Joku piilottakoon puhelimesi.`,
+    crossing: (permille: string, clock: string) =>
+      `Tällä tahdilla ohitat ${permille}\u00a0‰ noin klo ${clock}.`,
+  },
+
   stomach: {
     title: 'Syöty tänään',
     empty: 'Ei mitään',

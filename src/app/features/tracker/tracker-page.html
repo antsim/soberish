@@ -9,6 +9,10 @@
     [now]="clock.now()"
   />
 
+  @if (session.pace(); as projection) {
+    <app-pace-note [projection]="projection" />
+  }
+
   <app-bac-chart
     [timeline]="session.chartTimeline()"
     [drinks]="drinks.drinks()"

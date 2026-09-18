@@ -1,6 +1,9 @@
 :host {
   display: grid;
   gap: 0.55rem;
+  /* Matches the settings cards on the profile screen — the app's inset for a
+     card that carries its own heading. */
+  padding: 1.1rem;
 }
 
 .head {

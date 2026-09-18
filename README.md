@@ -77,6 +77,16 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
 The simulation runs forward from the first drink and always emits a fixed number of samples, which
 is what lets the chart interpolate between two curves index-for-index.
 
+### Drinks are counted the Finnish way
+
+The **Units** stat, and "annosta" everywhere in Finnish, is the THL *annos*: **12 g of pure
+alcohol**, the 1.5 cl of absolute alcohol you get from 33 cl of 4.7% beer, 12 cl of wine, or 4 cl
+of spirits. Deliberately not the WHO's 10 g, the UK's 8 g unit, or the American 14 g — the people
+using this read their limits in annosta.
+
+`bac_status.drinks` is published on that scale too, so `STANDARD_DRINK_GRAMS` is not a knob to turn
+casually: it changes what every client has already put on the board.
+
 ### Pacing
 
 `src/app/core/bac/pace.ts` answers "what if you carry on?", which the rest of the engine cannot:

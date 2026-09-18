@@ -3,8 +3,18 @@ import { Profile, WIDMARK_R } from '../models/profile.model';
 
 /** Density of ethanol in g/ml. */
 export const ETHANOL_DENSITY = 0.789;
-/** Grams of pure alcohol in one "standard drink" (WHO / most of the EU). */
-export const STANDARD_DRINK_GRAMS = 10;
+/**
+ * Grams of pure alcohol in one drink, on the Finnish scale.
+ *
+ * THL puts an *annos* at 12 g — the same 1.5 cl of absolute alcohol you get
+ * from 33 cl of 4.7% beer, 12 cl of wine, or 4 cl of spirits. That is what
+ * "annosta" means to everyone reading this app, and it is not the WHO's 10 g,
+ * the UK's 8 g unit, or the US's 14 g.
+ *
+ * Changing this rewrites the `drinks` column every client publishes to the
+ * leaderboard, so it is not a knob to turn casually.
+ */
+export const STANDARD_DRINK_GRAMS = 12;
 
 export const MINUTE = 60_000;
 export const HOUR = 60 * MINUTE;

@@ -78,6 +78,9 @@ src/app/
   a percentage (g/100 ml); every screen shows promille (×10), converted only in
   `shared/util/format.ts`. Never change the engine's unit — it would break stored rows and the
   Widmark maths.
+- **A drink is 12 g of alcohol, the Finnish way.** `STANDARD_DRINK_GRAMS` is THL's *annos*, not the
+  WHO's 10 g or the UK's 8 g unit. It is also the scale `bac_status.drinks` is published on, so
+  changing it silently rewrites every row already on the leaderboard.
 - **One clock drives everything.** `platform/clock.ts` is a signal of `Date.now()`; BAC,
   countdowns, chart and leaderboard are `computed()` off it. Never give a component its own timer.
 - **IndexedDB is the source of truth.** Writes land locally first; Supabase is a replica. Deletes

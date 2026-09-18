@@ -3,8 +3,10 @@ import { Drink } from '../models/drink.model';
 import { DEFAULT_PROFILE, Profile } from '../models/profile.model';
 import { formatPermille, toPermille } from '../../shared/util/format';
 import {
+  ETHANOL_DENSITY,
   HOUR,
   MINUTE,
+  STANDARD_DRINK_GRAMS,
   STATUS_CEILING,
   alcoholGrams,
   bacAt,
@@ -52,8 +54,33 @@ describe('alcoholGrams', () => {
     expect(alcoholGrams(330, 0)).toBe(0);
   });
 
-  it('counts a 330 ml 5% beer as ~1.3 standard drinks', () => {
-    expect(standardDrinks(330, 5)).toBeCloseTo(1.3, 1);
+  it('counts a 330 ml 5% beer as ~1.1 Finnish drinks', () => {
+    expect(standardDrinks(330, 5)).toBeCloseTo(1.1, 1);
+  });
+
+  it('puts one drink at the 12 g THL defines it as', () => {
+    expect(STANDARD_DRINK_GRAMS).toBe(12);
+
+    // 12 g of ethanol is 1.5 cl of the pure stuff, which is how THL words it.
+    const neatMl = STANDARD_DRINK_GRAMS / ETHANOL_DENSITY;
+    expect(neatMl).toBeCloseTo(15.2, 1);
+    expect(standardDrinks(neatMl, 100)).toBeCloseTo(1, 6);
+  });
+
+  it('scores the three servings THL calls one drink as one drink', () => {
+    // 33 cl of keskiolut, 12 cl of wine, 4 cl of spirits. The whole point of
+    // the unit is that these come out the same — and they do, to within the
+    // few percent THL loses by rounding them to pours people can actually
+    // order. Exact equality would be testing arithmetic, not the standard.
+    for (const [volumeMl, abv] of [
+      [330, 4.7],
+      [120, 12],
+      [40, 40],
+    ]) {
+      const drinks = standardDrinks(volumeMl, abv);
+      expect(drinks, `${volumeMl} ml at ${abv}%`).toBeGreaterThan(0.9);
+      expect(drinks, `${volumeMl} ml at ${abv}%`).toBeLessThan(1.1);
+    }
   });
 });
 

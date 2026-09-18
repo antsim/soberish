@@ -57,6 +57,7 @@ create table if not exists public.bac_status (
   display_name text not null default 'Anonymous',
   bac          numeric(5, 3) not null default 0 check (bac >= 0),
   peak_bac     numeric(5, 3) not null default 0 check (peak_bac >= 0),
+  -- Standard drinks on the Finnish scale — 12 g of ethanol each (THL).
   drinks       numeric(6, 1) not null default 0 check (drinks >= 0),
   -- The moment `bac` was true; clients extrapolate forward from here.
   measured_at  timestamptz not null default now(),

@@ -87,19 +87,26 @@ export const en = {
    * The numbers are straight; the framing is not. This is an app with a
    * leaderboard called "Top ‰" — a line that nags would be ignored by exactly
    * the people reading it.
+   *
+   * Every horizon here is relative. A fixed two-hour offset printed as a wall
+   * clock ("by 17:02") reads as a computed landmark when it is nothing of the
+   * sort, and it walks forward a minute at a time all night.
+   *
+   * The literal "two hours" tracks `PACE_HORIZON_MS`; a spec pins them
+   * together so the constant cannot drift away from the copy.
    */
   pace: {
     evidence: (drinks: number, minutes: number) => `${drinks} drinks in the last ${minutes} min`,
-    buzzed: (permille: string, clock: string) =>
-      `Keep this up and you're at ${permille}\u00a0‰ by ${clock}. Barely counts.`,
-    merry: (permille: string, clock: string) =>
-      `Stay on this pace and it's ${permille}\u00a0‰ by ${clock}. Prime form.`,
-    drunk: (permille: string, clock: string) =>
-      `Carry on like this and it's ${permille}\u00a0‰ by ${clock}. You'll feel that one.`,
-    wasted: (permille: string, clock: string) =>
-      `At this rate, ${permille}\u00a0‰ by ${clock}. Someone hide your phone.`,
-    crossing: (permille: string, clock: string) =>
-      `On this trajectory you sail past ${permille}\u00a0‰ around ${clock}.`,
+    buzzed: (permille: string) =>
+      `Keep this up and you're at ${permille}\u00a0‰ two hours from now. Barely counts.`,
+    merry: (permille: string) =>
+      `Stay on this pace and it's ${permille}\u00a0‰ two hours from now. Prime form.`,
+    drunk: (permille: string) =>
+      `Carry on like this and it's ${permille}\u00a0‰ two hours from now. You'll feel that one.`,
+    wasted: (permille: string) =>
+      `At this rate, ${permille}\u00a0‰ two hours from now. Someone hide your phone.`,
+    crossing: (permille: string, duration: string) =>
+      `On this trajectory you sail past ${permille}\u00a0‰ in about ${duration}.`,
   },
 
   stomach: {

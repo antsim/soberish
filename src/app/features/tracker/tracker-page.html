@@ -10,7 +10,7 @@
   />
 
   @if (session.pace(); as projection) {
-    <app-pace-note [projection]="projection" />
+    <app-pace-note [projection]="projection" [now]="clock.now()" />
   }
 
   <app-bac-chart

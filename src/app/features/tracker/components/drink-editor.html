@@ -7,8 +7,7 @@
     <div>
       <p class="preview__name">{{ label() || msg().editor.fallbackName }}</p>
       <p class="preview__meta tabular">
-        {{ imperial() ? volumeInput() + ' oz' : volumeMl() + ' ml' }} · {{ abv() }}% ·
-        {{ msg().editor.gramsAlcohol(grams().toFixed(1)) }}
+        {{ imperial() ? volumeInput() + ' oz' : volumeMl() + ' ml' }} · {{ abv() }}%
       </p>
     </div>
     <div class="preview__impact">
@@ -19,143 +18,175 @@
 
   <div class="group">
     <p class="section-title">{{ msg().editor.whatIsIt }}</p>
-    <div class="name-row">
-      <div class="icons" role="group" [attr.aria-label]="msg().editor.iconGroup">
-        @for (option of icons; track option) {
+    <div class="icons" role="group" [attr.aria-label]="msg().editor.iconGroup">
+      @for (option of icons; track option) {
+        <button
+          type="button"
+          class="icon-btn"
+          [class.icon-btn--active]="icon() === option"
+          [attr.aria-pressed]="icon() === option"
+          (click)="icon.set(option)"
+        >
+          {{ option }}
+        </button>
+      }
+    </div>
+    <div class="field">
+      <input
+        type="text"
+        maxlength="24"
+        autocomplete="off"
+        [placeholder]="msg().editor.name"
+        [attr.aria-label]="msg().editor.name"
+        [ngModel]="label()"
+        (ngModelChange)="label.set($event)"
+      />
+    </div>
+  </div>
+
+  <div class="group">
+    <p class="section-title">{{ msg().editor.pour }}</p>
+
+    <div class="block">
+      <p class="sub">{{ msg().editor.volume }}</p>
+      <div class="chips" role="group" [attr.aria-label]="msg().editor.howMuch(unitName())">
+        @for (chip of volumeChips(); track chip.ml) {
           <button
             type="button"
-            class="icon-btn"
-            [class.icon-btn--active]="icon() === option"
-            [attr.aria-pressed]="icon() === option"
-            (click)="icon.set(option)"
+            class="chip"
+            [class.chip--active]="volumeMl() === chip.ml"
+            [attr.aria-pressed]="volumeMl() === chip.ml"
+            (click)="volumeMl.set(chip.ml)"
           >
-            {{ option }}
+            {{ chip.text }}
           </button>
         }
       </div>
+    </div>
+
+    <div class="block">
+      <p class="sub">{{ msg().editor.strength }}</p>
+      <div class="chips" role="group" [attr.aria-label]="msg().editor.howStrong">
+        @for (preset of abvPresets; track preset) {
+          <button
+            type="button"
+            class="chip"
+            [class.chip--active]="abv() === preset"
+            [attr.aria-pressed]="abv() === preset"
+            (click)="setAbv(preset)"
+          >
+            {{ preset }}%
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="exact">
       <div class="field">
-        <label for="drink-label">{{ msg().editor.name }}</label>
-        <input
-          id="drink-label"
-          type="text"
-          maxlength="24"
-          autocomplete="off"
-          [ngModel]="label()"
-          (ngModelChange)="label.set($event)"
+        <label for="drink-volume">{{ msg().editor.exactVolume }}</label>
+        <app-decimal-field
+          fieldId="drink-volume"
+          [ariaLabel]="
+            msg().editor.exactVolumeAria(
+              imperial() ? msg().editor.ounces : msg().editor.millilitres
+            )
+          "
+          [value]="volumeInput()"
+          [maximumFractionDigits]="imperial() ? 1 : 0"
+          (valueChange)="setVolumeFromInput($event)"
+        />
+      </div>
+      <div class="field">
+        <label for="drink-abv">{{ msg().editor.exactAbv }}</label>
+        <app-decimal-field
+          fieldId="drink-abv"
+          [ariaLabel]="msg().editor.exactAbvAria"
+          [value]="abv()"
+          [maximumFractionDigits]="2"
+          (valueChange)="setAbv($event)"
         />
       </div>
     </div>
   </div>
 
   <div class="group">
-    <p class="section-title">{{ msg().editor.howMuch(imperial() ? 'oz' : 'ml') }}</p>
-    <div class="chips">
-      @for (chip of volumeChips(); track chip.ml) {
-        <button
-          type="button"
-          class="chip"
-          [class.chip--active]="volumeMl() === chip.ml"
-          (click)="volumeMl.set(chip.ml)"
+    <p class="section-title">{{ msg().editor.fineTune }}</p>
+    <div class="advanced">
+      <app-disclosure
+        icon="⏱"
+        [label]="msg().editor.pace"
+        [value]="paceSummary()"
+        [highlight]="paceChanged()"
+      >
+        <div class="chips" role="group" [attr.aria-label]="msg().editor.howLong">
+          @for (preset of durationPresets; track preset) {
+            <button
+              type="button"
+              class="chip"
+              [class.chip--active]="durationMinutes() === preset"
+              [attr.aria-pressed]="durationMinutes() === preset"
+              (click)="setDuration(preset)"
+            >
+              {{ preset ? msg().editor.minutes(preset) : msg().editor.inOneGo }}
+            </button>
+          }
+        </div>
+        <p class="hint">{{ msg().editor.howLongHint }}</p>
+      </app-disclosure>
+
+      <app-disclosure
+        icon="🕒"
+        [label]="msg().editor.time"
+        [value]="timeSummary()"
+        [highlight]="!isNow()"
+      >
+        <div class="chips" role="group" [attr.aria-label]="msg().editor.when">
+          <button type="button" class="chip" (click)="resetTime()">{{ msg().editor.now }}</button>
+          <button type="button" class="chip" (click)="shiftTime(-15)">
+            {{ msg().editor.minus15 }}
+          </button>
+          <button type="button" class="chip" (click)="shiftTime(-30)">
+            {{ msg().editor.minus30 }}
+          </button>
+          <button type="button" class="chip" (click)="shiftTime(-60)">
+            {{ msg().editor.minus60 }}
+          </button>
+          <button type="button" class="chip" (click)="shiftTime(15)">
+            {{ msg().editor.plus15 }}
+          </button>
+        </div>
+        <div class="field">
+          <label for="drink-time">{{ msg().editor.minutesAgo(minutesAgo()) }}</label>
+          <input
+            id="drink-time"
+            type="datetime-local"
+            [ngModel]="timeLocal()"
+            (ngModelChange)="setTimeFromInput($event)"
+          />
+        </div>
+      </app-disclosure>
+
+      @if (!isEdit()) {
+        <app-disclosure
+          icon="🎯"
+          [label]="msg().editor.limit"
+          [value]="limitSummary()"
+          [highlight]="hasLimit()"
+          [startOpen]="hasLimit()"
         >
-          {{ chip.text }}
-        </button>
+          <app-drink-planner
+            [profile]="profile()"
+            [volumeMl]="volumeMl()"
+            [abv]="abv()"
+            [durationMinutes]="durationMinutes()"
+            (stretched)="setDuration($event)"
+          />
+        </app-disclosure>
       }
     </div>
-    <div class="field">
-      <label for="drink-volume">{{ msg().editor.exactVolume }}</label>
-      <app-decimal-field
-        fieldId="drink-volume"
-        [ariaLabel]="
-          msg().editor.exactVolumeAria(imperial() ? msg().editor.ounces : msg().editor.millilitres)
-        "
-        [value]="volumeInput()"
-        [maximumFractionDigits]="imperial() ? 1 : 0"
-        (valueChange)="setVolumeFromInput($event)"
-      />
-    </div>
   </div>
 
-  <div class="group">
-    <p class="section-title">{{ msg().editor.howStrong }}</p>
-    <div class="chips">
-      @for (preset of abvPresets; track preset) {
-        <button
-          type="button"
-          class="chip"
-          [class.chip--active]="abv() === preset"
-          (click)="setAbv(preset)"
-        >
-          {{ preset }}%
-        </button>
-      }
-    </div>
-    <div class="field">
-      <label for="drink-abv">{{ msg().editor.exactAbv }}</label>
-      <app-decimal-field
-        fieldId="drink-abv"
-        [ariaLabel]="msg().editor.exactAbvAria"
-        [value]="abv()"
-        [maximumFractionDigits]="2"
-        (valueChange)="setAbv($event)"
-      />
-    </div>
-  </div>
-
-  <div class="group">
-    <p class="section-title">{{ msg().editor.howLong }}</p>
-    <div class="chips">
-      @for (preset of durationPresets; track preset) {
-        <button
-          type="button"
-          class="chip"
-          [class.chip--active]="durationMinutes() === preset"
-          [attr.aria-pressed]="durationMinutes() === preset"
-          (click)="setDuration(preset)"
-        >
-          {{ preset ? msg().editor.minutes(preset) : msg().editor.inOneGo }}
-        </button>
-      }
-    </div>
-    <p class="hint">{{ msg().editor.howLongHint }}</p>
-  </div>
-
-  <div class="group">
-    <p class="section-title">{{ msg().editor.when }}</p>
-    <div class="chips">
-      <button type="button" class="chip" (click)="resetTime()">{{ msg().editor.now }}</button>
-      <button type="button" class="chip" (click)="shiftTime(-15)">
-        {{ msg().editor.minus15 }}
-      </button>
-      <button type="button" class="chip" (click)="shiftTime(-30)">
-        {{ msg().editor.minus30 }}
-      </button>
-      <button type="button" class="chip" (click)="shiftTime(-60)">
-        {{ msg().editor.minus60 }}
-      </button>
-      <button type="button" class="chip" (click)="shiftTime(15)">{{ msg().editor.plus15 }}</button>
-    </div>
-    <div class="field">
-      <label for="drink-time">{{ msg().editor.minutesAgo(minutesAgo()) }}</label>
-      <input
-        id="drink-time"
-        type="datetime-local"
-        [ngModel]="timeLocal()"
-        (ngModelChange)="setTimeFromInput($event)"
-      />
-    </div>
-  </div>
-
-  @if (!isEdit()) {
-    <app-drink-planner
-      [profile]="profile()"
-      [volumeMl]="volumeMl()"
-      [abv]="abv()"
-      [durationMinutes]="durationMinutes()"
-      (stretched)="setDuration($event)"
-    />
-  }
-
-  <div class="actions">
+  <div class="actions" sheet-actions>
     @if (isEdit()) {
       <button type="button" class="btn btn--danger" (click)="remove()">
         {{ msg().editor.delete }}

@@ -37,9 +37,23 @@
   gap: 0.6rem;
 }
 
-.name-row {
+/* A labelled chip row: the label hugs its own chips rather than floating
+   halfway between two of them. */
+.block {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.35rem;
+}
+
+.sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.exact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.6rem;
 }
 
 .icons {
@@ -96,10 +110,21 @@
   }
 }
 
+/* One list, hairline-divided, so the folded settings read as a single block
+   rather than three loose cards. */
+.advanced {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+
+  app-disclosure + app-disclosure {
+    border-top: 1px solid var(--border);
+  }
+}
+
 .actions {
   display: flex;
   gap: 0.6rem;
-  padding-top: 0.2rem;
 }
 
 .hint {

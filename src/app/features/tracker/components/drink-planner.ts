@@ -35,14 +35,15 @@ type Tone = 'ok' | 'wait' | 'over';
  * Always answered from the current moment, never from the time set in the
  * editor above it: the question is about a drink not yet had, while that field
  * backdates one already drunk.
+ *
+ * The heading belongs to the row this folds out of, so the template starts at
+ * the controls.
  */
 @Component({
   selector: 'app-drink-planner',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DecimalField],
   template: `
-    <p class="section-title">{{ msg().planner.title }}</p>
-
     <div class="chips" role="group" [attr.aria-label]="msg().planner.title">
       <button
         type="button"

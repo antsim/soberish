@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { MINUTE } from '../../../core/bac/bac';
 import { PaceProjection } from '../../../core/bac/pace';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { formatClock, formatPermille } from '../../../shared/util/format';
+import { formatDuration, formatPermille } from '../../../shared/util/format';
 
 /**
  * Where the night is heading if nothing changes.
@@ -11,6 +11,10 @@ import { formatClock, formatPermille } from '../../../shared/util/format';
  * this one says where you are going. Drawn dashed and tinted by the band it
  * predicts, because an extrapolation is a much bigger guess than the current
  * estimate and must not borrow its authority.
+ *
+ * Every horizon is spoken as a distance, never a wall clock. The projection
+ * runs to a fixed offset, so printing it as a time of day invents a landmark
+ * nothing actually happens at — and one that creeps forward every tick.
  */
 @Component({
   selector: 'app-pace-note',
@@ -28,6 +32,7 @@ import { formatClock, formatPermille } from '../../../shared/util/format';
 })
 export class PaceNote {
   readonly projection = input.required<PaceProjection>();
+  readonly now = input.required<number>();
 
   protected readonly msg = inject(I18n).messages;
 
@@ -49,12 +54,11 @@ export class PaceNote {
     const crossesAt = projection.crossesAt;
 
     if (crossesAt !== null) {
-      return words.crossing(formatPermille(projection.bac), formatClock(crossesAt));
+      const away = formatDuration(Math.max(0, crossesAt - this.now()), this.msg().time);
+      return words.crossing(formatPermille(projection.bac), away);
     }
-    const permille = formatPermille(projection.bac);
-    const clock = formatClock(projection.at);
     const status = projection.status === 'sober' ? 'buzzed' : projection.status;
-    return words[status](permille, clock);
+    return words[status](formatPermille(projection.bac));
   });
 
   protected readonly evidence = computed(() => {

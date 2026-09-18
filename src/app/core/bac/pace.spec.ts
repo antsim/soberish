@@ -26,6 +26,15 @@ function beer(minutesAgo: number, overrides: Partial<Drink> = {}): Drink {
   };
 }
 
+describe('the horizon the copy promises', () => {
+  it('is the two hours every language says out loud', () => {
+    // The lines read "two hours from now" / "kahden tunnin päästä" rather than
+    // a wall clock, so the constant and the copy have to move together. If you
+    // are here because this failed, change the copy too.
+    expect(PACE_HORIZON_MS).toBe(2 * HOUR);
+  });
+});
+
 describe('measurePace', () => {
   it('says nothing from a single drink', () => {
     expect(measurePace([beer(30)], NOW)).toBeNull();

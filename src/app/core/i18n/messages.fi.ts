@@ -85,16 +85,16 @@ export const fi: Messages = {
   pace: {
     evidence: (drinks: number, minutes: number) =>
       `${drinks} juomaa viimeisen ${minutes} min aikana`,
-    buzzed: (permille: string, clock: string) =>
-      `Tällä tahdilla ${permille}\u00a0‰ klo ${clock}. Tuskin huomaat.`,
-    merry: (permille: string, clock: string) =>
-      `Tätä tahtia ${permille}\u00a0‰ klo ${clock}. Hyvä fiilis tulossa.`,
-    drunk: (permille: string, clock: string) =>
-      `Jos jatkat näin, ${permille}\u00a0‰ klo ${clock}. Tämän kyllä tuntee.`,
-    wasted: (permille: string, clock: string) =>
-      `Tällä menolla ${permille}\u00a0‰ klo ${clock}. Joku piilottakoon puhelimesi.`,
-    crossing: (permille: string, clock: string) =>
-      `Tällä tahdilla ohitat ${permille}\u00a0‰ noin klo ${clock}.`,
+    buzzed: (permille: string) =>
+      `Tällä tahdilla ${permille}\u00a0‰ kahden tunnin päästä. Tuskin huomaat.`,
+    merry: (permille: string) =>
+      `Tätä tahtia ${permille}\u00a0‰ kahden tunnin päästä. Hyvä fiilis tulossa.`,
+    drunk: (permille: string) =>
+      `Jos jatkat näin, ${permille}\u00a0‰ kahden tunnin päästä. Tämän kyllä tuntee.`,
+    wasted: (permille: string) =>
+      `Tällä menolla ${permille}\u00a0‰ kahden tunnin päästä. Joku piilottakoon puhelimesi.`,
+    crossing: (permille: string, duration: string) =>
+      `Tällä tahdilla ohitat ${permille}\u00a0‰ noin ${duration} päästä.`,
   },
 
   stomach: {

@@ -17,6 +17,7 @@ import { StomachStore } from '../../../core/state/stomach-store';
 @Component({
   selector: 'app-stomach-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'card' },
   template: `
     <div class="head">
       <h2 class="section-title">{{ msg().stomach.title }}</h2>

@@ -21,7 +21,7 @@
   max-height: 92dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 1.15rem calc(1.4rem + var(--safe-bottom));
+  padding: 0 1.15rem;
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: 26px 26px 0 0;
@@ -79,6 +79,34 @@
   gap: 1.15rem;
 }
 
+/*
+ * Always present, so the sheet keeps its bottom inset (and its safe-area
+ * allowance) whether or not anything was projected into it.
+ *
+ * The state has to be read off the projected content rather than a class,
+ * because scoped `> *` rules never match it: emulated encapsulation stamps
+ * them with this component's marker and projected nodes carry the caller's.
+ */
+.sheet__foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: grid;
+  padding-bottom: calc(1.4rem + var(--safe-bottom));
+
+  /* Empty, it is nothing but that inset — it must not float over the body and
+     swallow the taps meant for it. */
+  &:not(:has(*)) {
+    pointer-events: none;
+  }
+
+  &:has(*) {
+    margin-top: 0.25rem;
+    padding-top: 0.9rem;
+    background: linear-gradient(180deg, transparent, var(--bg-elevated) 45%);
+  }
+}
+
 @keyframes slide-up {
   from {
     transform: translateY(6%);
@@ -100,6 +128,5 @@
   .sheet {
     border-radius: 26px;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 1.4rem;
   }
 }

@@ -19,10 +19,12 @@ import {
   MAX_DRINK_DURATION,
 } from '../../../core/models/drink.model';
 import { Profile, WIDMARK_R } from '../../../core/models/profile.model';
+import { DrinkLimitStore } from '../../../core/state/drink-limit-store';
 import { DecimalField } from '../../../shared/ui/decimal-field';
+import { Disclosure } from '../../../shared/ui/disclosure';
 import { Sheet } from '../../../shared/ui/sheet';
 import { PermillePipe } from '../../../shared/util/pipes';
-import { mlToOz, ozToMl } from '../../../shared/util/format';
+import { formatClock, formatPermille, mlToOz, ozToMl } from '../../../shared/util/format';
 import { DrinkPlanner } from './drink-planner';
 
 const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
@@ -35,11 +37,18 @@ const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
  * Every control is chip-first with a numeric field as the escape hatch, and the
  * BAC impact is previewed live so the effect of a change is obvious before it
  * is saved.
+ *
+ * What a drink *is* — its name, size and strength — stays on screen, because
+ * that changes with every log. Pace, time and the planner's ceiling are set
+ * rarely and mostly left alone, so they fold into rows that still read out
+ * their current value. The ceiling is the one that opens itself: unlike the
+ * other two its panel holds a verdict ("wait 40 min") that the row's own
+ * summary cannot carry.
  */
 @Component({
   selector: 'app-drink-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalField, DrinkPlanner, FormsModule, PermillePipe, Sheet],
+  imports: [DecimalField, Disclosure, DrinkPlanner, FormsModule, PermillePipe, Sheet],
   templateUrl: './drink-editor.html',
   styleUrl: './drink-editor.scss',
 })
@@ -54,6 +63,7 @@ export class DrinkEditor implements OnInit {
   readonly dismissed = output<void>();
 
   protected readonly msg = inject(I18n).messages;
+  readonly #limits = inject(DrinkLimitStore);
 
   protected readonly icons = ICONS;
   protected readonly abvPresets = ABV_PRESETS;
@@ -68,6 +78,7 @@ export class DrinkEditor implements OnInit {
 
   protected readonly isEdit = computed(() => this.drink() !== null);
   protected readonly imperial = computed(() => this.profile().units === 'imperial');
+  protected readonly unitName = computed(() => (this.imperial() ? 'oz' : 'ml'));
 
   /** Volume in whatever unit the user thinks in. */
   protected readonly volumeInput = computed(() =>
@@ -81,13 +92,13 @@ export class DrinkEditor implements OnInit {
     })),
   );
 
-  protected readonly grams = computed(() => alcoholGrams(this.volumeMl(), this.abv()));
+  readonly #grams = computed(() => alcoholGrams(this.volumeMl(), this.abv()));
   protected readonly units = computed(() => standardDrinks(this.volumeMl(), this.abv()));
 
   /** Peak blood alcohol this drink alone adds, once fully absorbed. */
   protected readonly bacImpact = computed(() => {
     const profile = this.profile();
-    return (this.grams() / (profile.weightKg * 1000 * WIDMARK_R[profile.bodyType])) * 100;
+    return (this.#grams() / (profile.weightKg * 1000 * WIDMARK_R[profile.bodyType])) * 100;
   });
 
   protected readonly timeLocal = computed(() => toLocalInput(this.consumedAt()));
@@ -95,6 +106,32 @@ export class DrinkEditor implements OnInit {
   protected readonly minutesAgo = computed(() =>
     Math.max(0, Math.round((Date.now() - this.consumedAt()) / MINUTE)),
   );
+
+  /** Anything inside a minute of the present reads as "now" to a drinker. */
+  protected readonly isNow = computed(() => Date.now() - this.consumedAt() < MINUTE);
+
+  protected readonly timeSummary = computed(() =>
+    this.isNow() ? this.msg().editor.now : formatClock(this.consumedAt()),
+  );
+
+  protected readonly paceSummary = computed(() =>
+    this.durationMinutes()
+      ? this.msg().editor.minutes(this.durationMinutes())
+      : this.msg().editor.inOneGo,
+  );
+
+  protected readonly paceChanged = computed(
+    () => this.durationMinutes() !== DEFAULT_DRINK_DURATION,
+  );
+
+  protected readonly hasLimit = computed(() => this.#limits.limit() !== null);
+
+  protected readonly limitSummary = computed(() => {
+    const limit = this.#limits.limit();
+    return limit === null
+      ? this.msg().planner.off
+      : this.msg().planner.under(formatPermille(limit));
+  });
 
   ngOnInit(): void {
     const existing = this.drink() ?? this.seed();

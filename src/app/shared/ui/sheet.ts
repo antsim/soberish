@@ -13,7 +13,9 @@ import { I18n } from '../../core/i18n/i18n.service';
  * A modal bottom sheet — the app's only overlay primitive.
  *
  * Content is projected, so add/edit/auth all share the same entrance
- * animation, backdrop, and dismissal behaviour.
+ * animation, backdrop, and dismissal behaviour. Anything marked
+ * `sheet-actions` is projected into a footer that stays pinned to the bottom
+ * edge, keeping the commit button reachable however long the body grows.
  */
 @Component({
   selector: 'app-sheet',
@@ -46,6 +48,9 @@ import { I18n } from '../../core/i18n/i18n.service';
       <div class="sheet__body">
         <ng-content />
       </div>
+      <footer class="sheet__foot">
+        <ng-content select="[sheet-actions]" />
+      </footer>
     </section>
   `,
   styleUrl: './sheet.scss',

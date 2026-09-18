@@ -1,0 +1,76 @@
+:host {
+  display: block;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 0.9rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  transition: background 140ms ease;
+
+  &:active {
+    background: var(--surface-strong);
+  }
+}
+
+.head__icon {
+  font-size: 1rem;
+}
+
+.head__label {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.head__value {
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--text-faint);
+
+  &--set {
+    color: var(--amber-soft);
+  }
+}
+
+.head__chevron {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  color: var(--text-faint);
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: transform 200ms var(--ease-out);
+
+  .head--open & {
+    transform: rotate(180deg);
+  }
+}
+
+.panel {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0 0.9rem 0.9rem;
+  animation: disclosure-open 200ms var(--ease-out);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@keyframes disclosure-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

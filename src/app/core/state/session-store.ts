@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HOUR, MINUTE, buildTimeline, soberAt, standardDrinks, statusFor } from '../bac/bac';
 import { Messages } from '../i18n/messages.en';
+import { withStomach } from '../models/profile.model';
 import { Clock } from '../platform/clock';
 import {
   MIN_SPAN_MS,
@@ -15,6 +16,7 @@ import {
 } from './chart-viewport';
 import { DrinksStore } from './drinks-store';
 import { ProfileStore } from './profile-store';
+import { StomachStore } from './stomach-store';
 
 /** Names a block in `messages.status` — the five bands plus the pre-absorption case. */
 export type StatusKey = keyof Messages['status'];
@@ -36,11 +38,24 @@ export class SessionStore {
   readonly #drinks = inject(DrinksStore);
   readonly #profiles = inject(ProfileStore);
   readonly #clock = inject(Clock);
+  readonly #stomach = inject(StomachStore);
 
   readonly ready = computed(() => this.#drinks.loaded() && this.#profiles.loaded());
 
+  /**
+   * The profile the curve is actually computed from.
+   *
+   * Tonight's stomach state scales the profile's absorption baseline rather
+   * than replacing it, so anyone who has calibrated that slider keeps their
+   * calibration and still gets a faster curve on an empty stomach. Everything
+   * that runs BAC maths reads this, never the stored profile.
+   */
+  readonly curveProfile = computed(() =>
+    withStomach(this.#profiles.profile(), this.#stomach.state()),
+  );
+
   readonly timeline = computed(() =>
-    buildTimeline(this.#drinks.drinks(), this.#profiles.profile(), this.#clock.now(), {
+    buildTimeline(this.#drinks.drinks(), this.curveProfile(), this.#clock.now(), {
       samples: CHART_SAMPLES,
     }),
   );
@@ -76,9 +91,7 @@ export class SessionStore {
   );
 
   /** When the session ended (or will end); `null` with no drinks logged. */
-  readonly sessionSoberAt = computed(() =>
-    soberAt(this.#drinks.drinks(), this.#profiles.profile()),
-  );
+  readonly sessionSoberAt = computed(() => soberAt(this.#drinks.drinks(), this.curveProfile()));
 
   /** Deadline at which an already-finished session is auto-cleared. */
   readonly retentionDeadline = computed(() => {
@@ -147,7 +160,7 @@ export class SessionStore {
   /** Timeline for the visible window only — full resolution at any zoom. */
   readonly chartTimeline = computed(() => {
     const window = this.chartWindow();
-    return buildTimeline(this.#drinks.drinks(), this.#profiles.profile(), this.#clock.now(), {
+    return buildTimeline(this.#drinks.drinks(), this.curveProfile(), this.#clock.now(), {
       samples: CHART_SAMPLES,
       from: window.from,
       to: window.to,
@@ -192,7 +205,7 @@ export class SessionStore {
   bacIn(minutes: number): number {
     return buildTimeline(
       this.#drinks.drinks(),
-      this.#profiles.profile(),
+      this.curveProfile(),
       this.#clock.now() + minutes * MINUTE,
       {
         samples: 2,

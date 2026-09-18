@@ -78,7 +78,16 @@ export const en = {
     clearsIn: (duration: string) => `clears in ${duration}`,
     clearsInTitle: 'History clears 24 hours after you sober up',
     disclaimer:
-      "Estimates only. Widmark maths cannot account for food, medication, or your liver's mood — never use Soberish to decide whether to drive.",
+      "Estimates only. Even with food accounted for, Widmark maths cannot know your medication, hydration, or your liver's mood — never use Soberish to decide whether to drive.",
+  },
+
+  stomach: {
+    title: 'Eaten tonight',
+    empty: 'Nothing',
+    snack: 'Snack',
+    full: 'Meal',
+    effect: (minutes: number) => `${minutes} min to full effect`,
+    hint: 'Changes how fast the alcohol hits, not how much of it you get.',
   },
 
   quickAdd: {
@@ -201,8 +210,9 @@ export const en = {
     metabolismSection: 'Metabolism',
     burnOff: (permille: string) => `Burn-off rate — ${permille} ‰ per hour`,
     burnOffHint: 'Most people sit around 0.15 ‰. Regular drinkers clear alcohol slightly faster.',
-    absorption: (minutes: number) => `Absorption — ${minutes} min to full effect`,
-    absorptionHint: 'Shorter on an empty stomach, longer after a big meal.',
+    absorption: (minutes: number) => `Absorption — ${minutes} min on a normal stomach`,
+    absorptionHint: (minutes: number) =>
+      `Your baseline. What you have eaten tonight scales it, set on the Tonight screen — right now ${minutes} min.`,
 
     accountSection: 'Account & leaderboard',
     noSupabase:

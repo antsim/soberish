@@ -79,7 +79,16 @@ export const fi: Messages = {
     clearsIn: (duration: string) => `tyhjenee ${duration} päästä`,
     clearsInTitle: 'Historia tyhjenee 24 tuntia selviämisen jälkeen',
     disclaimer:
-      'Pelkkä arvio. Widmarkin kaava ei tiedä ruoasta, lääkkeistä eikä maksasi mielialasta — älä ikinä päätä ajamisesta Soberishin perusteella.',
+      'Pelkkä arvio. Vaikka ruoka otetaan huomioon, Widmarkin kaava ei tiedä lääkkeistäsi, nesteytyksestä eikä maksasi mielialasta — älä ikinä päätä ajamisesta Soberishin perusteella.',
+  },
+
+  stomach: {
+    title: 'Syöty tänään',
+    empty: 'Ei mitään',
+    snack: 'Välipala',
+    full: 'Ateria',
+    effect: (minutes: number) => `${minutes} min täyteen tehoon`,
+    hint: 'Muuttaa vain sitä, kuinka nopeasti alkoholi iskee — ei sen määrää.',
   },
 
   quickAdd: {
@@ -202,8 +211,9 @@ export const fi: Messages = {
     metabolismSection: 'Aineenvaihdunta',
     burnOff: (permille: string) => `Palamisnopeus — ${permille} ‰ tunnissa`,
     burnOffHint: 'Useimmilla noin 0.15 ‰. Tottuneella juojalla hieman ripeämmin.',
-    absorption: (minutes: number) => `Imeytyminen — ${minutes} min täyteen tehoon`,
-    absorptionHint: 'Tyhjään mahaan nopeammin, ison aterian päälle hitaammin.',
+    absorption: (minutes: number) => `Imeytyminen — ${minutes} min normaalilla vatsalla`,
+    absorptionHint: (minutes: number) =>
+      `Perustasosi. Illan syömiset skaalaavat sitä, valinta löytyy Tänään-näytöltä — juuri nyt ${minutes} min.`,
 
     accountSection: 'Tili ja tulostaulu',
     noSupabase:

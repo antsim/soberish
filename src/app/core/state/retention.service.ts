@@ -4,6 +4,7 @@ import { Clock } from '../platform/clock';
 import { Toaster } from '../platform/toaster';
 import { DrinksStore } from './drinks-store';
 import { SessionStore } from './session-store';
+import { StomachStore } from './stomach-store';
 
 /**
  * Enforces the 24-hour rule: once the level has been back at 0.00 ‰ for a full day the
@@ -20,6 +21,7 @@ export class RetentionService {
   readonly #drinks = inject(DrinksStore);
   readonly #clock = inject(Clock);
   readonly #toaster = inject(Toaster);
+  readonly #stomach = inject(StomachStore);
   readonly #i18n = inject(I18n);
   readonly #injector = inject(Injector);
   #running = false;
@@ -44,6 +46,8 @@ export class RetentionService {
     try {
       const cleared = this.#drinks.count();
       await this.#drinks.clear();
+      // Last night's meal says nothing about the next one.
+      await this.#stomach.reset();
       this.#toaster.show(this.#i18n.messages().toast.retentionWipe(cleared));
     } finally {
       this.#running = false;

@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Drink, DrinkDraft } from '../models/drink.model';
-import { SoberishDb } from '../storage/soberish-db';
+import { DEFAULT_STOMACH, isStomachState } from '../models/profile.model';
+import { META_KEYS, SoberishDb } from '../storage/soberish-db';
 
 function newId(): string {
   return crypto.randomUUID();
@@ -34,7 +35,19 @@ export class DrinksStore {
   readonly pending = computed(() => this.#all().filter((drink) => !drink.synced));
 
   async load(): Promise<void> {
-    this.#all.set(await this.#db.allDrinks());
+    const [drinks, night] = await Promise.all([
+      this.#db.allDrinks(),
+      this.#db.readMeta<unknown>(META_KEYS.stomach),
+    ]);
+    // Drinks logged before stomach state moved onto the drink were all drawn
+    // with the one setting the whole night shared, so they inherit it and the
+    // curve on screen does not jump after an update.
+    const legacy = isStomachState(night) ? night : DEFAULT_STOMACH;
+    this.#all.set(
+      drinks.map((drink) =>
+        isStomachState(drink.stomach) ? drink : { ...drink, stomach: legacy },
+      ),
+    );
     this.#loaded.set(true);
   }
 

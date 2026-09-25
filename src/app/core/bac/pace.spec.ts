@@ -16,6 +16,7 @@ function beer(minutesAgo: number, overrides: Partial<Drink> = {}): Drink {
     volumeMl: 330,
     abv: 5,
     durationMinutes: 0,
+    stomach: 'snack',
     label: 'Beer',
     icon: '🍺',
     createdAt: at,
@@ -113,10 +114,16 @@ describe('projectAtPace', () => {
     expect(heavy.bac).toBeLessThan(light.bac);
   });
 
-  it('respects tonight’s stomach state via absorption', () => {
+  it('respects the profile’s absorption baseline', () => {
     const quick = projectAtPace(steady(), { ...profile, absorptionMinutes: 27 }, NOW)!;
     const slow = projectAtPace(steady(), { ...profile, absorptionMinutes: 90 }, NOW)!;
     expect(quick.bac).toBeGreaterThan(slow.bac);
+  });
+
+  it('drinks the projected rounds on what has been eaten by now', () => {
+    const hungry = projectAtPace(steady(), profile, NOW, { stomach: 'empty' })!;
+    const fed = projectAtPace(steady(), profile, NOW, { stomach: 'full' })!;
+    expect(fed.bac).toBeLessThan(hungry.bac);
   });
 
   it('stays quiet when the trajectory goes nowhere', () => {

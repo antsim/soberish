@@ -3,8 +3,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { standardDrinks } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
-import { UnitSystem } from '../../../core/models/profile.model';
+import { DEFAULT_STOMACH, UnitSystem } from '../../../core/models/profile.model';
 import { VolumePipe } from '../../../shared/util/pipes';
+import { STOMACH_ICONS } from './stomach-picker';
 
 /** The session timeline, newest first, with edit and delete on every row. */
 @Component({
@@ -30,6 +31,12 @@ import { VolumePipe } from '../../../shared/util/pipes';
                 @if (drink.durationMinutes > 0) {
                   · {{ msg().editor.minutes(drink.durationMinutes) }}
                 }
+                @if (drink.stomach !== defaultStomach) {
+                  ·
+                  <span [title]="msg().stomach[drink.stomach]">{{
+                    stomachIcons[drink.stomach]
+                  }}</span>
+                }
               </span>
             </span>
             <span class="row__time tabular">{{ drink.consumedAt | date: 'HH:mm' }}</span>
@@ -52,6 +59,9 @@ import { VolumePipe } from '../../../shared/util/pipes';
 })
 export class DrinkList {
   protected readonly msg = inject(I18n).messages;
+  protected readonly stomachIcons = STOMACH_ICONS;
+  /** Only a departure from the neutral state is worth a mark on the row. */
+  protected readonly defaultStomach = DEFAULT_STOMACH;
 
   readonly drinks = input.required<readonly Drink[]>();
   readonly units = input.required<UnitSystem>();

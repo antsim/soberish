@@ -15,6 +15,7 @@ import { Toaster } from '../../core/platform/toaster';
 import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
 import { RecentDrinksStore } from '../../core/state/recent-drinks-store';
+import { StomachStore } from '../../core/state/stomach-store';
 import { SpanChoice } from '../../core/state/chart-viewport';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
@@ -57,6 +58,7 @@ export class TrackerPage implements OnInit {
   protected readonly recentDrinks = inject(RecentDrinksStore);
   protected readonly clock = inject(Clock);
   readonly #toaster = inject(Toaster);
+  readonly #stomach = inject(StomachStore);
   protected readonly msg = inject(I18n).messages;
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
@@ -142,6 +144,7 @@ export class TrackerPage implements OnInit {
       volumeMl: preset.volumeMl,
       abv: preset.abv,
       durationMinutes: preset.durationMinutes,
+      stomach: this.#stomach.state(),
       consumedAt: Date.now(),
     });
     this.clock.sync();
@@ -171,6 +174,13 @@ export class TrackerPage implements OnInit {
     } else {
       await this.drinks.add(draft);
       await this.recentDrinks.remember(draft);
+      // Saying this one came with a meal means a meal has been had, so the
+      // next quick-add should not quietly fall back to the old answer. Only
+      // for the newest drink, though: backfilling an earlier one says nothing
+      // about the stomach now.
+      if (draft.consumedAt >= (this.drinks.lastDrink()?.consumedAt ?? 0)) {
+        await this.#stomach.set(draft.stomach);
+      }
       this.#toaster.success(this.msg().toast.logged(draft.icon, draft.label));
     }
     this.clock.sync();
@@ -201,6 +211,8 @@ export class TrackerPage implements OnInit {
       volumeMl: last.volumeMl,
       abv: last.abv,
       durationMinutes: last.durationMinutes,
+      // Not the last drink's: lunch may have arrived since.
+      stomach: this.#stomach.state(),
       consumedAt: Date.now(),
     };
   }

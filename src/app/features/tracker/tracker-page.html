@@ -100,7 +100,7 @@
   <app-drink-editor
     [drink]="editing()"
     [seed]="seed()"
-    [profile]="session.curveProfile()"
+    [profile]="profiles.profile()"
     (saved)="save($event)"
     (removed)="removeById($event)"
     (dismissed)="close()"

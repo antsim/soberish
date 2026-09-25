@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Drink } from '../models/drink.model';
-import { DEFAULT_PROFILE, Profile } from '../models/profile.model';
+import { DEFAULT_PROFILE, Profile, StomachState } from '../models/profile.model';
 import { formatPermille, toPermille } from '../../shared/util/format';
 import {
   ETHANOL_DENSITY,
@@ -29,13 +29,20 @@ const profile: Profile = {
   absorptionMinutes: 45,
 };
 
-function drink(offsetMs: number, volumeMl: number, abv: number, durationMinutes = 0): Drink {
+function drink(
+  offsetMs: number,
+  volumeMl: number,
+  abv: number,
+  durationMinutes = 0,
+  stomach: StomachState = 'snack',
+): Drink {
   return {
     id: `d${offsetMs}-${volumeMl}`,
     consumedAt: T0 + offsetMs,
     volumeMl,
     abv,
     durationMinutes,
+    stomach,
     label: 'Test',
     icon: '🍺',
     createdAt: T0 + offsetMs,
@@ -241,7 +248,7 @@ describe('peakFrom', () => {
 });
 
 describe('planDrink', () => {
-  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0 };
+  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0, stomach: 'snack' as const };
 
   it('waves through a drink that stays under the limit', () => {
     const plan = planDrink([], profile, pint, STATUS_CEILING.merry, T0);
@@ -284,7 +291,7 @@ describe('planDrink', () => {
     const plan = planDrink(
       [],
       profile,
-      { volumeMl: 500, abv: 40, durationMinutes: 0 },
+      { volumeMl: 500, abv: 40, durationMinutes: 0, stomach: 'snack' as const },
       STATUS_CEILING.buzzed,
       T0,
     );
@@ -369,7 +376,7 @@ describe('drink duration', () => {
 
 describe('stretchToFit', () => {
   const options = [0, 15, 30, 45, 60, 120];
-  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0 };
+  const pint = { volumeMl: 500, abv: 5, durationMinutes: 0, stomach: 'snack' as const };
 
   it('finds a window that really does bring the peak under the limit', () => {
     const minutes = stretchToFit([], profile, pint, 0.025, T0, options);
@@ -402,17 +409,60 @@ describe('planDrink with a duration', () => {
     const fast = planDrink(
       drinks,
       profile,
-      { volumeMl: 500, abv: 5, durationMinutes: 0 },
+      { volumeMl: 500, abv: 5, durationMinutes: 0, stomach: 'snack' as const },
       STATUS_CEILING.merry,
       now,
     );
     const slow = planDrink(
       drinks,
       profile,
-      { volumeMl: 500, abv: 5, durationMinutes: 60 },
+      { volumeMl: 500, abv: 5, durationMinutes: 60, stomach: 'snack' as const },
       STATUS_CEILING.merry,
       now,
     );
     expect(slow.waitMs).toBeLessThan(fast.waitMs);
+  });
+});
+
+describe('stomach state per drink', () => {
+  it('spreads a drink on a full stomach into a later, lower peak', () => {
+    const empty = buildTimeline([drink(0, 500, 5, 0, 'empty')], profile, T0, { samples: 400 });
+    const full = buildTimeline([drink(0, 500, 5, 0, 'full')], profile, T0, { samples: 400 });
+    expect(full.peak).toBeLessThan(empty.peak);
+    expect(full.peakAt).toBeGreaterThan(empty.peakAt);
+  });
+
+  it('leaves a drink had before the meal alone', () => {
+    // The pub lunch: a beer on a snack, then food, then a beer with the meal.
+    // Eating must not reach back and slow down the first one.
+    const before = drink(0, 500, 5, 0, 'snack');
+    const withMeal = drink(90 * MINUTE, 500, 5, 0, 'full');
+    const at = T0 + 60 * MINUTE;
+    expect(bacAt([before, withMeal], profile, at)).toBe(bacAt([before], profile, at));
+    expect(bacAt([drink(0, 500, 5, 0, 'full'), withMeal], profile, at)).toBeLessThan(
+      bacAt([before], profile, at),
+    );
+  });
+
+  it('only slows the drinks it was set on', () => {
+    const snack = [drink(0, 500, 5), drink(30 * MINUTE, 500, 5)];
+    const mixed = [drink(0, 500, 5), drink(30 * MINUTE, 500, 5, 0, 'full')];
+    const allFull = [drink(0, 500, 5, 0, 'full'), drink(30 * MINUTE, 500, 5, 0, 'full')];
+    const at = T0 + 45 * MINUTE;
+    const [a, b, c] = [snack, mixed, allFull].map((drinks) => bacAt(drinks, profile, at));
+    expect(b).toBeLessThan(a);
+    expect(b).toBeGreaterThan(c);
+  });
+
+  it('waits for the slowest dose before calling the peak settled', () => {
+    // A slow pint on a full stomach followed by a quick shot: the peak can
+    // still be ahead after the shot has fully landed.
+    const drinks = [drink(0, 568, 5, 0, 'full'), drink(5 * MINUTE, 40, 40, 0, 'empty')];
+    const whole = buildTimeline(drinks, profile, T0, {
+      samples: 2000,
+      from: T0,
+      to: T0 + 6 * HOUR,
+    });
+    expect(peakFrom(drinks, profile, T0)).toBeCloseTo(whole.peak, 3);
   });
 });

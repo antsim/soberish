@@ -3,14 +3,18 @@ import { DEFAULT_STOMACH, StomachState, isStomachState } from '../models/profile
 import { META_KEYS, SoberishDb } from '../storage/soberish-db';
 
 /**
- * How much the drinker has eaten tonight.
+ * What the drinker has eaten by now — the stomach state the next drink is
+ * logged with.
+ *
+ * Each drink stores its own copy, so changing this never rewrites a drink
+ * already had: a beer on a snack stays a beer on a snack after lunch arrives.
+ * It is a default for what comes next, not a property of the night.
  *
  * Deliberately not part of `Profile`, for two reasons. It belongs to the
- * night rather than to the body — you eat differently on a Tuesday than at a
- * wedding — so it resets with the session. And writing it through
- * `ProfileStore.patch` would stamp `updatedAt`, which is what marks the body
- * profile as confirmed: picking "full meal" would silently dismiss the "set
- * your weight" onboarding card.
+ * night rather than to the body, so it resets with the session. And writing it
+ * through `ProfileStore.patch` would stamp `updatedAt`, which is what marks the
+ * body profile as confirmed: picking "full meal" would silently dismiss the
+ * "set your weight" onboarding card.
  */
 @Injectable({ providedIn: 'root' })
 export class StomachStore {

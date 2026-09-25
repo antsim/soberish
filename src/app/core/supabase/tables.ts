@@ -1,5 +1,6 @@
 import { Drink } from '../models/drink.model';
 import { LeaderboardEntry } from '../models/leaderboard.model';
+import { DEFAULT_STOMACH, isStomachState } from '../models/profile.model';
 
 /** Row shapes for the tables created by `supabase/schema.sql`. */
 export interface DrinkRow {
@@ -9,6 +10,7 @@ export interface DrinkRow {
   volume_ml: number;
   abv: number;
   duration_minutes: number | null;
+  stomach: string | null;
   label: string;
   icon: string;
   created_at: string;
@@ -36,6 +38,7 @@ export function toDrinkRow(drink: Drink, userId: string): DrinkRow {
     volume_ml: drink.volumeMl,
     abv: drink.abv,
     duration_minutes: drink.durationMinutes,
+    stomach: drink.stomach,
     label: drink.label,
     icon: drink.icon,
     created_at: new Date(drink.createdAt).toISOString(),
@@ -53,6 +56,8 @@ export function fromDrinkRow(row: DrinkRow): Drink {
     // Null for rows written before the column existed, and for a project whose
     // schema.sql has not been re-run yet.
     durationMinutes: Number(row.duration_minutes ?? 0),
+    // Same story, and 'snack' is the state that leaves the baseline untouched.
+    stomach: isStomachState(row.stomach) ? row.stomach : DEFAULT_STOMACH,
     label: row.label,
     icon: row.icon,
     createdAt: Date.parse(row.created_at),

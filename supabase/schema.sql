@@ -22,6 +22,8 @@ create table if not exists public.drinks (
   abv         numeric(5, 2) not null check (abv >= 0 and abv <= 96),
   -- Minutes spent drinking it; 0 is one swallow.
   duration_minutes numeric(6, 2) not null default 0 check (duration_minutes >= 0),
+  -- What had been eaten when it was drunk; scales that drink's absorption.
+  stomach     text not null default 'snack' check (stomach in ('empty', 'snack', 'full')),
   label       text not null default 'Drink',
   icon        text not null default '🍺',
   created_at  timestamptz not null default now(),
@@ -35,6 +37,9 @@ create table if not exists public.drinks (
 alter table public.drinks
   add column if not exists duration_minutes numeric(6, 2) not null default 0
   check (duration_minutes >= 0);
+alter table public.drinks
+  add column if not exists stomach text not null default 'snack'
+  check (stomach in ('empty', 'snack', 'full'));
 
 create index if not exists drinks_user_updated_idx on public.drinks (user_id, updated_at);
 
@@ -111,6 +116,12 @@ end $$;
 -- Housekeeping
 -- ---------------------------------------------------------------------------
 
+-- Upgrading from a version where "Eaten tonight" was one setting for the whole
+-- night? The second alter above adds the per-drink `stomach` column and fills
+-- existing rows with 'snack', the neutral state. Until it lands, pushes fail
+-- with "column stomach does not exist" and the app keeps the drinks queued
+-- locally, so re-run this file before (or right after) deploying.
+
 -- Upgrading from a version without drink durations? The alter above adds the
 -- column and backfills every existing row with 0 — "drunk in one go", which is
 -- how the app read them anyway. Running this whole file again is safe, or apply
@@ -122,7 +133,7 @@ end $$;
 -- add actually landed. This version is safe to re-run — do that, then check the
 -- column arrived:
 --   select column_name from information_schema.columns
---   where table_name = 'drinks' and column_name = 'duration_minutes';
+--   where table_name = 'drinks' and column_name in ('duration_minutes', 'stomach');
 
 -- Already ran an earlier version of this file and hit "permission denied for
 -- table bac_status"? The tables and policies are fine — only the grants above

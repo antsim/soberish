@@ -4,8 +4,15 @@ import { STOMACH_STATES, StomachState } from '../../../core/models/profile.model
 import { SessionStore } from '../../../core/state/session-store';
 import { StomachStore } from '../../../core/state/stomach-store';
 
+/** An empty plate, something small, a proper dinner. */
+export const STOMACH_ICONS: Record<StomachState, string> = {
+  empty: '🍽️',
+  snack: '🥪',
+  full: '🍝',
+};
+
 /**
- * "How much have you eaten tonight?"
+ * "How much have you eaten so far?"
  *
  * Food is the largest thing the Widmark maths cannot see from a body profile,
  * and the absorption slider that models it lives in settings where nobody
@@ -13,6 +20,9 @@ import { StomachStore } from '../../../core/state/stomach-store';
  * looking at buys most of that accuracy back, and the resulting absorption
  * time is shown so the choice has a visible consequence rather than being an
  * article of faith.
+ *
+ * It sets the stomach the *next* drink is logged with. Drinks already on the
+ * list keep theirs, and each can be changed on its own in the editor.
  */
 @Component({
   selector: 'app-stomach-picker',
@@ -49,26 +59,17 @@ export class StomachPicker {
 
   protected readonly state = this.#stomach.state;
 
-  /** An empty plate, something small, a proper dinner. */
-  protected readonly icons: Record<StomachState, string> = {
-    empty: '🍽️',
-    snack: '🥪',
-    full: '🍝',
-  };
-
   protected readonly options = computed(() => {
     const words = this.msg().stomach;
     return STOMACH_STATES.map((value) => ({
       value,
       label: words[value],
-      icon: this.icons[value],
+      icon: STOMACH_ICONS[value],
     }));
   });
 
-  /** What the choice actually does to the curve, in the unit the slider uses. */
-  protected readonly absorptionMinutes = computed(
-    () => this.#session.curveProfile().absorptionMinutes,
-  );
+  /** What the choice does to the next drink, in the unit the slider uses. */
+  protected readonly absorptionMinutes = this.#session.nextAbsorptionMinutes;
 
   protected choose(state: StomachState): void {
     void this.#stomach.set(state);

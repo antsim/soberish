@@ -135,6 +135,28 @@
       </app-disclosure>
 
       <app-disclosure
+        icon="🍽"
+        [label]="msg().editor.eaten"
+        [value]="stomachSummary()"
+        [highlight]="stomach() !== defaultStomach"
+      >
+        <div class="chips" role="group" [attr.aria-label]="msg().editor.eatenGroup">
+          @for (option of stomachOptions(); track option.value) {
+            <button
+              type="button"
+              class="chip"
+              [class.chip--active]="stomach() === option.value"
+              [attr.aria-pressed]="stomach() === option.value"
+              (click)="stomach.set(option.value)"
+            >
+              <span aria-hidden="true">{{ option.icon }}</span> {{ option.label }}
+            </button>
+          }
+        </div>
+        <p class="hint">{{ msg().editor.eatenHint }}</p>
+      </app-disclosure>
+
+      <app-disclosure
         icon="🕒"
         [label]="msg().editor.time"
         [value]="timeSummary()"
@@ -179,6 +201,7 @@
             [volumeMl]="volumeMl()"
             [abv]="abv()"
             [durationMinutes]="durationMinutes()"
+            [stomach]="stomach()"
             (stretched)="setDuration($event)"
           />
         </app-disclosure>

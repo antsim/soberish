@@ -38,14 +38,12 @@ export class ProfilePage {
   protected readonly limits = PROFILE_LIMITS;
 
   /**
-   * What the slider actually amounts to tonight.
+   * What the slider amounts to for the next drink, given what has been eaten.
    *
    * Without it the curve and this control silently disagree whenever the
    * stomach state is off its default, which reads as a bug in the maths.
    */
-  protected readonly tonightAbsorption = computed(
-    () => this.session.curveProfile().absorptionMinutes,
-  );
+  protected readonly tonightAbsorption = this.session.nextAbsorptionMinutes;
 
   protected readonly bodyTypes = computed<readonly { value: BodyType; label: string }[]>(() => [
     { value: 'female', label: this.msg().profile.female },

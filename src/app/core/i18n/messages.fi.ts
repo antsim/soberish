@@ -98,12 +98,12 @@ export const fi: Messages = {
   },
 
   stomach: {
-    title: 'Syöty tänään',
+    title: 'Syöty tähän mennessä',
     empty: 'Ei mitään',
     snack: 'Välipala',
     full: 'Ateria',
     effect: (minutes: number) => `${minutes} min täyteen tehoon`,
-    hint: 'Muuttaa vain sitä, kuinka nopeasti alkoholi iskee — ei sen määrää.',
+    hint: 'Koskee tästä eteenpäin kirjattuja juomia — aiemmat pitävät omansa. Muuttaa vain sitä, kuinka nopeasti alkoholi iskee, ei sen määrää.',
   },
 
   quickAdd: {
@@ -142,6 +142,9 @@ export const fi: Messages = {
     exactAbvAria: 'Tarkka alkoholipitoisuus prosentteina',
     fineTune: 'Hienosäätö',
     pace: 'Tahti',
+    eaten: 'Syöty',
+    eatenGroup: 'Mitä olit syönyt juodessasi',
+    eatenHint: 'Ruoka hidastaa tämän juoman imeytymistä vereen. Muihin juomiisi se ei vaikuta.',
     time: 'Aika',
     limit: 'Raja',
     when: 'Milloin?',
@@ -228,7 +231,7 @@ export const fi: Messages = {
     burnOffHint: 'Useimmilla noin 0.15 ‰. Tottuneella juojalla hieman ripeämmin.',
     absorption: (minutes: number) => `Imeytyminen — ${minutes} min normaalilla vatsalla`,
     absorptionHint: (minutes: number) =>
-      `Perustasosi. Illan syömiset skaalaavat sitä, valinta löytyy Tänään-näytöltä — juuri nyt ${minutes} min.`,
+      `Perustasosi. Syömisesi skaalaa sitä juomakohtaisesti — seuraava juomasi saa ${minutes} min.`,
 
     accountSection: 'Tili ja tulostaulu',
     noSupabase:

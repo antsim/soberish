@@ -7,7 +7,8 @@ export type BodyType = keyof typeof WIDMARK_R;
 export type UnitSystem = 'metric' | 'imperial';
 
 /**
- * How much food is in the way tonight, as a multiplier on absorption time.
+ * How much food was in the way when a drink went down, as a multiplier on that
+ * drink's absorption time.
  *
  * Food changes how *fast* alcohol reaches the blood, never how much of it gets
  * there — a full stomach spreads the same dose over a longer curve, so the
@@ -32,23 +33,16 @@ export function isStomachState(value: unknown): value is StomachState {
   return typeof value === 'string' && value in STOMACH_FACTOR;
 }
 
-/** Minutes to ~95% absorption once tonight's stomach state is applied. */
+/**
+ * Minutes to ~95% absorption for a drink taken on `stomach`.
+ *
+ * Scales the profile's baseline rather than replacing it, so anyone who has
+ * calibrated that slider keeps their calibration and still gets a faster curve
+ * on an empty stomach.
+ */
 export function absorptionMinutesFor(profile: Profile, stomach: StomachState): number {
   const scaled = Math.round(profile.absorptionMinutes * STOMACH_FACTOR[stomach]);
   return Math.min(ABSORPTION_BOUNDS.max, Math.max(ABSORPTION_BOUNDS.min, scaled));
-}
-
-/**
- * The profile the BAC maths should run on tonight.
- *
- * Returns the original object when nothing moved, so a `computed()` reading
- * this does not invalidate the whole chart on an unrelated profile edit.
- */
-export function withStomach(profile: Profile, stomach: StomachState): Profile {
-  const absorptionMinutes = absorptionMinutesFor(profile, stomach);
-  return absorptionMinutes === profile.absorptionMinutes
-    ? profile
-    : { ...profile, absorptionMinutes };
 }
 
 /** Everything that shapes the BAC curve, plus presentation preferences. */
@@ -61,7 +55,7 @@ export interface Profile {
   readonly eliminationRate: number;
   /**
    * Minutes for a drink to be ~95% absorbed on a normal stomach — the personal
-   * baseline that tonight's `StomachState` scales.
+   * baseline that each drink's `StomachState` scales.
    */
   readonly absorptionMinutes: number;
   readonly units: UnitSystem;

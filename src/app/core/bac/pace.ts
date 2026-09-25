@@ -1,5 +1,5 @@
 import { Drink } from '../models/drink.model';
-import { Profile } from '../models/profile.model';
+import { DEFAULT_STOMACH, Profile, StomachState } from '../models/profile.model';
 import {
   ETHANOL_DENSITY,
   HOUR,
@@ -108,11 +108,11 @@ export function measurePace(
  * The drinks they have not had yet, spaced at the rate they are keeping.
  *
  * Expressed as real `Drink`s so the projection runs through the same engine as
- * everything else — absorption, sipping windows and tonight's stomach state
- * all apply to the imagined half of the night exactly as they do to the real
- * half.
+ * everything else — absorption, sipping windows and the stomach they are drunk
+ * on all apply to the imagined half of the night exactly as they do to the
+ * real half.
  */
-function futureDrinks(pace: Pace, from: number, horizonMs: number): Drink[] {
+function futureDrinks(pace: Pace, from: number, horizonMs: number, stomach: StomachState): Drink[] {
   const perHour = pace.gramsPerHour / pace.averageGrams;
   if (!Number.isFinite(perHour) || perHour <= 0) return [];
 
@@ -129,6 +129,7 @@ function futureDrinks(pace: Pace, from: number, horizonMs: number): Drink[] {
       volumeMl,
       abv,
       durationMinutes: Math.round(pace.averageSpreadMs / MINUTE),
+      stomach,
       label: '',
       icon: '',
       createdAt: at,
@@ -151,13 +152,18 @@ export function projectAtPace(
   drinks: readonly Drink[],
   profile: Profile,
   now: number,
-  options: { readonly horizonMs?: number; readonly limit?: number | null } = {},
+  options: {
+    readonly horizonMs?: number;
+    readonly limit?: number | null;
+    /** What the drinks still to come will be drunk on — what has been eaten by now. */
+    readonly stomach?: StomachState;
+  } = {},
 ): PaceProjection | null {
   const pace = measurePace(drinks, now);
   if (!pace) return null;
 
   const horizonMs = options.horizonMs ?? PACE_HORIZON_MS;
-  const future = futureDrinks(pace, now, horizonMs);
+  const future = futureDrinks(pace, now, horizonMs, options.stomach ?? DEFAULT_STOMACH);
   if (!future.length) return null;
 
   const at = now + horizonMs;

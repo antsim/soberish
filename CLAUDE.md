@@ -91,6 +91,11 @@ src/app/
   `elapsedMs` freeze at that moment, and `chartBounds` stops following the clock so a finished
   night does not shrink over the following day. Do not conflate the two — the session clock once
   counted through 24 h of sobriety because of exactly that.
+- **Stomach state is per drink** (`Drink.stomach`), not per night. `StomachStore` only holds what
+  the _next_ drink is logged with; changing it must never rewrite drinks already had. The engine
+  scales absorption per dose from `profile.absorptionMinutes` — there is no night-wide "curve
+  profile" any more. Adding a `drinks` column means updating `schema.sql` (both the `create` and an
+  `add column if not exists`) and `tables.ts`, with a null-tolerant read for older rows.
 - **Retention:** the session is wiped 24 h after BAC returns to 0. Drinking again before the
   deadline carries the whole night forward. Implemented as a signal effect, not a timer.
 - The chart draws a _window_ onto the session (`core/state/chart-viewport.ts`, pure + tested), and

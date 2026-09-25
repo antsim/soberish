@@ -110,12 +110,12 @@ export const en = {
   },
 
   stomach: {
-    title: 'Eaten tonight',
+    title: 'Eaten so far',
     empty: 'Nothing',
     snack: 'Snack',
     full: 'Meal',
     effect: (minutes: number) => `${minutes} min to full effect`,
-    hint: 'Changes how fast the alcohol hits, not how much of it you get.',
+    hint: 'Applies to the drinks you log from now on — earlier ones keep their own. Changes how fast the alcohol hits, not how much of it you get.',
   },
 
   quickAdd: {
@@ -154,6 +154,10 @@ export const en = {
     exactAbvAria: 'Exact alcohol by volume percentage',
     fineTune: 'Fine-tune',
     pace: 'Pace',
+    eaten: 'Eaten',
+    eatenGroup: 'What you had eaten when you drank it',
+    eatenHint:
+      'Food slows how fast this drink reaches your blood. It does not change your other drinks.',
     time: 'Time',
     limit: 'Limit',
     when: 'When?',
@@ -240,7 +244,7 @@ export const en = {
     burnOffHint: 'Most people sit around 0.15 ‰. Regular drinkers clear alcohol slightly faster.',
     absorption: (minutes: number) => `Absorption — ${minutes} min on a normal stomach`,
     absorptionHint: (minutes: number) =>
-      `Your baseline. What you have eaten tonight scales it, set on the Tonight screen — right now ${minutes} min.`,
+      `Your baseline. What you had eaten scales it for each drink — your next one gets ${minutes} min.`,
 
     accountSection: 'Account & leaderboard',
     noSupabase:

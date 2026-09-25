@@ -1,3 +1,5 @@
+import { StomachState } from './profile.model';
+
 /** A single logged drink. Timestamps are epoch milliseconds (UTC). */
 export interface Drink {
   readonly id: string;
@@ -12,6 +14,12 @@ export interface Drink {
    * down in one go, which is how every drink logged before this existed reads.
    */
   readonly durationMinutes: number;
+  /**
+   * What had been eaten when it was drunk. Per drink rather than per night,
+   * because a night is rarely one meal: a beer on a snack, then lunch, then a
+   * second beer on a full stomach absorb at very different speeds.
+   */
+  readonly stomach: StomachState;
   /** Free-text label, usually the preset name ("Beer", "Wine"…). */
   readonly label: string;
   /** Emoji shown in the timeline. */
@@ -27,7 +35,7 @@ export interface Drink {
 /** The user-supplied part of a drink; everything else is derived. */
 export type DrinkDraft = Pick<
   Drink,
-  'consumedAt' | 'volumeMl' | 'abv' | 'label' | 'icon' | 'durationMinutes'
+  'consumedAt' | 'volumeMl' | 'abv' | 'label' | 'icon' | 'durationMinutes' | 'stomach'
 >;
 
 /** A one-tap shortcut in the "Log a drink" row. */

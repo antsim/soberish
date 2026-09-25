@@ -29,9 +29,13 @@ fall, and see who else is still above 0.00% on the live leaderboard.
   the last 90 minutes — the hero shows where you land in two hours if you keep it up, which is the
   opposite question to "when am I sober". It is a projection, so it is drawn dashed and tinted by
   the band it predicts, and it says nothing at all when the trajectory goes nowhere.
-- **Tells the curve what you have eaten.** Food is the biggest thing a body profile cannot see, so
-  "Eaten tonight" — nothing, a snack, or a meal — scales how fast each drink is absorbed. It is a
-  property of the night, not of you: it resets when the session does.
+- **Tells the curve what you have eaten — per drink.** Food is the biggest thing a body profile
+  cannot see, so every drink records whether it went down on nothing, a snack, or a meal, and that
+  scales how fast _that_ drink is absorbed. A pub lunch is the case it exists for: a beer on a
+  snack, then food, then a beer with the meal are two different curves, and eating does not reach
+  back and slow down the first one. The "Eaten so far" card on the Tonight screen sets what the
+  next drink is logged with; any drink's own setting can be changed in its editor. The card resets
+  with the session.
 - **Edit and delete anything.** Every logged drink stays editable, with undo on deletion.
 - **A session that cleans up after itself.** Once you have been back at 0.00 ‰ for 24 hours the
   history is wiped. Keep drinking before then and the whole night — drinks and graph — stays.
@@ -58,12 +62,18 @@ Requires Node 22.22.3+ or 24.15+ (Angular 22's minimum).
    `1 − e^(−3t/T)`, where `T` is the profile's _absorption minutes_ (time to ~95%).
    This is why a fresh drink reads 0.00 ‰ and the app says "kicking in" rather than "sober".
 
-   `T` is not a fixed number. The profile slider sets your **baseline on a normal stomach**, and
-   tonight's **"Eaten tonight"** choice scales it: `×0.6` on an empty stomach, `×1` after a snack,
-   `×2` after a full meal, clamped to 15–180 minutes. A 45-minute baseline therefore runs 27, 45
-   or 90 minutes depending on the night. Scaling rather than replacing means anyone who has
-   calibrated that slider keeps their calibration, and `snack` being exactly `×1` means a profile
-   that never touches the setting keeps the curve it always had.
+   `T` is not a fixed number, and not even one number per night. The profile slider sets your
+   **baseline on a normal stomach**, and each drink's own **stomach state** scales it: `×0.6` on
+   an empty stomach, `×1` after a snack, `×2` after a full meal, clamped to 15–180 minutes. A
+   45-minute baseline therefore runs 27, 45 or 90 minutes depending on what that drink was had
+   with. Scaling rather than replacing means anyone who has calibrated that slider keeps their
+   calibration, and `snack` being exactly `×1` means a drinker who never touches the setting keeps
+   the curve they always had.
+
+   The state lives on the drink (`Drink.stomach`) rather than on the night because meals happen
+   _between_ drinks. It used to be one setting for the whole session, so switching to "Meal" at
+   lunch retroactively slowed the beer had before it. Drinks stored before the change inherit the
+   night-wide setting they were drawn with, so the curve does not jump on update.
 
    Food does not change the _dose_ — the same grams of ethanol still reach the blood. It changes
    the _shape_: a full stomach spreads the same alcohol over a longer rise, so the peak lands later
@@ -94,8 +104,8 @@ every other projection assumes you stop now.
 
 It reads a rate from a trailing 90-minute window, then synthesises the drinks you have not had yet
 — spaced at that rate, each one your own recent average — and runs the *real* drinks plus the
-imagined ones back through `buildTimeline`. Absorption, sipping windows and tonight's stomach state
-therefore apply to the imagined half of the night exactly as they do to the real half.
+imagined ones back through `buildTimeline`. The imagined drinks are had on whatever has been eaten
+by now, so absorption, sipping windows and food therefore apply to the imagined half of the night exactly as they do to the real half.
 
 The measurement period has a 45-minute floor. Without it, two drinks ten minutes apart reads as
 twelve an hour and the app would open every night by predicting catastrophe.
@@ -196,6 +206,9 @@ and the affected screens say so.
 1. Create a Supabase project and run [`supabase/schema.sql`](supabase/schema.sql) in the SQL
    editor. It creates `drinks` and `bac_status` with row-level security: your drinks are private,
    the leaderboard is readable by signed-in users, and nobody can publish a status but themselves.
+   It is safe to re-run, and upgrading needs exactly that: a release that adds a column (most
+   recently `drinks.stomach`) cannot sync until the column exists, and keeps drinks queued locally
+   until then.
 2. Add two **repository variables** (Settings → Secrets and variables → Actions → Variables):
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`

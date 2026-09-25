@@ -18,14 +18,22 @@ import {
   DrinkDraft,
   MAX_DRINK_DURATION,
 } from '../../../core/models/drink.model';
-import { Profile, WIDMARK_R } from '../../../core/models/profile.model';
+import {
+  DEFAULT_STOMACH,
+  Profile,
+  STOMACH_STATES,
+  StomachState,
+  WIDMARK_R,
+} from '../../../core/models/profile.model';
 import { DrinkLimitStore } from '../../../core/state/drink-limit-store';
+import { StomachStore } from '../../../core/state/stomach-store';
 import { DecimalField } from '../../../shared/ui/decimal-field';
 import { Disclosure } from '../../../shared/ui/disclosure';
 import { Sheet } from '../../../shared/ui/sheet';
 import { PermillePipe } from '../../../shared/util/pipes';
 import { formatClock, formatPermille, mlToOz, ozToMl } from '../../../shared/util/format';
 import { DrinkPlanner } from './drink-planner';
+import { STOMACH_ICONS } from './stomach-picker';
 
 const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
 const VOLUME_PRESETS_ML = [40, 330, 400, 440, 500, 568];
@@ -39,7 +47,7 @@ const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
  * is saved.
  *
  * What a drink *is* — its name, size and strength — stays on screen, because
- * that changes with every log. Pace, time and the planner's ceiling are set
+ * that changes with every log. Pace, food, time and the planner's ceiling are set
  * rarely and mostly left alone, so they fold into rows that still read out
  * their current value. The ceiling is the one that opens itself: unlike the
  * other two its panel holds a verdict ("wait 40 min") that the row's own
@@ -64,10 +72,12 @@ export class DrinkEditor implements OnInit {
 
   protected readonly msg = inject(I18n).messages;
   readonly #limits = inject(DrinkLimitStore);
+  readonly #stomachNow = inject(StomachStore).state;
 
   protected readonly icons = ICONS;
   protected readonly abvPresets = ABV_PRESETS;
   protected readonly durationPresets = DURATION_PRESETS;
+  protected readonly defaultStomach = DEFAULT_STOMACH;
 
   protected readonly label = signal(this.msg().editor.defaultName);
   protected readonly icon = signal('🍺');
@@ -75,6 +85,8 @@ export class DrinkEditor implements OnInit {
   protected readonly abv = signal(4.7);
   protected readonly durationMinutes = signal(DEFAULT_DRINK_DURATION);
   protected readonly consumedAt = signal(Date.now());
+  /** A new drink starts on whatever has been eaten by now. */
+  protected readonly stomach = signal<StomachState>(this.#stomachNow());
 
   protected readonly isEdit = computed(() => this.drink() !== null);
   protected readonly imperial = computed(() => this.profile().units === 'imperial');
@@ -124,6 +136,17 @@ export class DrinkEditor implements OnInit {
     () => this.durationMinutes() !== DEFAULT_DRINK_DURATION,
   );
 
+  protected readonly stomachOptions = computed(() => {
+    const words = this.msg().stomach;
+    return STOMACH_STATES.map((value) => ({
+      value,
+      label: words[value],
+      icon: STOMACH_ICONS[value],
+    }));
+  });
+
+  protected readonly stomachSummary = computed(() => this.msg().stomach[this.stomach()]);
+
   protected readonly hasLimit = computed(() => this.#limits.limit() !== null);
 
   protected readonly limitSummary = computed(() => {
@@ -142,6 +165,7 @@ export class DrinkEditor implements OnInit {
       this.abv.set(existing.abv);
       this.durationMinutes.set(existing.durationMinutes);
       this.consumedAt.set(existing.consumedAt);
+      this.stomach.set(existing.stomach);
     }
   }
 
@@ -180,6 +204,7 @@ export class DrinkEditor implements OnInit {
       abv: round(this.abv(), 2),
       durationMinutes: this.durationMinutes(),
       consumedAt: this.consumedAt(),
+      stomach: this.stomach(),
     });
   }
 

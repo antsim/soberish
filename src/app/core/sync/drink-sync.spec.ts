@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Drink } from '../models/drink.model';
+import { fromDrinkRow, toDrinkRow } from '../supabase/tables';
 import { merge } from './drink-sync.service';
 
 function row(id: string, updatedAt: number, patch: Partial<Drink> = {}): Drink {
@@ -9,6 +10,7 @@ function row(id: string, updatedAt: number, patch: Partial<Drink> = {}): Drink {
     volumeMl: 330,
     abv: 5,
     durationMinutes: 0,
+    stomach: 'snack',
     label: 'Beer',
     icon: '🍺',
     createdAt: updatedAt,
@@ -44,5 +46,17 @@ describe('merge', () => {
 
   it('drops server tombstones that nothing is waiting to push', () => {
     expect(merge([], [row('a', 10, { deleted: true })], [])).toHaveLength(0);
+  });
+});
+
+describe('drink rows', () => {
+  it('round-trips the stomach state a drink was had on', () => {
+    const drink = row('a', 10, { stomach: 'full' });
+    expect(fromDrinkRow(toDrinkRow(drink, 'user')).stomach).toBe('full');
+  });
+
+  it('reads a row from before the column existed as the neutral state', () => {
+    const legacy = { ...toDrinkRow(row('a', 10), 'user'), stomach: null };
+    expect(fromDrinkRow(legacy).stomach).toBe('snack');
   });
 });

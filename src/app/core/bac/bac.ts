@@ -1,5 +1,5 @@
 import { Drink } from '../models/drink.model';
-import { Profile, WIDMARK_R } from '../models/profile.model';
+import { Profile, StomachState, WIDMARK_R, absorptionMinutesFor } from '../models/profile.model';
 
 /** Density of ethanol in g/ml. */
 export const ETHANOL_DENSITY = 0.789;
@@ -24,7 +24,7 @@ const STEP_MS = MINUTE;
 /** Nobody stays drunk for three days; this bounds the "when am I sober" search. */
 const MAX_PROJECTION_MS = 72 * HOUR;
 /**
- * Multiples of `absorptionMinutes` after which a dose is absorbed to the last
+ * Multiples of a dose's absorption time after which it is absorbed to the last
  * drop — `absorbedFraction` is within 1e-8 of 1 by then, so the curve past this
  * point can only fall.
  */
@@ -104,15 +104,18 @@ interface Dose {
   readonly grams: number;
   /** How long the drink took; zero for one swallow. */
   readonly spread: number;
+  /** Minutes to ~95% absorbed — the profile's baseline scaled by this drink's stomach. */
+  readonly absorption: number;
 }
 
-function toDoses(drinks: readonly Drink[]): Dose[] {
+function toDoses(drinks: readonly Drink[], profile: Profile): Dose[] {
   return drinks
     .filter((d) => !d.deleted && d.abv > 0 && d.volumeMl > 0)
     .map((d) => ({
       at: d.consumedAt,
       grams: alcoholGrams(d.volumeMl, d.abv),
       spread: Math.max(0, d.durationMinutes) * MINUTE,
+      absorption: absorptionMinutesFor(profile, d.stomach),
     }))
     .sort((a, b) => a.at - b.at);
 }
@@ -128,11 +131,11 @@ function lastDoseEnd(doses: readonly Dose[]): number {
 }
 
 /** Total alcohol absorbed into the blood by time `t`, in grams. */
-function absorbedGrams(doses: readonly Dose[], t: number, absorptionMinutes: number): number {
+function absorbedGrams(doses: readonly Dose[], t: number): number {
   let total = 0;
   for (const dose of doses) {
     if (dose.at > t) break;
-    total += dose.grams * absorbedFraction(t - dose.at, absorptionMinutes, dose.spread);
+    total += dose.grams * absorbedFraction(t - dose.at, dose.absorption, dose.spread);
   }
   return total;
 }
@@ -162,7 +165,7 @@ function walk(
   onSample?.(t, 0);
   while (t < until) {
     t = Math.min(t + STEP_MS, until);
-    const potential = absorbedGrams(doses, t, profile.absorptionMinutes) * perGram;
+    const potential = absorbedGrams(doses, t) * perGram;
     eliminated = Math.min(eliminated + perStep, potential);
     bac = Math.max(0, potential - eliminated);
     onSample?.(t, bac);
@@ -178,7 +181,7 @@ function walk(
  * concern; see `shared/util/format.ts`.
  */
 export function bacAt(drinks: readonly Drink[], profile: Profile, at: number): number {
-  const doses = toDoses(drinks);
+  const doses = toDoses(drinks, profile);
   if (!doses.length || at <= doses[0].at) return 0;
   return round(walk(doses, profile, at).bac);
 }
@@ -188,7 +191,7 @@ export function bacAt(drinks: readonly Drink[], profile: Profile, at: number): n
  * there is nothing to burn off.
  */
 export function soberAt(drinks: readonly Drink[], profile: Profile): number | null {
-  const doses = toDoses(drinks);
+  const doses = toDoses(drinks, profile);
   if (!doses.length) return null;
 
   const last = lastDoseEnd(doses);
@@ -200,7 +203,7 @@ export function soberAt(drinks: readonly Drink[], profile: Profile): number | nu
   let t = doses[0].at;
   while (t < deadline) {
     t += STEP_MS;
-    const potential = absorbedGrams(doses, t, profile.absorptionMinutes) * perGram;
+    const potential = absorbedGrams(doses, t) * perGram;
     eliminated = Math.min(eliminated + perStep, potential);
     // Sober only counts once every drink has been absorbed and burned off.
     if (t > last && potential - eliminated <= 0.000_05) return t;
@@ -220,7 +223,7 @@ export function buildTimeline(
   now: number,
   options: { readonly samples: number; readonly from?: number; readonly to?: number },
 ): BacTimeline {
-  const doses = toDoses(drinks);
+  const doses = toDoses(drinks, profile);
   const sober = doses.length ? soberAt(drinks, profile) : null;
   const from = options.from ?? (doses.length ? doses[0].at - 10 * MINUTE : now - HOUR);
   const to = options.to ?? Math.max(now + 30 * MINUTE, sober ?? now + HOUR);
@@ -325,10 +328,15 @@ export function statusFor(bac: number): SoberStatus {
  * what matters when planning the next drink is only what is still to come.
  */
 export function peakFrom(drinks: readonly Drink[], profile: Profile, from: number): number {
-  const doses = toDoses(drinks);
+  const doses = toDoses(drinks, profile);
   if (!doses.length) return 0;
 
-  const settled = lastDoseEnd(doses) + ABSORPTION_TAIL * profile.absorptionMinutes * MINUTE;
+  // The slowest dose sets when the curve can only fall, and it need not be the last.
+  const settled = doses.reduce(
+    (latest, dose) =>
+      Math.max(latest, dose.at + dose.spread + ABSORPTION_TAIL * dose.absorption * MINUTE),
+    -Infinity,
+  );
   let peak = 0;
   walk(doses, profile, Math.max(from, settled), (t, bac) => {
     if (t >= from && bac > peak) peak = bac;
@@ -341,6 +349,7 @@ export interface PlannedDrink {
   readonly volumeMl: number;
   readonly abv: number;
   readonly durationMinutes: number;
+  readonly stomach: StomachState;
 }
 
 /** What the planner works out about one prospective drink. */
@@ -408,6 +417,7 @@ function asDrink(planned: PlannedDrink, at: number): Drink {
     volumeMl: planned.volumeMl,
     abv: planned.abv,
     durationMinutes: planned.durationMinutes,
+    stomach: planned.stomach,
     label: '',
     icon: '',
     createdAt: at,

@@ -7,7 +7,7 @@ import {
   stretchToFit,
 } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { Profile } from '../../../core/models/profile.model';
+import { Profile, StomachState } from '../../../core/models/profile.model';
 import { Clock } from '../../../core/platform/clock';
 import { DrinkLimitStore, MAX_DRINK_LIMIT } from '../../../core/state/drink-limit-store';
 import { DURATION_PRESETS } from '../../../core/models/drink.model';
@@ -101,6 +101,7 @@ export class DrinkPlanner {
   readonly volumeMl = input.required<number>();
   readonly abv = input.required<number>();
   readonly durationMinutes = input.required<number>();
+  readonly stomach = input.required<StomachState>();
 
   /** A longer sipping window the user accepted, in minutes. */
   readonly stretched = output<number>();
@@ -122,6 +123,7 @@ export class DrinkPlanner {
     volumeMl: this.volumeMl(),
     abv: this.abv(),
     durationMinutes: this.durationMinutes(),
+    stomach: this.stomach(),
   }));
 
   protected readonly verdict = computed<{ tone: Tone; icon: string; text: string } | null>(() => {

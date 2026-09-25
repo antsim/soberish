@@ -8,7 +8,6 @@ import {
   STOMACH_STATES,
   absorptionMinutesFor,
   isStomachState,
-  withStomach,
 } from './profile.model';
 
 const profile = (absorptionMinutes: number): Profile => ({
@@ -41,17 +40,6 @@ describe('stomach state', () => {
         expect(minutes).toBeLessThanOrEqual(ABSORPTION_BOUNDS.max);
       }
     }
-  });
-
-  it('returns the same profile object when nothing moved', () => {
-    // Identity matters: a new object here would invalidate the whole chart.
-    const original = profile(45);
-    expect(withStomach(original, DEFAULT_STOMACH)).toBe(original);
-  });
-
-  it('touches only the absorption field', () => {
-    const original = profile(45);
-    expect(withStomach(original, 'full')).toEqual({ ...original, absorptionMinutes: 90 });
   });
 
   it('recognises stored states and rejects anything else', () => {

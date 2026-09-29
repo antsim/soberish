@@ -1,0 +1,254 @@
+/* The recap is its own little world: it covers the shell entirely, so a
+   screenshot is nothing but the card. */
+.stage {
+  --glow: color-mix(in srgb, var(--band) 55%, transparent);
+
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #04060b;
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+// --- The card --------------------------------------------------------------
+
+.recap-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(0.9rem, 2.6dvh, 1.6rem);
+  width: 100%;
+  min-height: 100dvh;
+  padding: calc(1.1rem + var(--safe-top)) 1.4rem calc(1.1rem + var(--safe-bottom));
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      120% 60% at 50% 0%,
+      color-mix(in srgb, var(--band) 16%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(180deg, rgba(10, 13, 24, 0.55), rgba(5, 7, 13, 0.82));
+
+  /* A starfield: three dot tiles of coprime sizes, so the repeats never line
+     up into a visible grid. Cheap, and it survives a screenshot. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.5;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 70% 80%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 45% 55%, #fff, transparent);
+    background-size:
+      137px 149px,
+      211px 173px,
+      293px 251px;
+  }
+}
+
+/* Anything larger than a phone gets a story-shaped card floating on the aurora,
+   so a desktop screenshot still crops to something that fits a chat bubble. */
+@media (min-width: 560px) and (min-height: 640px) {
+  .stage {
+    padding: 24px;
+  }
+
+  .chrome__hint {
+    bottom: 44px;
+  }
+
+  .recap-card {
+    width: min(440px, calc((100dvh - 48px) * 9 / 16));
+    min-height: 0;
+    height: min(calc(100dvh - 48px), 900px);
+    padding: 1.6rem 1.5rem 1.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 32px;
+    box-shadow:
+      0 30px 90px -30px var(--glow),
+      0 0 120px -40px var(--glow);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &__mark {
+    border-radius: 8px;
+  }
+
+  &__name {
+    font-size: 1.02rem;
+    font-weight: 800;
+  }
+}
+
+.eyebrow {
+  padding: 0.32rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--band) 45%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--band) 14%, transparent);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--band);
+}
+
+.when {
+  display: grid;
+  gap: 0.2rem;
+
+  &__date {
+    font-size: clamp(1.35rem, 6vw, 1.7rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+
+  &__hours {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+}
+
+.foot {
+  font-size: 0.66rem;
+  text-align: center;
+  color: var(--text-faint);
+}
+
+/* Each block rises into place in turn, top to bottom. */
+.rise {
+  animation: rise 700ms var(--ease-out) both;
+  animation-delay: calc(80ms + var(--i) * 90ms);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+// --- Chrome: everything that must not end up in the screenshot ---------------
+
+.chrome {
+  transition: opacity 260ms ease;
+
+  &__close {
+    position: fixed;
+    top: calc(0.8rem + var(--safe-top));
+    right: 0.8rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba(8, 10, 18, 0.72);
+    backdrop-filter: blur(10px);
+    font-size: 1rem;
+  }
+
+  &__hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(0.9rem + var(--safe-bottom));
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: max-content;
+    max-width: calc(100% - 2rem);
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-full);
+    background: rgba(8, 10, 18, 0.82);
+    backdrop-filter: blur(10px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    transform: translateX(-50%);
+    animation: hint-in 500ms var(--ease-out) 2.2s both;
+  }
+}
+
+.stage--clean .chrome {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The card sits right below the close button on a phone; push the brand row
+   out of its way only while the button is showing. */
+@media (max-width: 559px), (max-height: 639px) {
+  .head {
+    padding-right: 3.2rem;
+    transition: padding 260ms ease;
+  }
+
+  .stage--clean .head {
+    padding-right: 0;
+  }
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+// --- Nothing to show -----------------------------------------------------------
+
+.empty {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  max-width: 22rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+
+  &__icon {
+    font-size: 3rem;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  p {
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .btn {
+    margin-top: 0.6rem;
+  }
+}

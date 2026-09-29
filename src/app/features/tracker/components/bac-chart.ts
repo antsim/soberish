@@ -17,6 +17,7 @@ import { BacTimeline, HOUR, MINUTE, STATUS_CEILING, SoberStatus } from '../../..
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { toPermille } from '../../../shared/util/format';
+import { spline } from '../../../shared/util/spline';
 
 const HEIGHT = 240;
 /** Bottom padding holds two rows: drink markers, then the time axis. */
@@ -466,26 +467,6 @@ function lerpFrame(a: Frame, b: Frame, t: number): Frame {
     to: lerp(a.to, b.to, t),
     max: lerp(a.max, b.max, t),
   };
-}
-
-/** Catmull-Rom to Bézier: smooth without the overshoot of a naive spline. */
-function spline(points: readonly { x: number; y: number }[]): string {
-  if (points.length < 2) return '';
-  const parts = [`M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`];
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[Math.max(0, i - 1)];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[Math.min(points.length - 1, i + 2)];
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    parts.push(
-      `C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`,
-    );
-  }
-  return parts.join(' ');
 }
 
 function interpolateY(points: readonly { x: number; y: number }[], x: number): number {

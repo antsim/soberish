@@ -40,6 +40,19 @@ export function formatClock(timestamp: number): string {
   });
 }
 
+/**
+ * The night's date in the active language — "Saturday 27 September",
+ * "lauantai 27. syyskuuta". Always the language picked in the app rather than
+ * the browser's, so the date on the recap card matches the copy around it.
+ */
+export function formatNightDate(timestamp: number, locale: string): string {
+  return new Date(timestamp).toLocaleDateString(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+}
+
 /** "2h 15m", "45m", "just now" — with the unit suffixes of the active language. */
 export function formatDuration(ms: number, words: Messages['time']): string {
   if (ms < MINUTE) return words.justNow;

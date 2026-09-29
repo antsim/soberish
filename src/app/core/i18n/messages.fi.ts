@@ -97,6 +97,37 @@ export const fi: Messages = {
       `Tällä tahdilla ohitat ${permille}\u00a0‰ noin ${duration} päästä.`,
   },
 
+  recap: {
+    bannerTitle: 'Illan kooste on valmis',
+    bannerBody: (peak: string, duration: string) => `Huippu ${peak}\u00a0‰ · ${duration}`,
+    bannerExpires: (duration: string) => `Katoaa ${duration} päästä`,
+    bannerAria: 'Avaa illan kooste',
+    eyebrow: 'Illan kooste',
+    peak: 'Huippu',
+    peakAt: (clock: string) => `klo ${clock}`,
+    units: 'Annosta',
+    drinks: 'Juomia',
+    duration: 'Illan pituus',
+    lineup: 'Illan juomat',
+    more: (n: number) => `+${n}`,
+    favourite: 'Illan juoma',
+    verdict: {
+      sober: 'Tuskin edes ilta.',
+      buzzed: 'Sivistynyt ilta.',
+      merry: 'Just sopiva hiprakka. Hyvin pelattu.',
+      drunk: 'Kunnon ilta.',
+      wasted: 'Legendaarista. Juo vettä.',
+    },
+    chartAria: (peak: string, start: string, end: string) =>
+      `Promillekäyrä klo ${start}–${end}, huippu ${peak} promillea.`,
+    hint: 'Napauta napit piiloon ja ota kuva',
+    close: 'Sulje kooste',
+    footer: 'Arvioitu Widmarkin kaavalla · ei alkometri',
+    emptyTitle: 'Koostetta ei vielä ole',
+    emptyBody: 'Kooste ilmestyy, kun olet taas 0.00\u00a0‰:ssa, ja pysyy 24 tuntia.',
+    back: 'Takaisin iltaan',
+  },
+
   stomach: {
     title: 'Syöty tähän mennessä',
     empty: 'Ei mitään',

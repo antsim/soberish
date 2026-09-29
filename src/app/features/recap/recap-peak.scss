@@ -1,0 +1,56 @@
+:host {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.value {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  font-size: clamp(4.6rem, 25vw, 7.2rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  background: linear-gradient(180deg, #fff 20%, var(--band) 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 28px var(--glow));
+}
+
+.unit {
+  margin-top: 0.5rem;
+  font-size: 0.36em;
+  letter-spacing: 0;
+}
+
+.verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: var(--band);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #0b0d14;
+}

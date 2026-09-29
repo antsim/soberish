@@ -1,3 +1,7 @@
+@if (session.recap(); as recap) {
+  <app-recap-banner [recap]="recap" [msUntilWipe]="session.msUntilWipe()" />
+}
+
 <section class="hero card">
   <app-bac-readout
     [bac]="session.bac()"

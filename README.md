@@ -36,6 +36,10 @@ fall, and see who else is still above 0.00% on the live leaderboard.
   back and slow down the first one. The "Eaten so far" card on the Tonight screen sets what the
   next drink is logged with; any drink's own setting can be changed in its editor. The card resets
   with the session.
+- **A night recap for the group chat.** Once you are back at 0.00 ‰, Tonight offers a recap: a
+  fullscreen card with the night's peak ‰, the whole curve drawn in the colours of the bands it
+  passed through, units, drinks, how long it lasted, and every drink as a lineup. It is made to be
+  screenshotted — tap the card and the buttons get out of the way. See [Night recap](#night-recap).
 - **Edit and delete anything.** Every logged drink stays editable, with undo on deletion.
 - **A session that cleans up after itself.** Once you have been back at 0.00 ‰ for 24 hours the
   history is wiped. Keep drinking before then and the whole night — drinks and graph — stays.
@@ -110,6 +114,29 @@ by now, so absorption, sipping windows and food therefore apply to the imagined 
 The measurement period has a 45-minute floor. Without it, two drinks ten minutes apart reads as
 twelve an hour and the app would open every night by predicting catastrophe.
 
+### Night recap
+
+The recap is the morning-after reason to open the app: one card, built to be screenshotted and
+dropped into the group chat.
+
+- **When it appears.** The moment the session ends — BAC back at 0.00 ‰ — a banner leads the
+  Tonight screen with the peak, the night's length and a sparkline, plus how long until it is gone.
+  Tapping it opens `/recap`.
+- **When it disappears.** It lives exactly as long as the session. The 24-hour retention wipe takes
+  it with the drinks, and so does **Clear session**. Logging another drink before the wipe reopens
+  the night, which hides the recap until that longer night is over too.
+- **Nothing is stored.** The card is derived from the drinks already on the device
+  (`core/bac/recap.ts`, pure and unit tested), so there is no history, no share link and nothing to
+  sync. Sharing is a screenshot.
+- **Screenshot-friendly.** The card covers the whole screen, shell included. Tapping anywhere hides
+  the close button and the hint so the capture is only the card; tap again to bring them back.
+  Close, `Esc` and the system back gesture all return to where you came from. On a desktop the
+  card is story-shaped (9:16), so a desktop screenshot crops well in a chat bubble too.
+- **The look.** The peak counts up from zero, the curve draws itself in, coloured on a fixed ramp
+  (blue floor → buzzed → merry → drunk → wasted), so the colour always means the same level; the
+  background glows in the colour of the band the night peaked in. All motion respects
+  `prefers-reduced-motion`.
+
 ### Reading the chart
 
 The chart draws a _window_ onto the session rather than all of it, and the timeline is rebuilt for
@@ -148,7 +175,7 @@ All four inputs — weight, body composition, burn-off rate, absorption time —
 ```
 src/app/
   core/            everything with no UI
-    bac/           the Widmark simulation (pure functions + specs)
+    bac/           the Widmark simulation, pacing and the night recap (pure functions + specs)
     models/        Drink, Profile, LeaderboardEntry
     storage/       IndexedDB wrapper and the offline store of record
     state/         signal stores: profile, drinks, derived session, retention
@@ -159,6 +186,7 @@ src/app/
   features/        one folder per screen, lazily routed
     tracker/       the BAC readout, the animated chart, quick-add, the editor
     leaderboard/   Top BAC
+    recap/         the fullscreen night recap card
     profile/       body profile, account, install, data
     auth/          shared email sign-in card
   shared/          sheet, toasts, formatters, pipes

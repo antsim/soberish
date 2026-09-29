@@ -109,6 +109,43 @@ export const en = {
       `On this trajectory you sail past ${permille}\u00a0‰ in about ${duration}.`,
   },
 
+  /**
+   * The card people screenshot the morning after.
+   *
+   * Written to be posted, not read in-app: the verdicts are the caption the
+   * group chat sees, so they carry the same deadpan as the pace lines.
+   */
+  recap: {
+    bannerTitle: 'Your night recap is ready',
+    bannerBody: (peak: string, duration: string) => `Peak ${peak}\u00a0‰ · ${duration}`,
+    bannerExpires: (duration: string) => `Gone in ${duration}`,
+    bannerAria: 'Open the night recap',
+    eyebrow: 'Night recap',
+    peak: 'Peak',
+    peakAt: (clock: string) => `at ${clock}`,
+    units: 'Units',
+    drinks: 'Drinks',
+    duration: 'Night length',
+    lineup: 'The lineup',
+    more: (n: number) => `+${n}`,
+    favourite: 'Drink of the night',
+    verdict: {
+      sober: 'Barely a night at all.',
+      buzzed: 'A civilised affair.',
+      merry: 'Prime form. Well played.',
+      drunk: 'A proper night out.',
+      wasted: 'Legendary. Drink some water.',
+    },
+    chartAria: (peak: string, start: string, end: string) =>
+      `Blood alcohol curve from ${start} to ${end}, peaking at ${peak} promille.`,
+    hint: 'Tap to hide the buttons, then screenshot',
+    close: 'Close recap',
+    footer: 'Estimated with Widmark · not a breathalyser',
+    emptyTitle: 'No recap yet',
+    emptyBody: "The recap appears once you're back at 0.00\u00a0‰, and stays for 24 hours.",
+    back: 'Back to tonight',
+  },
+
   stomach: {
     title: 'Eaten so far',
     empty: 'Nothing',

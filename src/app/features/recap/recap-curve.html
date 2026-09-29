@@ -1,0 +1,92 @@
+@let chart = drawn();
+<figure class="curve">
+  <svg
+    [attr.viewBox]="'0 0 ' + view.width + ' ' + view.height"
+    role="img"
+    [attr.aria-label]="label()"
+  >
+    <defs>
+      <linearGradient
+        id="recap-ramp"
+        gradientUnits="userSpaceOnUse"
+        x1="0"
+        x2="0"
+        [attr.y1]="plot.bottom"
+        [attr.y2]="chart.gradientTop"
+      >
+        @for (stop of chart.ramp; track stop.offset) {
+          <stop [attr.offset]="stop.offset" [attr.stop-color]="stop.colour" />
+        }
+      </linearGradient>
+      <linearGradient id="recap-fade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fff" stop-opacity="0.55" />
+        <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+      </linearGradient>
+      <mask id="recap-area-mask">
+        <rect
+          [attr.x]="0"
+          [attr.y]="plot.top"
+          [attr.width]="view.width"
+          [attr.height]="plot.bottom - plot.top"
+          fill="url(#recap-fade)"
+        />
+      </mask>
+      <filter id="recap-glow" x="-20%" y="-40%" width="140%" height="180%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <line
+      class="curve__floor"
+      [attr.x1]="plot.left"
+      [attr.x2]="plot.right"
+      [attr.y1]="plot.bottom"
+      [attr.y2]="plot.bottom"
+    />
+    <path
+      class="curve__area"
+      [attr.d]="chart.area"
+      fill="url(#recap-ramp)"
+      mask="url(#recap-area-mask)"
+    />
+    <path
+      class="curve__line"
+      [attr.d]="chart.line"
+      stroke="url(#recap-ramp)"
+      filter="url(#recap-glow)"
+      pathLength="1"
+    />
+
+    <g class="curve__peak">
+      <line
+        class="curve__drop"
+        [attr.x1]="chart.peak.x"
+        [attr.x2]="chart.peak.x"
+        [attr.y1]="chart.peak.y"
+        [attr.y2]="plot.bottom"
+      />
+      <circle class="curve__halo" [attr.cx]="chart.peak.x" [attr.cy]="chart.peak.y" r="9" />
+      <circle class="curve__dot" [attr.cx]="chart.peak.x" [attr.cy]="chart.peak.y" r="4" />
+      <text
+        class="curve__peak-label"
+        [attr.x]="chart.peak.labelX"
+        [attr.y]="chart.peak.y - 14"
+        text-anchor="middle"
+      >
+        {{ peakCaption() }}
+      </text>
+    </g>
+
+    <g class="curve__markers" aria-hidden="true">
+      @for (marker of chart.markers; track marker.key) {
+        <text [attr.x]="marker.x" [attr.y]="plot.bottom + 22" text-anchor="middle">
+          {{ marker.icon }}
+        </text>
+      }
+    </g>
+  </svg>
+</figure>

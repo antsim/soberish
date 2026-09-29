@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HOUR, MINUTE, buildTimeline, soberAt, standardDrinks, statusFor } from '../bac/bac';
 import { PaceProjection, projectAtPace } from '../bac/pace';
+import { NightRecap, buildRecap } from '../bac/recap';
 import { Messages } from '../i18n/messages.en';
 import { absorptionMinutesFor } from '../models/profile.model';
 import { Clock } from '../platform/clock';
@@ -135,6 +136,19 @@ export class SessionStore {
   /** How long the session ran; frozen once it has ended. */
   readonly elapsedMs = computed(() =>
     sessionElapsed(this.startedAt(), this.endedAt(), this.#clock.now()),
+  );
+
+  /**
+   * The finished night, summed up for the recap card — `null` until BAC is back
+   * at 0.00 ‰, and gone again with the retention wipe.
+   *
+   * Keyed off `endedAt` rather than the clock, so it is built once when the
+   * night ends instead of every tick of the following day. Logging another
+   * drink before the wipe reopens the session, which takes the recap away
+   * until that longer night is over too.
+   */
+  readonly recap = computed<NightRecap | null>(() =>
+    buildRecap(this.#drinks.drinks(), this.#profiles.profile(), this.endedAt()),
   );
 
   // --- Chart viewport ------------------------------------------------------

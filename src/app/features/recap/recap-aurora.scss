@@ -1,0 +1,45 @@
+:host {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  animation: drift 18s ease-in-out infinite alternate;
+
+  &--a {
+    top: -35vmax;
+    left: -20vmax;
+    background: radial-gradient(circle, var(--band), transparent 65%);
+  }
+
+  &--b {
+    right: -30vmax;
+    top: 10vmax;
+    background: radial-gradient(circle, #6d28d9, transparent 65%);
+    opacity: 0.38;
+    animation-duration: 23s;
+    animation-direction: alternate-reverse;
+  }
+
+  &--c {
+    bottom: -40vmax;
+    left: -10vmax;
+    background: radial-gradient(circle, var(--sober), transparent 65%);
+    opacity: 0.22;
+    animation-duration: 29s;
+  }
+}
+
+@keyframes drift {
+  to {
+    transform: translate3d(8vmax, 6vmax, 0) scale(1.15);
+  }
+}

@@ -55,7 +55,7 @@
 ```
 src/app/
   core/          no UI, never imports from features/ (one-way, enforced by review)
-    bac/         Widmark simulation — pure functions + specs
+    bac/         Widmark simulation, pace projection, night recap — pure functions + specs
     models/      Drink, Profile, LeaderboardEntry
     storage/     IndexedDB wrapper + offline store of record
     state/       signal stores: drinks, profile, session (derived), retention, chart viewport
@@ -63,7 +63,7 @@ src/app/
     supabase/    lazy client, auth, leaderboard, status publishing
     platform/    clock, connectivity, toaster, PWA install/update
     config/      runtime config loaded before bootstrap
-  features/      one lazily-routed folder per screen: tracker, leaderboard, profile, auth
+  features/      one lazily-routed folder per screen: tracker, leaderboard, profile, auth, recap
   shared/        sheet, toast host, decimal field, formatters, pipes
 ```
 
@@ -98,6 +98,13 @@ src/app/
   `add column if not exists`) and `tables.ts`, with a null-tolerant read for older rows.
 - **Retention:** the session is wiped 24 h after BAC returns to 0. Drinking again before the
   deadline carries the whole night forward. Implemented as a signal effect, not a timer.
+- **The night recap is derived, never stored.** `SessionStore.recap` is `buildRecap()` keyed off
+  `endedAt`, so it exists from the moment BAC returns to 0 until the retention wipe (or a new
+  drink reopens the session). Do not persist recaps or add share URLs — sharing is a screenshot.
+  `/recap` is a fixed overlay above the shell (`z-index: 80`); anything that must not appear in the
+  screenshot belongs in its `.chrome`, which a tap hides. Recap styles are split across small
+  components to stay inside the 4 kB `anyComponentStyle` budget, and its root class is
+  `.recap-card` because the global `.card` would otherwise leak a border and backdrop onto it.
 - The chart draws a _window_ onto the session (`core/state/chart-viewport.ts`, pure + tested), and
   the timeline is rebuilt per window. Plain wheel belongs to the page; only pinch (`ctrl`+wheel)
   zooms, and `touch-action: pan-y` keeps vertical scrolling with the browser.

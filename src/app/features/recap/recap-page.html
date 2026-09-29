@@ -1,0 +1,59 @@
+<div
+  class="stage"
+  [class.stage--clean]="clean()"
+  [style.--band]="'var(--' + band() + ')'"
+  (click)="toggleClean()"
+>
+  <app-recap-aurora />
+
+  @if (recap(); as recap) {
+    <article class="recap-card" [attr.aria-label]="msg().recap.eyebrow + ', ' + title()">
+      <header class="head rise" style="--i: 0">
+        <span class="brand">
+          <img class="brand__mark" src="icons/icon-96.png" alt="" width="28" height="28" />
+          <span class="brand__name">Soberish</span>
+        </span>
+        <span class="eyebrow">{{ msg().recap.eyebrow }}</span>
+      </header>
+
+      <div class="when rise" style="--i: 1">
+        <h1 class="when__date">{{ title() }}</h1>
+        <p class="when__hours tabular">{{ hours() }}</p>
+      </div>
+
+      <app-recap-peak class="rise" style="--i: 2" [recap]="recap" />
+
+      <app-recap-curve class="rise" style="--i: 3" [recap]="recap" />
+
+      <app-recap-stats class="rise" style="--i: 4" [recap]="recap" />
+
+      <app-recap-lineup class="rise" style="--i: 5" [recap]="recap" />
+
+      <footer class="foot rise" style="--i: 6">{{ msg().recap.footer }}</footer>
+    </article>
+
+    <div class="chrome">
+      <button
+        type="button"
+        class="chrome__close"
+        [attr.aria-label]="msg().recap.close"
+        (click)="$event.stopPropagation(); close()"
+      >
+        ✕
+      </button>
+      <p class="chrome__hint" aria-live="polite">
+        <span aria-hidden="true">📸</span>
+        {{ msg().recap.hint }}
+      </p>
+    </div>
+  } @else {
+    <div class="empty" (click)="$event.stopPropagation()">
+      <p class="empty__icon" aria-hidden="true">🌙</p>
+      <h1>{{ msg().recap.emptyTitle }}</h1>
+      <p>{{ msg().recap.emptyBody }}</p>
+      <button type="button" class="btn btn--primary" (click)="close()">
+        {{ msg().recap.back }}
+      </button>
+    </div>
+  }
+</div>

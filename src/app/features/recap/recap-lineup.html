@@ -1,0 +1,21 @@
+@let lineup = shown();
+@let night = recap();
+<section class="lineup">
+  <div class="lineup__head">
+    <h2>{{ msg().recap.lineup }}</h2>
+    @if (night.favourite; as favourite) {
+      <p class="lineup__fav">
+        {{ msg().recap.favourite }}
+        <strong>{{ favourite.icon }} {{ favourite.label }} ×{{ favourite.count }}</strong>
+      </p>
+    }
+  </div>
+  <p class="lineup__icons" [attr.aria-label]="night.drinkCount + ' ' + msg().recap.drinks">
+    @for (drink of lineup.icons; track $index) {
+      <span class="lineup__icon" [style.--j]="$index" [title]="drink.label">{{ drink.icon }}</span>
+    }
+    @if (lineup.more) {
+      <span class="lineup__more">{{ msg().recap.more(lineup.more) }}</span>
+    }
+  </p>
+</section>

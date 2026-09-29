@@ -26,6 +26,7 @@ import { DrinkEditor } from './components/drink-editor';
 import { DrinkList } from './components/drink-list';
 import { PaceNote } from './components/pace-note';
 import { QuickAdd } from './components/quick-add';
+import { RecapBanner } from './components/recap-banner';
 import { StomachPicker } from './components/stomach-picker';
 
 type EditorState =
@@ -45,6 +46,7 @@ type EditorState =
     DurationPipe,
     PaceNote,
     QuickAdd,
+    RecapBanner,
     RouterLink,
     StomachPicker,
   ],

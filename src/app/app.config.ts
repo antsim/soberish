@@ -9,6 +9,8 @@ import { provideRouter, withInMemoryScrolling, withViewTransitions } from '@angu
 import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { APP_CONFIG, AppConfig } from './core/config/app-config';
+import { NotificationPrefsStore } from './core/notifications/notification-prefs-store';
+import { NotificationService } from './core/notifications/notification.service';
 import { PwaService } from './core/platform/pwa.service';
 import { DrinkLimitStore } from './core/state/drink-limit-store';
 import { DrinksStore } from './core/state/drinks-store';
@@ -47,6 +49,8 @@ export function createAppConfig(config: AppConfig): ApplicationConfig {
         const recentDrinks = inject(RecentDrinksStore);
         const drinkLimit = inject(DrinkLimitStore);
         const stomach = inject(StomachStore);
+        const notificationPrefs = inject(NotificationPrefsStore);
+        const notifications = inject(NotificationService);
         const auth = inject(AuthStore);
         const retention = inject(RetentionService);
         const sync = inject(DrinkSyncService);
@@ -59,12 +63,15 @@ export function createAppConfig(config: AppConfig): ApplicationConfig {
           recentDrinks.load(),
           drinkLimit.load(),
           stomach.load(),
+          notificationPrefs.load(),
+          notifications.load(),
         ]);
 
         retention.start();
         sync.start();
         publisher.start();
         pwa.start();
+        notifications.start();
 
         // Session restore can hit the network; never let it delay first paint.
         void auth.init();

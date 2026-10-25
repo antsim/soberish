@@ -13,6 +13,8 @@ export const META_KEYS = {
   recentDrinks: 'recentDrinks',
   drinkLimit: 'drinkLimit',
   stomach: 'stomach',
+  notifications: 'notifications',
+  notificationsDelivered: 'notificationsDelivered',
 } as const;
 
 /**

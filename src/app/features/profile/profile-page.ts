@@ -1,9 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../core/i18n/i18n.service';
+import { NotificationPrefsStore } from '../../core/notifications/notification-prefs-store';
+import { NOTIFICATION_RULES, NotificationKind } from '../../core/notifications/notification-rules';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { BodyType, PROFILE_LIMITS, UnitSystem } from '../../core/models/profile.model';
 import { Connectivity } from '../../core/platform/connectivity';
 import { PwaService } from '../../core/platform/pwa.service';
+import { SystemNotifications } from '../../core/platform/system-notifications';
 import { Toaster } from '../../core/platform/toaster';
 import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
@@ -15,7 +19,7 @@ import { formatWeight, kgToLb, lbToKg } from '../../shared/util/format';
 import { DurationPipe, PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
-/** Body profile, account, install, and data controls. */
+/** Body profile, account, notifications, install, and data controls. */
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,11 +35,15 @@ export class ProfilePage {
   protected readonly sync = inject(DrinkSyncService);
   protected readonly pwa = inject(PwaService);
   protected readonly network = inject(Connectivity);
+  protected readonly notifications = inject(NotificationService);
+  protected readonly notificationPrefs = inject(NotificationPrefsStore);
+  protected readonly system = inject(SystemNotifications);
   protected readonly i18n = inject(I18n);
   protected readonly msg = this.i18n.messages;
   readonly #toaster = inject(Toaster);
 
   protected readonly limits = PROFILE_LIMITS;
+  protected readonly notificationRules = NOTIFICATION_RULES;
 
   /**
    * What the slider amounts to for the next drink, given what has been eaten.
@@ -111,6 +119,18 @@ export class ProfilePage {
 
   protected patch(changes: Parameters<ProfileStore['patch']>[0]): void {
     void this.profiles.patch(changes);
+  }
+
+  protected async toggleNotifications(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (input.checked) await this.notifications.enable();
+    else await this.notifications.disable();
+    // The browser may have said no, and the box has to show what actually happened.
+    input.checked = this.notifications.active();
+  }
+
+  protected setNotificationKind(kind: NotificationKind, event: Event): void {
+    void this.notifications.setKind(kind, (event.target as HTMLInputElement).checked);
   }
 
   protected async signOut(): Promise<void> {

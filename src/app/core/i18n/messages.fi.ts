@@ -288,6 +288,23 @@ export const fi: Messages = {
     installIosAdd: 'Lisää Koti-valikkoon',
     installOther: 'Käytä selaimesi "Asenna sovellus"- tai "Lisää kotivalikkoon" -valintaa.',
 
+    notificationsSection: 'Ilmoitukset',
+    notificationsTitle: 'Salli ilmoitukset',
+    notificationsBody: 'Selain kysyy luvan, kun kytket tämän päälle.',
+    notificationsBlocked:
+      'Ilmoitukset on estetty Soberishilta. Salli ne selaimen sivustoasetuksista ja yritä uudelleen.',
+    notificationsUnsupported: 'Tämä selain ei osaa näyttää ilmoituksia.',
+    notificationsIos:
+      'iPhonella lisää Soberish ensin Koti-valikkoon — Safari sallii ilmoitukset vain asennetuille sovelluksille.',
+    notificationsBackground:
+      'Ilmoitukset tulevat, kun Soberish on auki tai käynnissä taustalla — eivät enää, kun sovellus on suljettu.',
+    notificationKinds: {
+      drinkReminder: {
+        title: 'Juomamuistutus',
+        body: 'Muistuttaa 15 min viimeisen juoman juomisajan jälkeen, jos et ole kirjannut uutta.',
+      },
+    },
+
     dataSection: 'Tiedot',
     drinksStored: (n: number) => `${n} juoma${n === 1 ? '' : 'a'} tallessa`,
     autoClearsIn: (duration: string) =>
@@ -328,6 +345,14 @@ export const fi: Messages = {
       `Tyhjennettiin ${n} juoma${n === 1 ? '' : 'a'} — olit ollut selvin päin 24 tuntia.`,
     updateReady: 'Soberishista on uusi versio valmiina.',
     reload: 'Lataa uudelleen',
+  },
+
+  notifications: {
+    drinkReminder: {
+      title: 'Unohtuiko juoman kirjaus?',
+      body: (icon: string, label: string) =>
+        `${icon} ${label} pitäisi olla jo juotu. Kirjaa seuraava, niin käyrä pysyy rehellisenä.`,
+    },
   },
 
   sheet: {

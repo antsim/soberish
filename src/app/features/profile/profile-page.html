@@ -149,6 +149,47 @@
 </section>
 
 <section class="card block">
+  <h2 class="section-title">{{ msg().profile.notificationsSection }}</h2>
+
+  @if (!system.supported) {
+    <p class="hint">
+      {{ pwa.isIos ? msg().profile.notificationsIos : msg().profile.notificationsUnsupported }}
+    </p>
+  } @else {
+    <label class="toggle">
+      <input
+        type="checkbox"
+        [checked]="notifications.active()"
+        (change)="toggleNotifications($event)"
+      />
+      <span>
+        <strong>{{ msg().profile.notificationsTitle }}</strong>
+        <small>{{ msg().profile.notificationsBody }}</small>
+      </span>
+    </label>
+
+    @if (system.permission() === 'denied') {
+      <p class="hint">{{ msg().profile.notificationsBlocked }}</p>
+    } @else if (notifications.active()) {
+      @for (rule of notificationRules; track rule.kind) {
+        <label class="toggle toggle--nested">
+          <input
+            type="checkbox"
+            [checked]="notificationPrefs.isOn(rule.kind)"
+            (change)="setNotificationKind(rule.kind, $event)"
+          />
+          <span>
+            <strong>{{ msg().profile.notificationKinds[rule.kind].title }}</strong>
+            <small>{{ msg().profile.notificationKinds[rule.kind].body }}</small>
+          </span>
+        </label>
+      }
+      <p class="hint">{{ msg().profile.notificationsBackground }}</p>
+    }
+  }
+</section>
+
+<section class="card block">
   <h2 class="section-title">{{ msg().profile.appSection }}</h2>
 
   @if (pwa.installed()) {

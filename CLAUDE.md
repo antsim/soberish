@@ -105,6 +105,12 @@ src/app/
   screenshot belongs in its `.chrome`, which a tap hides. Recap styles are split across small
   components to stay inside the 4 kB `anyComponentStyle` budget, and its root class is
   `.recap-card` because the global `.card` would otherwise leak a border and backdrop onto it.
+- **Notifications are rules, not timers.** Each kind is a pure `NotificationRule` in
+  `core/notifications/notification-rules.ts` that answers "what is due, under which key" from state;
+  `NotificationService` asks them on every clock tick and persists delivered keys, so each key fires
+  once even across reloads. A new kind = a rule in `NOTIFICATION_RULES`, a `NotificationKind`, and
+  copy under `notifications` + `profile.notificationKinds`. Delivery is page-side only (works while
+  the app runs, also in the background); Web Push for a closed app would need a server.
 - The chart draws a _window_ onto the session (`core/state/chart-viewport.ts`, pure + tested), and
   the timeline is rebuilt per window. Plain wheel belongs to the page; only pinch (`ctrl`+wheel)
   zooms, and `touch-action: pan-y` keeps vertical scrolling with the browser.

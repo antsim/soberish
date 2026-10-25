@@ -307,6 +307,23 @@ export const en = {
     installIosAdd: 'Add to Home Screen',
     installOther: 'Use your browser\'s "Install app" or "Add to Home Screen" menu item.',
 
+    notificationsSection: 'Notifications',
+    notificationsTitle: 'Allow notifications',
+    notificationsBody: 'Your browser asks for permission when you turn this on.',
+    notificationsBlocked:
+      'Notifications are blocked for Soberish. Allow them in your browser’s site settings, then try again.',
+    notificationsUnsupported: 'This browser cannot show notifications.',
+    notificationsIos:
+      'On iPhone, add Soberish to your Home Screen first — Safari only allows notifications from installed apps.',
+    notificationsBackground:
+      'Notifications arrive while Soberish is open or running in the background, not once it has been closed.',
+    notificationKinds: {
+      drinkReminder: {
+        title: 'Drink reminder',
+        body: 'A nudge 15 minutes after your last drink’s drinking time, if you have not logged another.',
+      },
+    },
+
     dataSection: 'Data',
     drinksStored: (n: number) => `${n} drinks stored`,
     autoClearsIn: (duration: string) => `Auto-clears in ${duration} — 24 h after you sobered up.`,
@@ -346,6 +363,14 @@ export const en = {
       `Cleared ${n} drink${n === 1 ? '' : 's'} — you'd been sober for 24 hours.`,
     updateReady: 'A new version of Soberish is ready.',
     reload: 'Reload',
+  },
+
+  notifications: {
+    drinkReminder: {
+      title: 'Forgot to log a drink?',
+      body: (icon: string, label: string) =>
+        `${icon} ${label} should be finished by now. Log the next one to keep the curve honest.`,
+    },
   },
 
   sheet: {

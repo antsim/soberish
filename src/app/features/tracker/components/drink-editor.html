@@ -25,7 +25,7 @@
           class="icon-btn"
           [class.icon-btn--active]="icon() === option"
           [attr.aria-pressed]="icon() === option"
-          (click)="icon.set(option)"
+          (click)="pickType(option)"
         >
           {{ option }}
         </button>

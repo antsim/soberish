@@ -7,8 +7,9 @@ import { VolumePipe } from '../../../shared/util/pipes';
 /**
  * The fast path: one tap logs a drink at the current time.
  *
- * The row is built from the drinks this user actually added through "Custom",
- * so the shortcuts are theirs rather than a guess at an average night out.
+ * Docked above the tab bar rather than placed in the page, because logging is
+ * the one thing done all night and the page above it is taller than a phone —
+ * in the flow it sat a full scroll away from the thumb.
  */
 @Component({
   selector: 'app-quick-add',
@@ -29,8 +30,6 @@ import { VolumePipe } from '../../../shared/util/pipes';
             {{ preset.volumeMl | volume: units() }} · {{ preset.abv }}%
           </span>
         </button>
-      } @empty {
-        <p class="hint">{{ msg().quickAdd.empty }}</p>
       }
     </div>
   `,

@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HOUR } from '../../core/bac/bac';
 import { I18n } from '../../core/i18n/i18n.service';
+import { quickPresets, starterPresets } from '../../core/models/drink-types';
 import { Drink, DrinkDraft, DrinkPreset } from '../../core/models/drink.model';
 import { Clock } from '../../core/platform/clock';
 import { Toaster } from '../../core/platform/toaster';
@@ -27,6 +28,7 @@ import { DrinkList } from './components/drink-list';
 import { PaceNote } from './components/pace-note';
 import { QuickAdd } from './components/quick-add';
 import { RecapBanner } from './components/recap-banner';
+import { SetupSheet } from './components/setup-sheet';
 import { StomachPicker } from './components/stomach-picker';
 
 type EditorState =
@@ -48,6 +50,7 @@ type EditorState =
     QuickAdd,
     RecapBanner,
     RouterLink,
+    SetupSheet,
     StomachPicker,
   ],
   templateUrl: './tracker-page.html',
@@ -72,6 +75,19 @@ export class TrackerPage implements OnInit {
   /** The weight the curve is using, in the user's own units. */
   protected readonly weightShown = computed(() =>
     formatWeight(this.profiles.profile().weightKg, this.profiles.profile().units),
+  );
+
+  /** Wide enough to scroll, short enough that the user's own drinks lead it. */
+  protected readonly presets = computed(() =>
+    quickPresets(this.recentDrinks.recent(), starterPresets(this.msg().drinkTypes), 8),
+  );
+
+  /** Never over the editor: the manifest shortcut opens that one directly. */
+  protected readonly askingSetup = computed(
+    () =>
+      this.profiles.needsSetup() &&
+      !this.profiles.setupPostponed() &&
+      this.editor().mode === 'closed',
   );
 
   protected readonly editing = computed(() => {

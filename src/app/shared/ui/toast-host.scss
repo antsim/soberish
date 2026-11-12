@@ -1,6 +1,6 @@
 :host {
   position: fixed;
-  inset: auto 0 calc(84px + var(--safe-bottom)) 0;
+  inset: auto 0 calc(var(--tabbar-h) + var(--dock, 0px) + 12px + var(--safe-bottom)) 0;
   z-index: 70;
   display: flex;
   justify-content: center;

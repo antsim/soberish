@@ -11,6 +11,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MINUTE, alcoholGrams, standardDrinks } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
+import { DRINK_TYPES, PLAIN_ICONS, drinkTypeFor } from '../../../core/models/drink-types';
 import {
   DEFAULT_DRINK_DURATION,
   DURATION_PRESETS,
@@ -35,9 +36,12 @@ import { formatClock, formatPermille, mlToOz, ozToMl } from '../../../shared/uti
 import { DrinkPlanner } from './drink-planner';
 import { STOMACH_ICONS } from './stomach-picker';
 
-const ICONS = ['🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🥂', '🍎', '🧉', '💧'];
-const VOLUME_PRESETS_ML = [40, 330, 400, 440, 500, 568];
-const ABV_PRESETS = [0, 4.5, 5, 5.5, 8, 12, 20, 40];
+const ICONS = [...DRINK_TYPES.map((type) => type.icon), ...PLAIN_ICONS];
+/** The pours a Finnish bar actually serves: shot, wine, large wine, bottle, 0.4, pint. */
+const VOLUME_PRESETS_ML = [40, 120, 160, 330, 400, 500];
+/** 1.5, 5, 12, 16 and 19.2 US oz — shot, wine, can, US pint, imperial pint. */
+const VOLUME_PRESETS_IMPERIAL_ML = [44, 148, 355, 473, 568];
+const ABV_PRESETS = [0, 4.7, 5.5, 8, 12.5, 20, 40];
 
 /**
  * Add / edit form for a single drink.
@@ -98,7 +102,7 @@ export class DrinkEditor implements OnInit {
   );
 
   protected readonly volumeChips = computed(() =>
-    VOLUME_PRESETS_ML.map((ml) => ({
+    (this.imperial() ? VOLUME_PRESETS_IMPERIAL_ML : VOLUME_PRESETS_ML).map((ml) => ({
       ml,
       text: this.imperial() ? `${round(mlToOz(ml), 1)} oz` : `${ml} ml`,
     })),
@@ -167,6 +171,24 @@ export class DrinkEditor implements OnInit {
       this.consumedAt.set(existing.consumedAt);
       this.stomach.set(existing.stomach);
     }
+  }
+
+  /**
+   * Choosing what the drink is fills in how it is usually poured. Only while
+   * adding: on a drink already had, the icon is a relabel and must not rewrite
+   * what was actually drunk.
+   */
+  protected pickType(icon: string): void {
+    this.icon.set(icon);
+    const type = drinkTypeFor(icon);
+    if (!type || this.isEdit()) return;
+    this.volumeMl.set(type.volumeMl);
+    this.abv.set(type.abv);
+    this.durationMinutes.set(type.durationMinutes);
+    // A name the user typed is theirs; one we supplied follows the type.
+    const names = this.msg().drinkTypes;
+    const current = this.label().trim();
+    if (!current || Object.values(names).includes(current)) this.label.set(names[type.key]);
   }
 
   protected setVolumeFromInput(value: number): void {

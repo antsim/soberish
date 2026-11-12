@@ -73,7 +73,6 @@ export const en = {
     statSession: 'Session',
     setWeightTitle: 'Set your weight for an accurate curve.',
     setWeightBody: (weight: string) => `Soberish is using ${weight} right now.`,
-    logADrink: 'Log a drink',
     tonight: 'Tonight',
     clearsIn: (duration: string) => `clears in ${duration}`,
     clearsInTitle: 'History clears 24 hours after you sober up',
@@ -147,7 +146,8 @@ export const en = {
   },
 
   stomach: {
-    title: 'Eaten so far',
+    title: 'Eaten',
+    info: 'What does this change?',
     empty: 'Nothing',
     snack: 'Snack',
     full: 'Meal',
@@ -159,14 +159,33 @@ export const en = {
     group: 'Log a drink',
     custom: 'Custom',
     customMeta: 'Any size',
-    empty: 'Drinks you add with Custom show up here as shortcuts.',
+  },
+
+  drinkTypes: {
+    beer: 'Beer',
+    pint: 'Large beer',
+    wine: 'Wine',
+    shot: 'Shot',
+    cocktail: 'Cocktail',
+    longDrink: 'Long drink',
+    sparkling: 'Sparkling',
+    cider: 'Cider',
+    water: 'Water',
+  },
+
+  setup: {
+    title: 'Two things first',
+    body: 'Blood alcohol depends on your size. With these two the curve is yours, not an average person’s.',
+    weight: 'Weight (kg)',
+    later: 'Later',
+    done: 'Done',
   },
 
   drinkList: {
     edit: (label: string) => `Edit ${label}`,
     delete: (label: string) => `Delete ${label}`,
     units: (n: string) => `${n} units`,
-    empty: 'Nothing logged yet — tap a drink above to start the night.',
+    empty: 'Nothing logged yet — tap a drink below to start the night.',
   },
 
   editor: {

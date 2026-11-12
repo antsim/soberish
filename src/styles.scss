@@ -12,8 +12,9 @@
   --border-strong: rgba(255, 255, 255, 0.18);
 
   --text: #f2f5fb;
-  --text-muted: #96a0b5;
-  --text-faint: #626d84;
+  --text-muted: #aab3c7;
+  /* 6.4:1 on --bg. The app is read in a dim bar, mostly at 12 px. */
+  --text-faint: #8a94aa;
 
   --amber: #ffb020;
   --amber-soft: #ffd27a;
@@ -40,6 +41,9 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+
+  --tabbar-h: 66px;
+  --dock-h: 66px;
 
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
@@ -69,6 +73,11 @@ body {
   text-rendering: optimizeLegibility;
   transition: background-image 600ms var(--ease-out);
   overscroll-behavior-y: none;
+}
+
+/* The quick-add dock is fixed; everything else at the bottom edge makes room. */
+body:has(app-quick-add) {
+  --dock: var(--dock-h);
 }
 
 h1,
@@ -112,7 +121,7 @@ select {
 }
 
 .section-title {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { STOMACH_STATES, StomachState } from '../../../core/models/profile.model';
 import { SessionStore } from '../../../core/state/session-store';
@@ -21,6 +21,9 @@ export const STOMACH_ICONS: Record<StomachState, string> = {
  * time is shown so the choice has a visible consequence rather than being an
  * article of faith.
  *
+ * The explanation is read once, so it waits behind the info button instead of
+ * costing the screen three lines every night.
+ *
  * It sets the stomach the *next* drink is logged with. Drinks already on the
  * list keep theirs, and each can be changed on its own in the editor.
  */
@@ -32,6 +35,16 @@ export const STOMACH_ICONS: Record<StomachState, string> = {
     <div class="head">
       <h2 class="section-title">{{ msg().stomach.title }}</h2>
       <span class="effect tabular">{{ msg().stomach.effect(absorptionMinutes()) }}</span>
+      <button
+        type="button"
+        class="info"
+        [attr.aria-label]="msg().stomach.info"
+        [attr.aria-expanded]="explained()"
+        aria-controls="stomach-hint"
+        (click)="explained.set(!explained())"
+      >
+        i
+      </button>
     </div>
 
     <div class="segmented" role="group" [attr.aria-label]="msg().stomach.title">
@@ -48,7 +61,7 @@ export const STOMACH_ICONS: Record<StomachState, string> = {
       }
     </div>
 
-    <p class="hint">{{ msg().stomach.hint }}</p>
+    <p class="hint" id="stomach-hint" [hidden]="!explained()">{{ msg().stomach.hint }}</p>
   `,
   styleUrl: './stomach-picker.scss',
 })
@@ -58,6 +71,7 @@ export class StomachPicker {
   protected readonly msg = inject(I18n).messages;
 
   protected readonly state = this.#stomach.state;
+  protected readonly explained = signal(false);
 
   protected readonly options = computed(() => {
     const words = this.msg().stomach;

@@ -27,7 +27,7 @@
   text-align: center;
 
   dt {
-    font-size: 0.66rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -64,7 +64,6 @@
   color: var(--text-faint);
 }
 
-.add,
 .history {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -78,13 +77,13 @@
 }
 
 .wipe {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-faint);
 }
 
 .disclaimer {
   padding: 0 0.2rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.5;
   color: var(--text-faint);
   text-align: center;

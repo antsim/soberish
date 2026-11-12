@@ -1,10 +1,25 @@
+:host {
+  position: fixed;
+  inset: auto 0 calc(var(--tabbar-h) + var(--safe-bottom)) 0;
+  /* Above the page, below the tab bar's own layer and every overlay. */
+  z-index: 35;
+  width: min(560px, 100%);
+  height: var(--dock-h);
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+  background: rgba(8, 11, 18, 0.86);
+  backdrop-filter: blur(18px);
+}
+
 .row {
   display: flex;
-  gap: 0.6rem;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
   overflow-x: auto;
-  padding: 0.15rem 1.15rem 0.6rem;
-  margin: 0 -1.15rem;
+  padding: 0 1.15rem;
   scroll-snap-type: x proximity;
+  scroll-padding-inline: 1.15rem;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -15,13 +30,15 @@
 .preset {
   flex: 0 0 auto;
   display: grid;
-  gap: 0.1rem;
-  justify-items: center;
-  min-width: 92px;
-  padding: 0.7rem 0.75rem 0.6rem;
-  border: 1px solid var(--border);
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.3rem 0.85rem 0.3rem 0.65rem;
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--surface-strong);
+  text-align: left;
   scroll-snap-align: start;
   transition:
     transform 140ms var(--ease-out),
@@ -39,30 +56,27 @@
 
   &--custom {
     border-style: dashed;
+    background: transparent;
     color: var(--text-muted);
   }
 }
 
 .preset__icon {
-  font-size: 1.5rem;
-  line-height: 1.2;
+  grid-row: span 2;
+  font-size: 1.4rem;
+  line-height: 1;
 }
 
 .preset__label {
   font-size: 0.85rem;
   font-weight: 650;
-}
-
-.preset__meta {
-  font-size: 0.68rem;
-  color: var(--text-faint);
+  line-height: 1.2;
   white-space: nowrap;
 }
 
-.hint {
-  align-self: center;
-  margin: 0;
-  font-size: 0.8rem;
+.preset__meta {
+  font-size: 0.75rem;
+  line-height: 1.2;
   color: var(--text-faint);
-  text-wrap: balance;
+  white-space: nowrap;
 }

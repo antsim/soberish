@@ -106,7 +106,7 @@
   border: 1px solid color-mix(in srgb, var(--band) 45%, transparent);
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--band) 14%, transparent);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -136,7 +136,7 @@
 }
 
 .foot {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   text-align: center;
   color: var(--text-faint);
 }

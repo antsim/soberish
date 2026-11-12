@@ -15,6 +15,17 @@ export class ProfileStore {
   /** True until the user has confirmed their weight — drives the onboarding card. */
   readonly needsSetup = computed(() => this.#loaded() && this.#profile().updatedAt === 0);
 
+  readonly #setupPostponed = signal(false);
+  /**
+   * "Later" on the first-run questions, for this launch only: the questions
+   * step aside for the night, and the notice on Tonight keeps the door open.
+   */
+  readonly setupPostponed = this.#setupPostponed.asReadonly();
+
+  postponeSetup(): void {
+    this.#setupPostponed.set(true);
+  }
+
   async load(): Promise<void> {
     const stored = await this.#db.readProfile();
     // A profile saved before languages existed has no choice to honour, so the

@@ -74,7 +74,6 @@ export const fi: Messages = {
     statSession: 'Ilta',
     setWeightTitle: 'Aseta painosi, niin käyrä pitää kutinsa.',
     setWeightBody: (weight: string) => `Soberish veikkaa nyt ${weight}.`,
-    logADrink: 'Kirjaa juoma',
     tonight: 'Illan saldo',
     clearsIn: (duration: string) => `tyhjenee ${duration} päästä`,
     clearsInTitle: 'Historia tyhjenee 24 tuntia selviämisen jälkeen',
@@ -129,7 +128,8 @@ export const fi: Messages = {
   },
 
   stomach: {
-    title: 'Syöty tähän mennessä',
+    title: 'Syöty',
+    info: 'Mihin tämä vaikuttaa?',
     empty: 'Ei mitään',
     snack: 'Välipala',
     full: 'Ateria',
@@ -141,14 +141,33 @@ export const fi: Messages = {
     group: 'Kirjaa juoma',
     custom: 'Oma',
     customMeta: 'Mikä vain',
-    empty: 'Omalla-napilla lisätyt juomat ilmestyvät tähän pikavalinnoiksi.',
+  },
+
+  drinkTypes: {
+    beer: 'Olut',
+    pint: 'Iso olut',
+    wine: 'Viini',
+    shot: 'Shotti',
+    cocktail: 'Drinkki',
+    longDrink: 'Lonkero',
+    sparkling: 'Kuohuviini',
+    cider: 'Siideri',
+    water: 'Vesi',
+  },
+
+  setup: {
+    title: 'Kaksi asiaa ensin',
+    body: 'Promillet riippuvat koostasi. Näillä kahdella käyrä on sinun eikä keskivertoihmisen.',
+    weight: 'Paino (kg)',
+    later: 'Myöhemmin',
+    done: 'Valmis',
   },
 
   drinkList: {
     edit: (label: string) => `Muokkaa: ${label}`,
     delete: (label: string) => `Poista: ${label}`,
     units: (n: string) => `${n} annosta`,
-    empty: 'Ei vielä mitään — napauta juomaa yltä, niin ilta alkaa.',
+    empty: 'Ei vielä mitään — napauta juomaa alta, niin ilta alkaa.',
   },
 
   editor: {

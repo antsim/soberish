@@ -70,16 +70,6 @@
 
 <app-stomach-picker />
 
-<section class="add">
-  <h2 class="section-title">{{ msg().tracker.logADrink }}</h2>
-  <app-quick-add
-    [units]="profiles.profile().units"
-    [presets]="recentDrinks.recent()"
-    (picked)="quickAdd($event)"
-    (customised)="openCustom()"
-  />
-</section>
-
 <section class="history">
   <header class="history__head">
     <h2 class="section-title">{{ msg().tracker.tonight }}</h2>
@@ -99,6 +89,17 @@
 </section>
 
 <p class="disclaimer">{{ msg().tracker.disclaimer }}</p>
+
+<app-quick-add
+  [units]="profiles.profile().units"
+  [presets]="presets()"
+  (picked)="quickAdd($event)"
+  (customised)="openCustom()"
+/>
+
+@if (askingSetup()) {
+  <app-setup-sheet (dismissed)="profiles.postponeSetup()" />
+}
 
 @if (editor().mode !== 'closed') {
   <app-drink-editor

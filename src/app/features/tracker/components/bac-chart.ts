@@ -119,12 +119,15 @@ interface Marker {
 })
 export class BacChart {
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   readonly timeline = input.required<BacTimeline>();
   readonly drinks = input<readonly Drink[]>([]);
   readonly now = input.required<number>();
-  /** Whether drag, pinch, wheel and arrow keys move the window. */
+  /** Whether pinch, wheel and arrow keys move the window. */
   readonly interactive = input(false);
+  /** The planner's ceiling as a BAC percentage, drawn as a line when it is on the axis. */
+  readonly limit = input<number | null>(null);
 
   /** Milliseconds to shift the visible window by. */
   readonly panned = output<number>();
@@ -244,7 +247,7 @@ export class BacChart {
     for (let value = 0; value <= frame.max + 1e-9; value += step) {
       lines.push({
         y: plot.bottom - (plot.height * value) / frame.max,
-        label: value.toFixed(decimals),
+        label: this.fmt().decimal(value, decimals),
       });
     }
     return lines;
@@ -265,7 +268,7 @@ export class BacChart {
     const ticks: Tick[] = [];
     const first = Math.ceil(frame.from / step) * step;
     for (let t = first; t <= frame.to; t += step) {
-      ticks.push({ x: this.#toX(t, frame, plot), label: clockLabel(t) });
+      ticks.push({ x: this.#toX(t, frame, plot), label: this.fmt().clock(t) });
     }
     return ticks.filter((tick) => tick.x >= plot.left - 1 && tick.x <= plot.right + 1);
   });
@@ -288,29 +291,78 @@ export class BacChart {
           x,
           y: plot.bottom + 6,
           icon: drink.icon,
-          label: `${drink.label} at ${clockLabel(drink.consumedAt)}`,
+          label: `${drink.label} · ${this.fmt().clock(drink.consumedAt)}`,
           showIcon,
         };
       });
   });
 
+  /** The ceiling, when there is one and the axis reaches it. */
+  protected readonly limitLine = computed(() => {
+    const limit = this.limit();
+    const { max } = this.#displayed();
+    const plot = this.plot();
+    if (limit === null) return null;
+    const permille = toPermille(limit);
+    if (permille <= 0 || permille >= max) return null;
+    return {
+      y: plot.bottom - (plot.height * permille) / max,
+      label: this.msg().chart.limit(this.fmt().permille(limit)),
+    };
+  });
+
+  /** Where the finger is, in SVG x. `null` when nothing is being read off. */
+  readonly #scrubX = signal<number | null>(null);
+
+  /**
+   * The moment under the finger: its time and the curve's value there.
+   *
+   * Read off the displayed frame rather than recomputed, so the dot sits on
+   * the line that is actually drawn.
+   */
+  protected readonly scrub = computed(() => {
+    const at = this.#scrubX();
+    const frame = this.#displayed();
+    const plot = this.plot();
+    if (at === null || frame.ys.length < 2 || this.timeline().peak <= 0) return null;
+
+    const x = Math.min(plot.right, Math.max(plot.left, at));
+    const ratio = (x - plot.left) / plot.width;
+    const position = ratio * (frame.ys.length - 1);
+    const index = Math.floor(position);
+    const next = Math.min(frame.ys.length - 1, index + 1);
+    const value = lerp(frame.ys[index], frame.ys[next], position - index);
+    const t = frame.from + ratio * (frame.to - frame.from);
+    const text = `${this.fmt().clock(t)} · ${this.fmt().decimal(value, 2)} ‰`;
+    const width = text.length * 6.8 + 20;
+    return {
+      x,
+      y: plot.bottom - (plot.height * Math.min(value, frame.max)) / frame.max,
+      text,
+      width,
+      boxX: Math.min(this.width() - width - 2, Math.max(2, x - width / 2)),
+    };
+  });
+
   protected readonly description = computed(() => {
     const timeline = this.timeline();
     return this.msg().chart.aria(
-      toPermille(timeline.current).toFixed(2),
-      toPermille(timeline.peak).toFixed(2),
+      this.fmt().permille(timeline.current),
+      this.fmt().permille(timeline.peak),
     );
   });
 
   // --- Gestures ------------------------------------------------------------
   //
-  // Pointer events cover mouse, touch and pen in one path. `touch-action:
-  // pan-y` on the frame leaves vertical page scrolling to the browser while
-  // handing us horizontal drags and pinches, so panning the chart never traps
-  // the page.
+  // Pointer events cover mouse, touch and pen in one path. One finger reads the
+  // curve, because that is what a finger on a chart is asking for; moving the
+  // window takes two (or the mouse, which has hover to read with). `touch-action:
+  // pan-y` on the frame leaves vertical page scrolling to the browser, so
+  // neither traps the page.
 
   readonly #pointers = new Map<number, { x: number; y: number }>();
   #pinchDistance = 0;
+  #pinchMidX = 0;
   #gestureEndsAt = 0;
 
   /** True mid-gesture: the curve snaps rather than tweening, so drags track the finger. */
@@ -319,40 +371,73 @@ export class BacChart {
   }
 
   protected onPointerDown(event: PointerEvent): void {
-    if (!this.interactive()) return;
     const target = event.currentTarget as HTMLElement;
     target.setPointerCapture(event.pointerId);
     this.#pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (this.#pointers.size === 2) this.#pinchDistance = this.#spread();
+    if (this.#pointers.size === 2) {
+      this.#scrubX.set(null);
+      this.#pinchDistance = this.#spread();
+      this.#pinchMidX = this.#midpointX();
+    } else if (event.pointerType !== 'mouse') {
+      this.#scrubX.set(this.#localX(event.clientX));
+    }
   }
 
   protected onPointerMove(event: PointerEvent): void {
     const previous = this.#pointers.get(event.pointerId);
-    if (!previous) return;
+    if (!previous) {
+      // A mouse that is merely passing over reads the curve.
+      if (event.pointerType === 'mouse') this.#scrubX.set(this.#localX(event.clientX));
+      return;
+    }
     this.#pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
     if (this.#pointers.size >= 2) {
+      if (!this.interactive()) return;
       const spread = this.#spread();
+      const midX = this.#midpointX();
       if (this.#pinchDistance > 0 && spread > 0) {
         this.zoomed.emit({
           factor: spread / this.#pinchDistance,
-          focusRatio: this.#ratioAt(this.#midpointX()),
+          focusRatio: this.#ratioAt(midX),
         });
       }
+      // Two fingers travelling together move the window back or forward.
+      const shift = midX - this.#pinchMidX;
+      if (shift) this.panned.emit(-shift * this.#msPerPixel());
       this.#pinchDistance = spread;
+      this.#pinchMidX = midX;
+      return;
+    }
+
+    if (event.pointerType !== 'mouse') {
+      this.#scrubX.set(this.#localX(event.clientX));
       return;
     }
 
     // Dragging right reveals earlier time, so the window moves back.
     const dx = event.clientX - previous.x;
-    if (dx) this.panned.emit(-dx * this.#msPerPixel());
+    if (dx && this.interactive()) {
+      this.#scrubX.set(null);
+      this.panned.emit(-dx * this.#msPerPixel());
+    }
   }
 
   protected onPointerUp(event: PointerEvent): void {
     this.#pointers.delete(event.pointerId);
-    this.#pinchDistance = this.#pointers.size === 2 ? this.#spread() : 0;
+    if (this.#pointers.size === 2) {
+      this.#pinchDistance = this.#spread();
+      this.#pinchMidX = this.#midpointX();
+    } else {
+      this.#pinchDistance = 0;
+    }
+    if (event.pointerType !== 'mouse') this.#scrubX.set(null);
     // Keep snapping briefly, so releasing a drag does not kick off a tween.
     this.#gestureEndsAt = performance.now() + 120;
+  }
+
+  protected onPointerLeave(): void {
+    if (!this.#pointers.size) this.#scrubX.set(null);
   }
 
   protected onWheel(event: WheelEvent): void {
@@ -398,6 +483,11 @@ export class BacChart {
   #midpointX(): number {
     const [a, b] = [...this.#pointers.values()];
     return (a.x + b.x) / 2;
+  }
+
+  /** A client x in the SVG's own coordinates, which are real pixels. */
+  #localX(clientX: number): number {
+    return clientX - this.host().nativeElement.getBoundingClientRect().left;
   }
 
   /** Turns a client x into a 0–1 position across the plot area. */
@@ -479,8 +569,4 @@ function interpolateY(points: readonly { x: number; y: number }[], x: number): n
     }
   }
   return points[points.length - 1]?.y ?? 0;
-}
-
-function clockLabel(t: number): string {
-  return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }

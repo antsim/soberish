@@ -10,7 +10,7 @@
     [disabled]="board.loading() || !network.online()"
     [attr.aria-label]="msg().leaderboard.refresh"
   >
-    {{ board.loading() ? '…' : '↻' }}
+    <app-icon name="refresh" [class.spin]="board.loading()" />
   </button>
 </header>
 
@@ -44,7 +44,9 @@
         >
           <span class="podium__medal" aria-hidden="true">{{ medals[entry.rank - 1] }}</span>
           <span class="podium__name">{{ entry.displayName }}</span>
-          <span class="podium__bac tabular">{{ entry.liveBac | permille }}<small>‰</small></span>
+          <span class="podium__bac tabular"
+            >{{ fmt().permille(entry.liveBac) }}<small>‰</small></span
+          >
           <span class="podium__meta tabular">{{ msg().leaderboard.units(entry.drinks) }}</span>
         </li>
       }
@@ -57,7 +59,7 @@
             <span class="row__rank tabular">{{ entry.rank }}</span>
             <span class="row__name">{{ entry.displayName }}</span>
             <span class="row__meta tabular">{{ msg().leaderboard.units(entry.drinks) }}</span>
-            <span class="row__bac tabular">{{ entry.liveBac | permille }}</span>
+            <span class="row__bac tabular">{{ fmt().permille(entry.liveBac) }}</span>
           </li>
         }
       </ul>
@@ -76,9 +78,7 @@
       {{ msg().leaderboard.notRanked }}
     }
     @if (board.fetchedAt(); as at) {
-      <span class="foot__time">{{
-        msg().leaderboard.updatedAt((at | date: 'HH:mm:ss') ?? '')
-      }}</span>
+      <span class="foot__time">{{ msg().leaderboard.updatedAt(fmt().clock(at)) }}</span>
     }
   </p>
 }

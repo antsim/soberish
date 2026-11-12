@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { I18n } from '../../core/i18n/i18n.service';
 import { SessionStore } from '../../core/state/session-store';
-import { formatClock, formatNightDate } from '../../shared/util/format';
+import { formatNightDate } from '../../shared/util/format';
 import { RecapAurora } from './recap-aurora';
 import { RecapCurve } from './recap-curve';
 import { RecapLineup } from './recap-lineup';
@@ -35,6 +35,7 @@ export class RecapPage {
   readonly #router = inject(Router);
   readonly #location = inject(Location);
   protected readonly msg = this.#i18n.messages;
+  protected readonly fmt = this.#i18n.format;
 
   protected readonly recap = this.#session.recap;
 
@@ -50,7 +51,7 @@ export class RecapPage {
 
   protected readonly hours = computed(() => {
     const recap = this.recap();
-    return recap ? `${formatClock(recap.startedAt)} → ${formatClock(recap.endedAt)}` : '';
+    return recap ? `${this.fmt().clock(recap.startedAt)} → ${this.fmt().clock(recap.endedAt)}` : '';
   });
 
   protected toggleClean(): void {

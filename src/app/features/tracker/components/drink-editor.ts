@@ -31,8 +31,7 @@ import { StomachStore } from '../../../core/state/stomach-store';
 import { DecimalField } from '../../../shared/ui/decimal-field';
 import { Disclosure } from '../../../shared/ui/disclosure';
 import { Sheet } from '../../../shared/ui/sheet';
-import { PermillePipe } from '../../../shared/util/pipes';
-import { formatClock, formatPermille, mlToOz, ozToMl } from '../../../shared/util/format';
+import { mlToOz, ozToMl } from '../../../shared/util/format';
 import { DrinkPlanner } from './drink-planner';
 import { STOMACH_ICONS } from './stomach-picker';
 
@@ -60,7 +59,7 @@ const ABV_PRESETS = [0, 4.7, 5.5, 8, 12.5, 20, 40];
 @Component({
   selector: 'app-drink-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalField, Disclosure, DrinkPlanner, FormsModule, PermillePipe, Sheet],
+  imports: [DecimalField, Disclosure, DrinkPlanner, FormsModule, Sheet],
   templateUrl: './drink-editor.html',
   styleUrl: './drink-editor.scss',
 })
@@ -75,6 +74,7 @@ export class DrinkEditor implements OnInit {
   readonly dismissed = output<void>();
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
   readonly #limits = inject(DrinkLimitStore);
   readonly #stomachNow = inject(StomachStore).state;
 
@@ -104,7 +104,7 @@ export class DrinkEditor implements OnInit {
   protected readonly volumeChips = computed(() =>
     (this.imperial() ? VOLUME_PRESETS_IMPERIAL_ML : VOLUME_PRESETS_ML).map((ml) => ({
       ml,
-      text: this.imperial() ? `${round(mlToOz(ml), 1)} oz` : `${ml} ml`,
+      text: this.fmt().volume(ml, this.profile().units),
     })),
   );
 
@@ -127,7 +127,7 @@ export class DrinkEditor implements OnInit {
   protected readonly isNow = computed(() => Date.now() - this.consumedAt() < MINUTE);
 
   protected readonly timeSummary = computed(() =>
-    this.isNow() ? this.msg().editor.now : formatClock(this.consumedAt()),
+    this.isNow() ? this.msg().editor.now : this.fmt().clock(this.consumedAt()),
   );
 
   protected readonly paceSummary = computed(() =>
@@ -157,7 +157,7 @@ export class DrinkEditor implements OnInit {
     const limit = this.#limits.limit();
     return limit === null
       ? this.msg().planner.off
-      : this.msg().planner.under(formatPermille(limit));
+      : this.msg().planner.under(this.fmt().permille(limit));
   });
 
   ngOnInit(): void {

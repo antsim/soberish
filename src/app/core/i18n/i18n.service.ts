@@ -1,5 +1,6 @@
 import { Injectable, computed, effect, inject } from '@angular/core';
 import { ProfileStore } from '../state/profile-store';
+import { formatterFor } from './formatter';
 import { Locale } from './locale';
 import { Messages, en } from './messages.en';
 import { fi } from './messages.fi';
@@ -19,6 +20,9 @@ export class I18n {
 
   readonly locale = computed<Locale>(() => this.#profiles.profile().locale);
   readonly messages = computed<Messages>(() => DICTIONARIES[this.locale()]);
+
+  /** Numbers and times of day, written the way the active language writes them. */
+  readonly format = computed(() => formatterFor(this.locale()));
 
   /** Language options for the settings picker, each labelled in its own language. */
   readonly options = Object.entries(DICTIONARIES).map(([value, messages]) => ({

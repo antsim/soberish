@@ -50,7 +50,6 @@ export const en = {
   readout: {
     rising: '↑ still rising',
     falling: '↓ coming down',
-    empty: '— nothing on board',
     soberIn: (duration: string, clock: string) => `Sober in ${duration} · ${clock}`,
     aria: (permille: string) => `Blood alcohol ${permille} promille`,
     ariaSoberIn: (duration: string) => `, sober in ${duration}`,
@@ -59,7 +58,9 @@ export const en = {
   chart: {
     aria: (current: string, peak: string) =>
       `Blood alcohol curve. Currently ${current} promille, session peak ${peak} promille.`,
-    gestures: 'Drag to pan, pinch or scroll to zoom.',
+    gestures:
+      'Drag across to read any moment. Pinch to zoom; two fingers or the arrow keys move the window.',
+    limit: (permille: string) => `limit ${permille}`,
     rangeGroup: 'Chart time range',
     hours: (n: number) => `${n}h`,
     wholeSession: 'Session',
@@ -71,6 +72,8 @@ export const en = {
     statDrinks: 'Drinks',
     statPeak: 'Peak',
     statSession: 'Session',
+    emptyTitle: 'The night starts with the first drink',
+    emptyBody: 'Tap a drink below and the curve draws itself here.',
     setWeightTitle: 'Set your weight for an accurate curve.',
     setWeightBody: (weight: string) => `Soberish is using ${weight} right now.`,
     tonight: 'Tonight',
@@ -261,9 +264,9 @@ export const en = {
     title: 'Top ‰',
     subtitle: 'Everyone currently above 0.00 ‰.',
     refresh: 'Refresh leaderboard',
-    offlineOnlyTitle: 'Leaderboard is offline-only here',
+    offlineOnlyTitle: 'No leaderboard here',
     offlineOnlyBody:
-      'This deployment was built without Supabase credentials, so Soberish runs entirely on your device. Add SUPABASE_URL and SUPABASE_ANON_KEY to the repository variables and redeploy to switch the board on.',
+      'This copy of Soberish keeps everything on your device, so there is no shared board to show.',
     offlineTitle: "You're offline",
     offlineBody: 'Your own BAC keeps tracking. The board will catch up when you reconnect.',
     errorTitle: "Couldn't load the board",
@@ -304,7 +307,7 @@ export const en = {
 
     accountSection: 'Account & leaderboard',
     noSupabase:
-      'This deployment has no Supabase configuration, so Soberish is running fully offline. Everything still works — it just stays on this device.',
+      'This copy of Soberish keeps everything on this device: no account and no leaderboard. Everything else works.',
     signOut: 'Sign out',
     leaderboardName: 'Leaderboard name',
     anonymous: 'Anonymous',
@@ -349,7 +352,9 @@ export const en = {
     autoClearsHint: 'History clears automatically 24 h after you hit 0.00 ‰.',
     exportJson: 'Export JSON',
     clearSession: 'Clear session',
-    clearConfirm: (n: number) => `Delete all ${n} drinks from this session?`,
+    clearConfirm: (n: number) =>
+      `This deletes all ${n} drinks from this session. It cannot be undone.`,
+    cancel: 'Cancel',
 
     disclaimer:
       'Soberish estimates BAC with the Widmark equation. Real blood alcohol depends on food, hydration, medication, genetics, and more. It is not a breathalyser and never a reason to drive.',
@@ -363,7 +368,7 @@ export const en = {
     magicLink: 'Email me a magic link',
     fine: 'Your drinks stay on this device until you sign in. Signing in syncs them and puts you on the leaderboard — you can turn sharing off in You.',
     fineYou: 'You',
-    notConfigured: 'Cloud sync is not configured for this deployment.',
+    notConfigured: 'Accounts are not available in this copy of Soberish.',
   },
 
   toast: {

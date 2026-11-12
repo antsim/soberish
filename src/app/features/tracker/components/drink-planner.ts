@@ -13,13 +13,7 @@ import { DrinkLimitStore, MAX_DRINK_LIMIT } from '../../../core/state/drink-limi
 import { DURATION_PRESETS } from '../../../core/models/drink.model';
 import { DrinksStore } from '../../../core/state/drinks-store';
 import { DecimalField } from '../../../shared/ui/decimal-field';
-import {
-  formatClock,
-  formatDuration,
-  formatPermille,
-  fromPermille,
-  toPermille,
-} from '../../../shared/util/format';
+import { formatDuration, fromPermille, toPermille } from '../../../shared/util/format';
 
 /** The bands offered as one-tap ceilings, weakest first. */
 const PRESETS = (Object.keys(STATUS_CEILING) as CappedStatus[]).map((band) => ({
@@ -110,6 +104,7 @@ export class DrinkPlanner {
   readonly #clock = inject(Clock);
   readonly #limits = inject(DrinkLimitStore);
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly presets = PRESETS;
   protected readonly limit = this.#limits.limit;
@@ -137,14 +132,14 @@ export class DrinkPlanner {
 
     const now = this.#clock.now();
     const plan = planDrink(this.#drinks.drinks(), this.profile(), this.planned(), limit, now);
-    const peak = formatPermille(plan.peak);
+    const peak = this.fmt().permille(plan.peak);
 
     if (!plan.fits) {
       return plan.currentPeak > limit
         ? {
             tone: 'over',
             icon: '🚫',
-            text: messages.planner.alreadyOver(formatPermille(plan.currentPeak)),
+            text: messages.planner.alreadyOver(this.fmt().permille(plan.currentPeak)),
           }
         : { tone: 'over', icon: '🚫', text: messages.planner.tooBig(peak) };
     }
@@ -154,7 +149,7 @@ export class DrinkPlanner {
       icon: '⏳',
       text: messages.planner.wait(
         formatDuration(plan.waitMs, messages.time),
-        formatClock(plan.at),
+        this.fmt().clock(plan.at),
         peak,
       ),
     };
@@ -181,7 +176,7 @@ export class DrinkPlanner {
   });
 
   protected permille(bacPercent: number): string {
-    return formatPermille(bacPercent);
+    return this.fmt().permille(bacPercent);
   }
 
   protected choose(limit: number | null): void {

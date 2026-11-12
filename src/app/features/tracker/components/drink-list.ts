@@ -1,17 +1,16 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { standardDrinks } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { DEFAULT_STOMACH, UnitSystem } from '../../../core/models/profile.model';
-import { VolumePipe } from '../../../shared/util/pipes';
+import { Icon } from '../../../shared/ui/icon';
 import { STOMACH_ICONS } from './stomach-picker';
 
 /** The session timeline, newest first, with edit and delete on every row. */
 @Component({
   selector: 'app-drink-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, VolumePipe],
+  imports: [Icon],
   template: `
     <ul class="list">
       @for (drink of ordered(); track drink.id) {
@@ -26,8 +25,8 @@ import { STOMACH_ICONS } from './stomach-picker';
             <span class="row__text">
               <span class="row__title">{{ drink.label }}</span>
               <span class="row__meta tabular">
-                {{ drink.volumeMl | volume: units() }} · {{ drink.abv }}% ·
-                {{ msg().drinkList.units(unitsFor(drink).toFixed(1)) }}
+                {{ fmt().volume(drink.volumeMl, units()) }} · {{ fmt().abv(drink.abv) }} ·
+                {{ msg().drinkList.units(fmt().decimal(unitsFor(drink), 1)) }}
                 @if (drink.durationMinutes > 0) {
                   · {{ msg().editor.minutes(drink.durationMinutes) }}
                 }
@@ -39,7 +38,7 @@ import { STOMACH_ICONS } from './stomach-picker';
                 }
               </span>
             </span>
-            <span class="row__time tabular">{{ drink.consumedAt | date: 'HH:mm' }}</span>
+            <span class="row__time tabular">{{ fmt().clock(drink.consumedAt) }}</span>
           </button>
           <button
             type="button"
@@ -47,7 +46,7 @@ import { STOMACH_ICONS } from './stomach-picker';
             (click)="remove.emit(drink)"
             [attr.aria-label]="msg().drinkList.delete(drink.label)"
           >
-            ✕
+            <app-icon name="close" />
           </button>
         </li>
       } @empty {
@@ -59,6 +58,7 @@ import { STOMACH_ICONS } from './stomach-picker';
 })
 export class DrinkList {
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
   protected readonly stomachIcons = STOMACH_ICONS;
   /** Only a departure from the neutral state is worth a mark on the row. */
   protected readonly defaultStomach = DEFAULT_STOMACH;

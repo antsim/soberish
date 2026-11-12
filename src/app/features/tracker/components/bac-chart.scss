@@ -8,10 +8,11 @@
   overflow: hidden;
   border-radius: var(--radius-sm);
 
+  /* Vertical page scrolling stays with the browser; horizontal drags and
+     pinches come to us. Without this the page scrolls instead of reading. */
+  touch-action: pan-y;
+
   &--interactive {
-    /* Vertical page scrolling stays with the browser; horizontal drags and
-       pinches come to us. Without this the page scrolls instead of panning. */
-    touch-action: pan-y;
     cursor: grab;
 
     &:active {
@@ -105,5 +106,48 @@
   50% {
     fill-opacity: 0.26;
     transform: scale(1.15);
+  }
+}
+
+.limit {
+  line {
+    stroke: var(--text);
+    stroke-width: 1;
+    stroke-opacity: 0.55;
+    stroke-dasharray: 6 4;
+  }
+
+  text {
+    fill: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+}
+
+.scrub {
+  pointer-events: none;
+
+  line {
+    stroke: var(--text);
+    stroke-width: 1;
+    stroke-opacity: 0.5;
+  }
+
+  circle {
+    fill: var(--text);
+    stroke: var(--bg);
+    stroke-width: 2.5;
+  }
+
+  rect {
+    fill: var(--bg-elevated);
+    stroke: var(--border-strong);
+  }
+
+  text {
+    fill: var(--text);
+    font-size: 12px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
   }
 }

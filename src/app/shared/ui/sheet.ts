@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { I18n } from '../../core/i18n/i18n.service';
+import { Icon } from './icon';
 
 /**
  * A modal bottom sheet — the app's only overlay primitive.
@@ -23,6 +24,7 @@ import { I18n } from '../../core/i18n/i18n.service';
     class: 'sheet-host',
     '(keydown.escape)': 'dismissed.emit()',
   },
+  imports: [Icon],
   template: `
     <div class="backdrop" (click)="dismissed.emit()" aria-hidden="true"></div>
     <section
@@ -42,7 +44,7 @@ import { I18n } from '../../core/i18n/i18n.service';
           (click)="dismissed.emit()"
           [attr.aria-label]="msg().sheet.close"
         >
-          ✕
+          <app-icon name="close" />
         </button>
       </header>
       <div class="sheet__body">

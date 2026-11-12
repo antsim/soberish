@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,19 +7,19 @@ import {
   inject,
 } from '@angular/core';
 import { statusFor } from '../../core/bac/bac';
+import { Icon } from '../../shared/ui/icon';
 import { I18n } from '../../core/i18n/i18n.service';
 import { RankedEntry } from '../../core/models/leaderboard.model';
 import { Connectivity } from '../../core/platform/connectivity';
 import { AuthStore } from '../../core/supabase/auth-store';
 import { LeaderboardService } from '../../core/supabase/leaderboard.service';
-import { PermillePipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
 /** Who is still above 0.00 ‰ right now, ranked. */
 @Component({
   selector: 'app-leaderboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AuthCard, DatePipe, PermillePipe],
+  imports: [AuthCard, Icon],
   templateUrl: './leaderboard-page.html',
   styleUrl: './leaderboard-page.scss',
 })
@@ -30,6 +29,7 @@ export class LeaderboardPage implements OnInit, OnDestroy {
   protected readonly network = inject(Connectivity);
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly medals = ['🥇', '🥈', '🥉'];
 

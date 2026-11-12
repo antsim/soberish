@@ -6,6 +6,8 @@ import { Connectivity } from './core/platform/connectivity';
 import { PwaService } from './core/platform/pwa.service';
 import { SessionStore } from './core/state/session-store';
 import { DrinkSyncService } from './core/sync/drink-sync.service';
+import { SupabaseService } from './core/supabase/supabase.service';
+import { Icon } from './shared/ui/icon';
 import { ToastHost } from './shared/ui/toast-host';
 
 /** Accent colour per BAC band — drives the whole shell's tint. */
@@ -21,7 +23,7 @@ const STATUS_ACCENT: Record<SoberStatus, { accent: string; dim: string }> = {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastHost],
+  imports: [Icon, RouterLink, RouterLinkActive, RouterOutlet, ToastHost],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -31,6 +33,8 @@ export class App {
   protected readonly pwa = inject(PwaService);
   protected readonly sync = inject(DrinkSyncService);
   protected readonly msg = inject(I18n).messages;
+  /** Without a backend there is no board, and a tab that leads to an apology is worse than no tab. */
+  protected readonly cloud = inject(SupabaseService).enabled;
 
   constructor() {
     // Tint the whole app with the current BAC band.

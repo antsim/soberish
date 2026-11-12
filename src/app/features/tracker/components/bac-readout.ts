@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { SoberStatus } from '../../../core/bac/bac';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { formatClock, formatDuration, toPermille } from '../../../shared/util/format';
+import { formatDuration, toPermille } from '../../../shared/util/format';
 import { DurationPipe } from '../../../shared/util/pipes';
 
 const COUNT_MS = 720;
@@ -23,16 +23,16 @@ const COUNT_MS = 720;
   template: `
     <p class="status section-title">{{ statusTitle() }}</p>
     <p class="value tabular" [attr.aria-label]="ariaLabel()">
-      <span aria-hidden="true">{{ shown().toFixed(2) }}</span>
+      <span aria-hidden="true">{{ fmt().decimal(shown(), 2) }}</span>
       <span class="unit" aria-hidden="true">‰</span>
     </p>
-    <p class="trend">
-      <span class="chip" [class.chip--rising]="rising()">
-        {{
-          rising() ? msg().readout.rising : bac() > 0 ? msg().readout.falling : msg().readout.empty
-        }}
-      </span>
-    </p>
+    @if (rising() || bac() > 0) {
+      <p class="trend">
+        <span class="chip" [class.chip--rising]="rising()">
+          {{ rising() ? msg().readout.rising : msg().readout.falling }}
+        </span>
+      </p>
+    }
     @if (msUntilSober(); as remaining) {
       <p class="sober">{{ msg().readout.soberIn(remaining | duration: msg(), soberClock()) }}</p>
     } @else {
@@ -52,6 +52,7 @@ export class BacReadout {
   readonly now = input.required<number>();
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly shown = signal(0);
   #raf = 0;
@@ -63,7 +64,7 @@ export class BacReadout {
 
   protected readonly soberClock = computed(() => {
     const target = this.soberAt();
-    return target === null ? '' : formatClock(target);
+    return target === null ? '' : this.fmt().clock(target);
   });
 
   protected readonly ariaLabel = computed(() => {
@@ -73,7 +74,7 @@ export class BacReadout {
       remaining === null
         ? ''
         : messages.readout.ariaSoberIn(formatDuration(remaining, messages.time));
-    return messages.readout.aria(toPermille(this.bac()).toFixed(2)) + suffix;
+    return messages.readout.aria(this.fmt().permille(this.bac())) + suffix;
   });
 
   constructor() {

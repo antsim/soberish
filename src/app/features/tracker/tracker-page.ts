@@ -13,6 +13,7 @@ import { quickPresets, starterPresets } from '../../core/models/drink-types';
 import { Drink, DrinkDraft, DrinkPreset } from '../../core/models/drink.model';
 import { Clock } from '../../core/platform/clock';
 import { Toaster } from '../../core/platform/toaster';
+import { DrinkLimitStore } from '../../core/state/drink-limit-store';
 import { DrinksStore } from '../../core/state/drinks-store';
 import { ProfileStore } from '../../core/state/profile-store';
 import { RecentDrinksStore } from '../../core/state/recent-drinks-store';
@@ -20,7 +21,7 @@ import { StomachStore } from '../../core/state/stomach-store';
 import { SpanChoice } from '../../core/state/chart-viewport';
 import { SessionStore } from '../../core/state/session-store';
 import { DurationPipe } from '../../shared/util/pipes';
-import { formatPermille, formatWeight } from '../../shared/util/format';
+
 import { BacChart } from './components/bac-chart';
 import { BacReadout } from './components/bac-readout';
 import { DrinkEditor } from './components/drink-editor';
@@ -65,8 +66,11 @@ export class TrackerPage implements OnInit {
   readonly #toaster = inject(Toaster);
   readonly #stomach = inject(StomachStore);
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
+
+  protected readonly limit = inject(DrinkLimitStore).limit;
 
   protected readonly editor = signal<EditorState>({ mode: 'closed' });
 
@@ -74,7 +78,7 @@ export class TrackerPage implements OnInit {
 
   /** The weight the curve is using, in the user's own units. */
   protected readonly weightShown = computed(() =>
-    formatWeight(this.profiles.profile().weightKg, this.profiles.profile().units),
+    this.fmt().weight(this.profiles.profile().weightKg, this.profiles.profile().units),
   );
 
   /** Wide enough to scroll, short enough that the user's own drinks lead it. */
@@ -123,9 +127,12 @@ export class TrackerPage implements OnInit {
   protected readonly stats = computed(() => {
     const messages = this.msg();
     return [
-      { label: messages.tracker.statUnits, value: this.session.totalStandardDrinks().toFixed(1) },
+      {
+        label: messages.tracker.statUnits,
+        value: this.fmt().decimal(this.session.totalStandardDrinks(), 1),
+      },
       { label: messages.tracker.statDrinks, value: `${this.drinks.count()}` },
-      { label: messages.tracker.statPeak, value: formatPermille(this.session.peak()) },
+      { label: messages.tracker.statPeak, value: this.fmt().permille(this.session.peak()) },
       {
         label: messages.tracker.statSession,
         value: this.session.elapsedMs()

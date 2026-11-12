@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { RouterLink } from '@angular/router';
 import { NightRecap } from '../../../core/bac/recap';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { formatDuration, formatPermille } from '../../../shared/util/format';
+import { formatDuration } from '../../../shared/util/format';
 import { spline } from '../../../shared/util/spline';
 
 const SPARK = { width: 88, height: 40, pad: 3 } as const;
@@ -54,13 +54,14 @@ export class RecapBanner {
   readonly msUntilWipe = input<number | null>(null);
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
   protected readonly spark = SPARK;
 
   protected readonly summary = computed(() => {
     const recap = this.recap();
     const messages = this.msg();
     return messages.recap.bannerBody(
-      formatPermille(recap.peak),
+      this.fmt().permille(recap.peak),
       formatDuration(recap.durationMs, messages.time),
     );
   });

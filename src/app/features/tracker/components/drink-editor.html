@@ -7,12 +7,12 @@
     <div>
       <p class="preview__name">{{ label() || msg().editor.fallbackName }}</p>
       <p class="preview__meta tabular">
-        {{ imperial() ? volumeInput() + ' oz' : volumeMl() + ' ml' }} · {{ abv() }}%
+        {{ fmt().volume(volumeMl(), profile().units) }} · {{ fmt().abv(abv()) }}
       </p>
     </div>
     <div class="preview__impact">
-      <span class="tabular">+{{ bacImpact() | permille }} ‰</span>
-      <small class="tabular">{{ msg().editor.units(units().toFixed(1)) }}</small>
+      <span class="tabular">+{{ fmt().permille(bacImpact()) }} ‰</span>
+      <small class="tabular">{{ msg().editor.units(fmt().decimal(units(), 1)) }}</small>
     </div>
   </div>
 
@@ -75,7 +75,7 @@
             [attr.aria-pressed]="abv() === preset"
             (click)="setAbv(preset)"
           >
-            {{ preset }}%
+            {{ fmt().abv(preset) }}
           </button>
         }
       </div>

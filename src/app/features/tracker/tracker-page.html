@@ -17,44 +17,56 @@
     <app-pace-note [projection]="projection" [now]="clock.now()" />
   }
 
-  <app-bac-chart
-    [timeline]="session.chartTimeline()"
-    [drinks]="drinks.drinks()"
-    [now]="clock.now()"
-    [interactive]="session.zoomable()"
-    (panned)="onPan($event)"
-    (zoomed)="onZoom($event)"
-  />
+  @if (drinks.count()) {
+    <app-bac-chart
+      [timeline]="session.chartTimeline()"
+      [drinks]="drinks.drinks()"
+      [now]="clock.now()"
+      [interactive]="session.zoomable()"
+      [limit]="limit()"
+      (panned)="onPan($event)"
+      (zoomed)="onZoom($event)"
+    />
 
-  @if (session.zoomable()) {
-    <div class="ranges" role="group" [attr.aria-label]="msg().chart.rangeGroup">
-      @for (range of ranges(); track range.label) {
-        <button
-          type="button"
-          class="range"
-          [class.range--active]="range.active"
-          [attr.aria-pressed]="range.active"
-          (click)="setRange(range.choice)"
-        >
-          {{ range.label }}
-        </button>
-      }
-      @if (!session.following()) {
-        <button type="button" class="range range--now" (click)="session.followNow()">
-          {{ msg().chart.jumpToNow }}
-        </button>
-      }
-    </div>
-  }
-
-  <dl class="stats">
-    @for (stat of stats(); track stat.label) {
-      <div class="stat">
-        <dt>{{ stat.label }}</dt>
-        <dd class="tabular">{{ stat.value }}</dd>
+    @if (session.zoomable()) {
+      <div class="ranges" role="group" [attr.aria-label]="msg().chart.rangeGroup">
+        @for (range of ranges(); track range.label) {
+          <button
+            type="button"
+            class="range"
+            [class.range--active]="range.active"
+            [attr.aria-pressed]="range.active"
+            (click)="setRange(range.choice)"
+          >
+            {{ range.label }}
+          </button>
+        }
+        @if (!session.following()) {
+          <button type="button" class="range range--now" (click)="session.followNow()">
+            {{ msg().chart.jumpToNow }}
+          </button>
+        }
       </div>
     }
-  </dl>
+
+    <dl class="stats">
+      @for (stat of stats(); track stat.label) {
+        <div class="stat">
+          <dt>{{ stat.label }}</dt>
+          <dd class="tabular">{{ stat.value }}</dd>
+        </div>
+      }
+    </dl>
+  } @else {
+    <div class="blank">
+      <svg class="blank__curve" viewBox="0 0 280 70" aria-hidden="true">
+        <path d="M4 66 C 50 66, 62 10, 104 10 S 190 44, 276 66" />
+      </svg>
+      <p class="blank__title">{{ msg().tracker.emptyTitle }}</p>
+      <p class="blank__body">{{ msg().tracker.emptyBody }}</p>
+      <span class="blank__arrow" aria-hidden="true">↓</span>
+    </div>
+  }
 </section>
 
 @if (profiles.needsSetup()) {
@@ -70,23 +82,25 @@
 
 <app-stomach-picker />
 
-<section class="history">
-  <header class="history__head">
-    <h2 class="section-title">{{ msg().tracker.tonight }}</h2>
-    @if (session.msUntilWipe(); as remaining) {
-      <span class="wipe tabular" [title]="msg().tracker.clearsInTitle">
-        {{ msg().tracker.clearsIn(remaining | duration: msg()) }}
-      </span>
-    }
-  </header>
+@if (drinks.count()) {
+  <section class="history">
+    <header class="history__head">
+      <h2 class="section-title">{{ msg().tracker.tonight }}</h2>
+      @if (session.msUntilWipe(); as remaining) {
+        <span class="wipe tabular" [title]="msg().tracker.clearsInTitle">
+          {{ msg().tracker.clearsIn(remaining | duration: msg()) }}
+        </span>
+      }
+    </header>
 
-  <app-drink-list
-    [drinks]="drinks.drinks()"
-    [units]="profiles.profile().units"
-    (edit)="openEdit($event)"
-    (remove)="remove($event)"
-  />
-</section>
+    <app-drink-list
+      [drinks]="drinks.drinks()"
+      [units]="profiles.profile().units"
+      (edit)="openEdit($event)"
+      (remove)="remove($event)"
+    />
+  </section>
+}
 
 <p class="disclaimer">{{ msg().tracker.disclaimer }}</p>
 

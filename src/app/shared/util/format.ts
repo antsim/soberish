@@ -1,6 +1,5 @@
 import { MINUTE } from '../../core/bac/bac';
 import { Messages } from '../../core/i18n/messages.en';
-import { UnitSystem } from '../../core/models/profile.model';
 
 const ML_PER_OZ = 29.5735;
 const KG_PER_LB = 0.453_592_37;
@@ -29,15 +28,6 @@ export function fromPermille(permille: number): number {
  */
 export function formatPermille(bacPercent: number): string {
   return toPermille(bacPercent).toFixed(2);
-}
-
-/** Time of day, 24-hour, in the browser's own locale — "23:45". */
-export function formatClock(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
 }
 
 /**
@@ -79,17 +69,4 @@ export function kgToLb(kg: number): number {
 
 export function lbToKg(lb: number): number {
   return lb * KG_PER_LB;
-}
-
-export function formatVolume(ml: number, units: UnitSystem): string {
-  return units === 'imperial' ? `${round(mlToOz(ml), 1)} oz` : `${Math.round(ml)} ml`;
-}
-
-export function formatWeight(kg: number, units: UnitSystem): string {
-  return units === 'imperial' ? `${Math.round(kgToLb(kg))} lb` : `${Math.round(kg)} kg`;
-}
-
-function round(value: number, decimals: number): number {
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
 }

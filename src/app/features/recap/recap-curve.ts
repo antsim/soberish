@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { STATUS_CEILING } from '../../core/bac/bac';
 import { NightRecap } from '../../core/bac/recap';
 import { I18n } from '../../core/i18n/i18n.service';
-import { formatClock, formatPermille, toPermille } from '../../shared/util/format';
+import { toPermille } from '../../shared/util/format';
 import { spline } from '../../shared/util/spline';
 
 /** SVG user units. The card scales the whole drawing, so these are proportions. */
@@ -42,6 +42,7 @@ export class RecapCurve {
   readonly recap = input.required<NightRecap>();
 
   readonly #msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly view = VIEW;
   protected readonly plot = PLOT;
@@ -52,14 +53,14 @@ export class RecapCurve {
   protected readonly label = computed(() => {
     const recap = this.recap();
     return this.#msg().recap.chartAria(
-      formatPermille(recap.peak),
-      formatClock(recap.startedAt),
-      formatClock(recap.endedAt),
+      this.fmt().permille(recap.peak),
+      this.fmt().clock(recap.startedAt),
+      this.fmt().clock(recap.endedAt),
     );
   });
 
   protected readonly peakCaption = computed(() =>
-    this.#msg().recap.peakAt(formatClock(this.recap().peakAt)),
+    this.#msg().recap.peakAt(this.fmt().clock(this.recap().peakAt)),
   );
 }
 

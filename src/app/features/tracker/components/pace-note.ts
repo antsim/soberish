@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { MINUTE } from '../../../core/bac/bac';
 import { PaceProjection } from '../../../core/bac/pace';
 import { I18n } from '../../../core/i18n/i18n.service';
-import { formatDuration, formatPermille } from '../../../shared/util/format';
+import { formatDuration } from '../../../shared/util/format';
 
 /**
  * Where the night is heading if nothing changes.
@@ -35,6 +35,7 @@ export class PaceNote {
   readonly now = input.required<number>();
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly icon = computed(
     () =>
@@ -55,10 +56,10 @@ export class PaceNote {
 
     if (crossesAt !== null) {
       const away = formatDuration(Math.max(0, crossesAt - this.now()), this.msg().time);
-      return words.crossing(formatPermille(projection.bac), away);
+      return words.crossing(this.fmt().permille(projection.bac), away);
     }
     const status = projection.status === 'sober' ? 'buzzed' : projection.status;
-    return words[status](formatPermille(projection.bac));
+    return words[status](this.fmt().permille(projection.bac));
   });
 
   protected readonly evidence = computed(() => {

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { NightRecap } from '../../core/bac/recap';
 import { I18n } from '../../core/i18n/i18n.service';
-import { formatPermille, toPermille } from '../../shared/util/format';
+import { toPermille } from '../../shared/util/format';
 
 const COUNT_MS = 1400;
 
@@ -22,7 +22,7 @@ const COUNT_MS = 1400;
   template: `
     <p class="label">{{ msg().recap.peak }}</p>
     <p class="value tabular" [attr.aria-label]="peakLabel() + ' ‰'">
-      <span aria-hidden="true">{{ shown().toFixed(2) }}</span>
+      <span aria-hidden="true">{{ fmt().decimal(shown(), 2) }}</span>
       <span class="unit" aria-hidden="true">‰</span>
     </p>
     <p class="verdict">
@@ -36,8 +36,9 @@ export class RecapPeak {
   readonly recap = input.required<NightRecap>();
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
   protected readonly band = computed(() => this.recap().peakStatus);
-  protected readonly peakLabel = computed(() => formatPermille(this.recap().peak));
+  protected readonly peakLabel = computed(() => this.fmt().permille(this.recap().peak));
 
   /** The number on screen, which counts up to the peak on arrival. */
   protected readonly shown = signal(0);

@@ -121,3 +121,51 @@
     color: var(--accent);
   }
 }
+
+/* Before the first drink there is no curve to draw and nothing to count, so
+   the space says what to do instead of showing an empty grid and a row of zeros. */
+.blank {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.5rem 0.4rem;
+  text-align: center;
+}
+
+.blank__curve {
+  width: min(280px, 100%);
+  margin-bottom: 0.5rem;
+
+  path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-opacity: 0.45;
+    stroke-linecap: round;
+    stroke-dasharray: 3 7;
+  }
+}
+
+.blank__title {
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.blank__body {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  text-wrap: balance;
+}
+
+.blank__arrow {
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+  color: var(--accent);
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateY(5px);
+  }
+}

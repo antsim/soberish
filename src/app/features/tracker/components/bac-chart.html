@@ -8,6 +8,7 @@
   (pointermove)="onPointerMove($event)"
   (pointerup)="onPointerUp($event)"
   (pointercancel)="onPointerUp($event)"
+  (pointerleave)="onPointerLeave()"
   (wheel)="onWheel($event)"
   (keydown)="onKeyDown($event)"
 >
@@ -99,6 +100,18 @@
     <circle class="now-halo" [attr.cx]="nowPoint().x" [attr.cy]="nowPoint().y" r="11" />
     <circle class="now-dot" [attr.cx]="nowPoint().x" [attr.cy]="nowPoint().y" r="5" />
 
+    @if (limitLine(); as line) {
+      <g class="limit" aria-hidden="true">
+        <line
+          [attr.x1]="plot().left"
+          [attr.x2]="plot().right"
+          [attr.y1]="line.y"
+          [attr.y2]="line.y"
+        />
+        <text [attr.x]="plot().left + 6" [attr.y]="line.y - 5">{{ line.label }}</text>
+      </g>
+    }
+
     <g class="markers">
       @for (marker of markers(); track marker.id) {
         <g [attr.transform]="'translate(' + marker.x + ',' + marker.y + ')'">
@@ -110,5 +123,21 @@
         </g>
       }
     </g>
+
+    @if (scrub(); as point) {
+      <g class="scrub" aria-hidden="true">
+        <line
+          [attr.x1]="point.x"
+          [attr.x2]="point.x"
+          [attr.y1]="plot().top"
+          [attr.y2]="plot().bottom"
+        />
+        <circle [attr.cx]="point.x" [attr.cy]="point.y" r="5" />
+        <rect [attr.x]="point.boxX" y="1" [attr.width]="point.width" height="24" rx="12" />
+        <text [attr.x]="point.boxX + point.width / 2" y="17.5" text-anchor="middle">
+          {{ point.text }}
+        </text>
+      </g>
+    }
   </svg>
 </div>

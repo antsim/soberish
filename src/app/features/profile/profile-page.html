@@ -25,6 +25,7 @@
         <button
           type="button"
           [class.active]="profiles.profile().bodyType === option.value"
+          [attr.aria-pressed]="profiles.profile().bodyType === option.value"
           (click)="patch({ bodyType: option.value })"
         >
           {{ option.label }}
@@ -41,6 +42,7 @@
         <button
           type="button"
           [class.active]="profiles.profile().units === option.value"
+          [attr.aria-pressed]="profiles.profile().units === option.value"
           (click)="patch({ units: option.value })"
         >
           {{ option.label }}
@@ -57,6 +59,7 @@
       <button
         type="button"
         [class.active]="i18n.locale() === option.value"
+        [attr.aria-pressed]="i18n.locale() === option.value"
         [attr.lang]="option.value"
         (click)="patch({ locale: option.value })"
       >
@@ -71,7 +74,7 @@
 
   <div class="field">
     <label for="burn">{{
-      msg().profile.burnOff(profiles.profile().eliminationRate | permille)
+      msg().profile.burnOff(fmt().permille(profiles.profile().eliminationRate))
     }}</label>
     <input
       id="burn"
@@ -135,6 +138,7 @@
     <label class="toggle">
       <input
         type="checkbox"
+        role="switch"
         [ngModel]="profiles.profile().shareToLeaderboard"
         (ngModelChange)="patch({ shareToLeaderboard: $event })"
       />
@@ -159,6 +163,7 @@
     <label class="toggle">
       <input
         type="checkbox"
+        role="switch"
         [checked]="notifications.active()"
         (change)="toggleNotifications($event)"
       />
@@ -175,6 +180,7 @@
         <label class="toggle toggle--nested">
           <input
             type="checkbox"
+            role="switch"
             [checked]="notificationPrefs.isOn(rule.kind)"
             (change)="setNotificationKind(rule.kind, $event)"
           />
@@ -223,10 +229,29 @@
     <button type="button" class="btn btn--ghost" (click)="exportJson()">
       {{ msg().profile.exportJson }}
     </button>
-    <button type="button" class="btn btn--danger" (click)="clearHistory()">
+    <button
+      type="button"
+      class="btn btn--danger"
+      [disabled]="!drinks.count()"
+      (click)="confirmingClear.set(true)"
+    >
       {{ msg().profile.clearSession }}
     </button>
   </div>
 </section>
 
 <p class="disclaimer">{{ msg().profile.disclaimer }}</p>
+
+@if (confirmingClear()) {
+  <app-sheet [title]="msg().profile.clearSession" (dismissed)="confirmingClear.set(false)">
+    <p class="confirm">{{ msg().profile.clearConfirm(drinks.count()) }}</p>
+    <div class="buttons" sheet-actions>
+      <button type="button" class="btn btn--ghost" (click)="confirmingClear.set(false)">
+        {{ msg().profile.cancel }}
+      </button>
+      <button type="button" class="btn btn--danger" (click)="confirmClear()">
+        {{ msg().profile.clearSession }}
+      </button>
+    </div>
+  </app-sheet>
+}

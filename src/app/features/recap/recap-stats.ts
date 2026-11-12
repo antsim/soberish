@@ -23,12 +23,13 @@ export class RecapStats {
   readonly recap = input.required<NightRecap>();
 
   protected readonly msg = inject(I18n).messages;
+  protected readonly fmt = inject(I18n).format;
 
   protected readonly stats = computed(() => {
     const recap = this.recap();
     const messages = this.msg();
     return [
-      { label: messages.recap.units, value: recap.units.toFixed(1) },
+      { label: messages.recap.units, value: this.fmt().decimal(recap.units, 1) },
       { label: messages.recap.drinks, value: `${recap.drinkCount}` },
       { label: messages.recap.duration, value: formatDuration(recap.durationMs, messages.time) },
     ];

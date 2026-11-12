@@ -76,11 +76,15 @@ src/app/
 
 - **Units: percent inside, promille outside.** The engine and the `bac_status` column store BAC as
   a percentage (g/100 ml); every screen shows promille (×10), converted only in
-  `shared/util/format.ts`. Never change the engine's unit — it would break stored rows and the
+  `shared/util/format.ts` and `core/i18n/formatter.ts`. Never change the engine's unit — it would break stored rows and the
   Widmark maths.
 - **A drink is 12 g of alcohol, the Finnish way.** `STANDARD_DRINK_GRAMS` is THL's *annos*, not the
   WHO's 10 g or the UK's 8 g unit. It is also the scale `bac_status.drinks` is published on, so
   changing it silently rewrites every row already on the leaderboard.
+- **Every number and time of day on screen goes through `I18n.format`** (`core/i18n/formatter.ts`),
+  keyed by the app's language, not the browser's: "0,31 ‰" and "klo 00.15" in Finnish, "0.31 ‰" and
+  "00:15" in English. Never `toFixed`, `DatePipe` or `toLocaleTimeString` in a template or component.
+  Timeline points are deliberately unrounded — rounding them draws the curve as a staircase.
 - **One clock drives everything.** `platform/clock.ts` is a signal of `Date.now()`; BAC,
   countdowns, chart and leaderboard are `computed()` off it. Never give a component its own timer.
 - **IndexedDB is the source of truth.** Writes land locally first; Supabase is a replica. Deletes
@@ -113,7 +117,8 @@ src/app/
   the app runs, also in the background); Web Push for a closed app would need a server.
 - The chart draws a _window_ onto the session (`core/state/chart-viewport.ts`, pure + tested), and
   the timeline is rebuilt per window. Plain wheel belongs to the page; only pinch (`ctrl`+wheel)
-  zooms, and `touch-action: pan-y` keeps vertical scrolling with the browser.
+  zooms, and `touch-action: pan-y` keeps vertical scrolling with the browser. One finger (or mouse
+  hover) reads a moment off the curve; two fingers, a mouse drag or the arrow keys move the window.
 
 ## Supabase
 

@@ -28,15 +28,17 @@
 
 <nav class="tabbar" [attr.aria-label]="msg().nav.primary">
   <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-    <span class="tabbar__icon" aria-hidden="true">🍺</span>
+    <app-icon class="tabbar__icon" name="glass" />
     <span class="tabbar__label">{{ msg().nav.tonight }}</span>
   </a>
-  <a routerLink="/leaderboard" routerLinkActive="active">
-    <span class="tabbar__icon" aria-hidden="true">🏆</span>
-    <span class="tabbar__label">{{ msg().nav.leaderboard }}</span>
-  </a>
+  @if (cloud) {
+    <a routerLink="/leaderboard" routerLinkActive="active">
+      <app-icon class="tabbar__icon" name="trophy" />
+      <span class="tabbar__label">{{ msg().nav.leaderboard }}</span>
+    </a>
+  }
   <a routerLink="/you" routerLinkActive="active">
-    <span class="tabbar__icon" aria-hidden="true">⚙️</span>
+    <app-icon class="tabbar__icon" name="user" />
     <span class="tabbar__label">{{ msg().nav.you }}</span>
   </a>
 </nav>

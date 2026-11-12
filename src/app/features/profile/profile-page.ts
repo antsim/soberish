@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../core/i18n/i18n.service';
 import { NotificationPrefsStore } from '../../core/notifications/notification-prefs-store';
@@ -15,15 +15,16 @@ import { SessionStore } from '../../core/state/session-store';
 import { DrinkSyncService } from '../../core/sync/drink-sync.service';
 import { AuthStore } from '../../core/supabase/auth-store';
 import { DecimalField } from '../../shared/ui/decimal-field';
-import { formatWeight, kgToLb, lbToKg } from '../../shared/util/format';
-import { DurationPipe, PermillePipe } from '../../shared/util/pipes';
+import { kgToLb, lbToKg } from '../../shared/util/format';
+import { Sheet } from '../../shared/ui/sheet';
+import { DurationPipe } from '../../shared/util/pipes';
 import { AuthCard } from '../auth/auth-card';
 
 /** Body profile, account, notifications, install, and data controls. */
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AuthCard, DecimalField, DurationPipe, FormsModule, PermillePipe],
+  imports: [AuthCard, DecimalField, DurationPipe, FormsModule, Sheet],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })
@@ -40,6 +41,10 @@ export class ProfilePage {
   protected readonly system = inject(SystemNotifications);
   protected readonly i18n = inject(I18n);
   protected readonly msg = this.i18n.messages;
+  protected readonly fmt = this.i18n.format;
+
+  /** The clear-session question, asked in the app's own sheet rather than a browser dialog. */
+  protected readonly confirmingClear = signal(false);
   readonly #toaster = inject(Toaster);
 
   protected readonly limits = PROFILE_LIMITS;
@@ -74,7 +79,7 @@ export class ProfilePage {
 
   /** Weight with its unit, for the slider's label. */
   protected readonly weightLabel = computed(() =>
-    formatWeight(this.profiles.profile().weightKg, this.profiles.profile().units),
+    this.fmt().weight(this.profiles.profile().weightKg, this.profiles.profile().units),
   );
 
   protected readonly weightRange = computed(() =>
@@ -138,10 +143,8 @@ export class ProfilePage {
     this.#toaster.show(this.msg().toast.signedOut);
   }
 
-  protected async clearHistory(): Promise<void> {
-    if (!this.drinks.count()) return;
-    const confirmed = confirm(this.msg().profile.clearConfirm(this.drinks.count()));
-    if (!confirmed) return;
+  protected async confirmClear(): Promise<void> {
+    this.confirmingClear.set(false);
     await this.drinks.clear();
     this.#toaster.show(this.msg().toast.sessionCleared);
   }

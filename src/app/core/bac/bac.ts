@@ -275,7 +275,9 @@ export function buildTimeline(
   const soon = bacAt(drinks, profile, now + 5 * MINUTE);
 
   return {
-    points: curve.map((p) => ({ t: p.t, bac: round(p.bac) })),
+    // Left unrounded on purpose. Three decimals of a percent is 0.01 ‰, a
+    // step of several pixels on the chart, which drew the curve as a staircase.
+    points: curve,
     from,
     to,
     current,

@@ -4,8 +4,8 @@ import { Messages } from './messages.en';
  * Finnish, written the way a Finn would actually talk about a night out rather
  * than as a literal translation — the humour is the point.
  *
- * Numbers keep their decimal point: the readouts come from `toFixed`, and copy
- * that said "0,00 ‰" while the hero number said "0.00 ‰" would look broken.
+ * Numbers use the decimal comma, like every readout that `I18n.format` renders
+ * around this copy.
  */
 export const fi: Messages = {
   languageName: 'Suomi',
@@ -28,8 +28,8 @@ export const fi: Messages = {
 
   time: {
     justNow: 'juuri äsken',
-    hourSuffix: 't',
-    minuteSuffix: 'min',
+    hourSuffix: '\u00a0t',
+    minuteSuffix: '\u00a0min',
   },
 
   status: {
@@ -51,7 +51,6 @@ export const fi: Messages = {
   readout: {
     rising: '↑ nousee vielä',
     falling: '↓ laskee jo',
-    empty: '— tankki tyhjä',
     soberIn: (duration: string, clock: string) => `Selvänä ${duration} päästä · klo ${clock}`,
     aria: (permille: string) => `Veren alkoholipitoisuus ${permille} promillea`,
     ariaSoberIn: (duration: string) => `, selvänä ${duration} päästä`,
@@ -60,9 +59,11 @@ export const fi: Messages = {
   chart: {
     aria: (current: string, peak: string) =>
       `Promillekäyrä. Nyt ${current} promillea, illan huippu ${peak} promillea.`,
-    gestures: 'Vedä siirtääksesi, nipistä tai rullaa zoomataksesi.',
+    gestures:
+      'Vedä sormella lukeaksesi minkä tahansa hetken. Nipistä zoomataksesi; kaksi sormea tai nuolinäppäimet siirtävät näkymää.',
+    limit: (permille: string) => `raja ${permille}`,
     rangeGroup: 'Kuvaajan aikaväli',
-    hours: (n: number) => `${n} t`,
+    hours: (n: number) => `${n}\u00a0t`,
     wholeSession: 'Ilta',
     jumpToNow: 'Hyppää nykyhetkeen',
   },
@@ -72,6 +73,8 @@ export const fi: Messages = {
     statDrinks: 'Juomia',
     statPeak: 'Huippu',
     statSession: 'Ilta',
+    emptyTitle: 'Ilta alkaa ensimmäisestä juomasta',
+    emptyBody: 'Napauta juomaa alta, niin käyrä piirtyy tähän.',
     setWeightTitle: 'Aseta painosi, niin käyrä pitää kutinsa.',
     setWeightBody: (weight: string) => `Soberish veikkaa nyt ${weight}.`,
     tonight: 'Illan saldo',
@@ -123,7 +126,7 @@ export const fi: Messages = {
     close: 'Sulje kooste',
     footer: 'Arvioitu Widmarkin kaavalla · ei alkometri',
     emptyTitle: 'Koostetta ei vielä ole',
-    emptyBody: 'Kooste ilmestyy, kun olet taas 0.00\u00a0‰:ssa, ja pysyy 24 tuntia.',
+    emptyBody: 'Kooste ilmestyy, kun olet taas 0,00\u00a0‰:ssa, ja pysyy 24 tuntia.',
     back: 'Takaisin iltaan',
   },
 
@@ -239,11 +242,11 @@ export const fi: Messages = {
 
   leaderboard: {
     title: 'Kärki ‰',
-    subtitle: 'Kaikki jotka ovat juuri nyt yli 0.00 ‰.',
+    subtitle: 'Kaikki jotka ovat juuri nyt yli 0,00\u00a0‰.',
     refresh: 'Päivitä lista',
-    offlineOnlyTitle: 'Tulostaulu on täällä pelkkä haave',
+    offlineOnlyTitle: 'Kärkilistaa ei ole',
     offlineOnlyBody:
-      'Tämä asennus rakennettiin ilman Supabase-tunnuksia, joten Soberish pyörii kokonaan omalla laitteellasi. Lisää SUPABASE_URL ja SUPABASE_ANON_KEY repositorion muuttujiin ja julkaise uudelleen, niin taulu herää henkiin.',
+      'Tämä Soberish pitää kaiken omalla laitteellasi, joten yhteistä listaa ei ole.',
     offlineTitle: 'Olet katveessa',
     offlineBody: 'Omat promillesi lasketaan silti. Taulu ottaa kiinni kun verkko palaa.',
     errorTitle: 'Taulua ei saatu ladattua',
@@ -278,19 +281,19 @@ export const fi: Messages = {
 
     metabolismSection: 'Aineenvaihdunta',
     burnOff: (permille: string) => `Palamisnopeus — ${permille} ‰ tunnissa`,
-    burnOffHint: 'Useimmilla noin 0.15 ‰. Tottuneella juojalla hieman ripeämmin.',
+    burnOffHint: 'Useimmilla noin 0,15\u00a0‰. Tottuneella juojalla hieman ripeämmin.',
     absorption: (minutes: number) => `Imeytyminen — ${minutes} min normaalilla vatsalla`,
     absorptionHint: (minutes: number) =>
       `Perustasosi. Syömisesi skaalaa sitä juomakohtaisesti — seuraava juomasi saa ${minutes} min.`,
 
     accountSection: 'Tili ja tulostaulu',
     noSupabase:
-      'Tässä asennuksessa ei ole Supabase-asetuksia, joten Soberish toimii täysin ilman verkkoa. Kaikki toimii silti — tiedot vain pysyvät tällä laitteella.',
+      'Tämä Soberish pitää kaiken tällä laitteella: ei tiliä eikä kärkilistaa. Kaikki muu toimii.',
     signOut: 'Kirjaudu ulos',
     leaderboardName: 'Nimi tulostaulussa',
     anonymous: 'Nimetön',
     shareTitle: 'Jaa promilleni',
-    shareBody: 'Julkaisee nimesi ja tasosi aina kun olet yli 0.00 ‰.',
+    shareBody: 'Julkaisee nimesi ja tasosi aina kun olet yli 0,00\u00a0‰.',
 
     syncLocalOnly: 'Vain tällä laitteella',
     syncSyncing: 'Synkataan…',
@@ -328,10 +331,11 @@ export const fi: Messages = {
     drinksStored: (n: number) => `${n} juoma${n === 1 ? '' : 'a'} tallessa`,
     autoClearsIn: (duration: string) =>
       `Tyhjenee itsestään ${duration} päästä — 24 t selviämisestäsi.`,
-    autoClearsHint: 'Historia tyhjenee itsestään 24 t sen jälkeen kun olet 0.00 ‰.',
+    autoClearsHint: 'Historia tyhjenee itsestään 24 t sen jälkeen kun olet 0,00\u00a0‰.',
     exportJson: 'Vie JSON',
     clearSession: 'Tyhjennä ilta',
-    clearConfirm: (n: number) => `Poistetaanko kaikki ${n} juomaa tästä illasta?`,
+    clearConfirm: (n: number) => `Tämä poistaa illan kaikki ${n} juomaa. Poistoa ei voi kumota.`,
+    cancel: 'Peruuta',
 
     disclaimer:
       'Soberish arvioi promillet Widmarkin kaavalla. Todellinen lukema riippuu ruoasta, nesteytyksestä, lääkkeistä, geeneistä ja muusta. Tämä ei ole alkometri eikä ikinä syy lähteä rattiin.',
@@ -345,7 +349,7 @@ export const fi: Messages = {
     magicLink: 'Lähetä taikalinkki sähköpostiin',
     fine: 'Juomasi pysyvät tällä laitteella kunnes kirjaudut. Kirjautuminen synkkaa ne ja vie sinut tulostauluun — jakamisen voi napsauttaa pois Sinä-välilehdeltä.',
     fineYou: 'Sinä',
-    notConfigured: 'Pilvisynkkausta ei ole määritetty tähän asennukseen.',
+    notConfigured: 'Tilit eivät ole käytössä tässä Soberishissa.',
   },
 
   toast: {

@@ -36,8 +36,8 @@ import { DrinkPlanner } from './drink-planner';
 import { STOMACH_ICONS } from './stomach-picker';
 
 const ICONS = [...DRINK_TYPES.map((type) => type.icon), ...PLAIN_ICONS];
-/** The pours a Finnish bar actually serves: shot, wine, large wine, bottle, 0.4, pint. */
-const VOLUME_PRESETS_ML = [40, 120, 160, 330, 400, 500];
+/** The pours a Finnish bar actually serves: shot, wine, large wine, bottle, 0.4, pint, UK pint. */
+const VOLUME_PRESETS_ML = [40, 120, 160, 330, 400, 500, 568];
 /** 1.5, 5, 12, 16 and 19.2 US oz — shot, wine, can, US pint, imperial pint. */
 const VOLUME_PRESETS_IMPERIAL_ML = [44, 148, 355, 473, 568];
 const ABV_PRESETS = [0, 4.7, 5.5, 8, 12.5, 20, 40];

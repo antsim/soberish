@@ -1,6 +1,7 @@
 import { Drink } from '../models/drink.model';
 import { Profile } from '../models/profile.model';
 import { BacPoint, MINUTE, SoberStatus, buildTimeline, standardDrinks, statusFor } from './bac';
+import { drinkKcal } from './energy';
 
 /**
  * Samples on the recap curve. Nothing morphs here, so unlike `CHART_SAMPLES`
@@ -42,6 +43,8 @@ export interface NightRecap {
   readonly units: number;
   readonly drinkCount: number;
   readonly volumeMl: number;
+  /** Estimated energy of everything drunk, alcohol and sugar together. */
+  readonly kcal: number;
   /** The whole night, evenly sampled from `from` to `to`. */
   readonly points: readonly BacPoint[];
   readonly from: number;
@@ -80,6 +83,7 @@ export function buildRecap(
     units: live.reduce((sum, drink) => sum + standardDrinks(drink.volumeMl, drink.abv), 0),
     drinkCount: live.length,
     volumeMl: live.reduce((sum, drink) => sum + drink.volumeMl, 0),
+    kcal: live.reduce((sum, drink) => sum + drinkKcal(drink), 0),
     points: timeline.points,
     from,
     to,

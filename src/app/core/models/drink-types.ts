@@ -11,21 +11,49 @@ export interface DrinkType {
   readonly volumeMl: number;
   readonly abv: number;
   readonly durationMinutes: number;
+  /**
+   * Energy per 100 ml from everything that is not alcohol — mostly sugar and
+   * other carbohydrate. Typical of the kind as sold in Finland (Fineli and
+   * product labels): a lager's malt, a lonkero's grapefruit soda, a dry wine's
+   * last grams of sugar. The alcohol itself is counted from volume and ABV.
+   */
+  readonly extraKcalPer100Ml: number;
 }
 
 export type DrinkTypeKey =
   'beer' | 'pint' | 'wine' | 'shot' | 'cocktail' | 'longDrink' | 'sparkling' | 'cider' | 'water';
 
 export const DRINK_TYPES: readonly DrinkType[] = [
-  { key: 'beer', icon: '🍺', volumeMl: 330, abv: 4.7, durationMinutes: 30 },
-  { key: 'pint', icon: '🍻', volumeMl: 500, abv: 4.7, durationMinutes: 45 },
-  { key: 'wine', icon: '🍷', volumeMl: 120, abv: 12.5, durationMinutes: 30 },
-  { key: 'shot', icon: '🥃', volumeMl: 40, abv: 40, durationMinutes: 0 },
-  { key: 'cocktail', icon: '🍸', volumeMl: 160, abv: 15, durationMinutes: 30 },
-  { key: 'longDrink', icon: '🍹', volumeMl: 330, abv: 5.5, durationMinutes: 30 },
-  { key: 'sparkling', icon: '🥂', volumeMl: 120, abv: 11.5, durationMinutes: 30 },
-  { key: 'cider', icon: '🍎', volumeMl: 330, abv: 4.7, durationMinutes: 30 },
-  { key: 'water', icon: '💧', volumeMl: 330, abv: 0, durationMinutes: 15 },
+  { key: 'beer', icon: '🍺', volumeMl: 330, abv: 4.7, durationMinutes: 30, extraKcalPer100Ml: 15 },
+  { key: 'pint', icon: '🍻', volumeMl: 500, abv: 4.7, durationMinutes: 45, extraKcalPer100Ml: 15 },
+  { key: 'wine', icon: '🍷', volumeMl: 120, abv: 12.5, durationMinutes: 30, extraKcalPer100Ml: 10 },
+  { key: 'shot', icon: '🥃', volumeMl: 40, abv: 40, durationMinutes: 0, extraKcalPer100Ml: 0 },
+  {
+    key: 'cocktail',
+    icon: '🍸',
+    volumeMl: 160,
+    abv: 15,
+    durationMinutes: 30,
+    extraKcalPer100Ml: 40,
+  },
+  {
+    key: 'longDrink',
+    icon: '🍹',
+    volumeMl: 330,
+    abv: 5.5,
+    durationMinutes: 30,
+    extraKcalPer100Ml: 33,
+  },
+  {
+    key: 'sparkling',
+    icon: '🥂',
+    volumeMl: 120,
+    abv: 11.5,
+    durationMinutes: 30,
+    extraKcalPer100Ml: 6,
+  },
+  { key: 'cider', icon: '🍎', volumeMl: 330, abv: 4.7, durationMinutes: 30, extraKcalPer100Ml: 25 },
+  { key: 'water', icon: '💧', volumeMl: 330, abv: 0, durationMinutes: 15, extraKcalPer100Ml: 0 },
 ];
 
 /** Icons with no pour of their own: they label a drink without describing it. */

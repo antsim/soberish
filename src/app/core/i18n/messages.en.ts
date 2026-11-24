@@ -128,6 +128,8 @@ export const en = {
     units: 'Units',
     drinks: 'Drinks',
     duration: 'Night length',
+    kcal: 'Calories',
+    kcalValue: (kcal: string) => `≈\u00a0${kcal}`,
     lineup: 'The lineup',
     more: (n: number) => `+${n}`,
     favourite: 'Drink of the night',
@@ -188,6 +190,7 @@ export const en = {
     edit: (label: string) => `Edit ${label}`,
     delete: (label: string) => `Delete ${label}`,
     units: (n: string) => `${n} units`,
+    kcal: (kcal: string) => `≈\u00a0${kcal}\u00a0kcal`,
     empty: 'Nothing logged yet — tap a drink below to start the night.',
   },
 
@@ -197,6 +200,9 @@ export const en = {
     defaultName: 'Beer',
     fallbackName: 'Drink',
     units: (n: string) => `${n} units`,
+    kcal: (kcal: string) => `≈\u00a0${kcal}\u00a0kcal`,
+    kcalHint:
+      'Estimated: the alcohol counted exactly, plus the sugar typical of this kind of drink.',
     whatIsIt: 'What is it?',
     iconGroup: 'Drink icon',
     name: 'Name',

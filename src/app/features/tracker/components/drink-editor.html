@@ -13,6 +13,9 @@
     <div class="preview__impact">
       <span class="tabular">+{{ fmt().permille(bacImpact()) }} ‰</span>
       <small class="tabular">{{ msg().editor.units(fmt().decimal(units(), 1)) }}</small>
+      <small class="tabular" [title]="msg().editor.kcalHint">
+        {{ msg().editor.kcal(fmt().kcal(kcal())) }}
+      </small>
     </div>
   </div>
 

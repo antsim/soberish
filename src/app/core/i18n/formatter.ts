@@ -19,6 +19,11 @@ export interface Formatter {
   /** Time of day, 24-hour. */
   clock(timestamp: number): string;
   volume(ml: number, units: UnitSystem): string;
+  /**
+   * Kilocalories, rounded to what an estimate can honestly claim: the nearest
+   * 5, or 10 once it runs into four digits. The unit is the caller's.
+   */
+  kcal(value: number): string;
   weight(kg: number, units: UnitSystem): string;
 }
 
@@ -51,6 +56,7 @@ function build(tag: string): Formatter {
     return format.format(value);
   };
   const loose = new Intl.NumberFormat(tag, { maximumFractionDigits: 2, useGrouping: false });
+  const grouped = new Intl.NumberFormat(tag, { maximumFractionDigits: 0 });
   const percent = new Intl.NumberFormat(tag, { style: 'percent', maximumFractionDigits: 2 });
   const clock = new Intl.DateTimeFormat(tag, {
     hour: '2-digit',
@@ -69,6 +75,10 @@ function build(tag: string): Formatter {
       units === 'imperial'
         ? `${loose.format(Math.round((ml / ML_PER_OZ) * 10) / 10)} oz`
         : `${Math.round(ml)} ml`,
+    kcal: (value) => {
+      const step = value >= 1000 ? 10 : 5;
+      return grouped.format(Math.round(value / step) * step);
+    },
     weight: (kg, units) =>
       units === 'imperial' ? `${Math.round(kg / KG_PER_LB)} lb` : `${Math.round(kg)} kg`,
   };

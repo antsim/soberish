@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MINUTE, alcoholGrams, standardDrinks } from '../../../core/bac/bac';
+import { drinkKcal } from '../../../core/bac/energy';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { DRINK_TYPES, PLAIN_ICONS, drinkTypeFor } from '../../../core/models/drink-types';
 import {
@@ -110,6 +111,9 @@ export class DrinkEditor implements OnInit {
 
   readonly #grams = computed(() => alcoholGrams(this.volumeMl(), this.abv()));
   protected readonly units = computed(() => standardDrinks(this.volumeMl(), this.abv()));
+  protected readonly kcal = computed(() =>
+    drinkKcal({ volumeMl: this.volumeMl(), abv: this.abv(), icon: this.icon() }),
+  );
 
   /** Peak blood alcohol this drink alone adds, once fully absorbed. */
   protected readonly bacImpact = computed(() => {

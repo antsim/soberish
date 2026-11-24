@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Drink } from '../models/drink.model';
 import { DEFAULT_PROFILE, Profile } from '../models/profile.model';
 import { HOUR, MINUTE, buildTimeline, soberAt, standardDrinks, statusFor } from './bac';
+import { drinkKcal } from './energy';
 import { RECAP_SAMPLES, buildRecap } from './recap';
 
 const START = Date.UTC(2026, 0, 1, 20, 0, 0);
@@ -80,6 +81,16 @@ describe('buildRecap', () => {
     expect(recap.units).toBeCloseTo(expected, 10);
     expect(recap.drinkCount).toBe(4);
     expect(recap.volumeMl).toBe(330 * 3 + 120);
+  });
+
+  it('adds up the same per-drink calories the drink list shows', () => {
+    const ended = soberAt(night, profile)!;
+    const recap = buildRecap(night, profile, ended)!;
+    const expected = night.reduce((sum, d) => sum + drinkKcal(d), 0);
+    expect(recap.kcal).toBeCloseTo(expected, 10);
+    // Deleted drinks were never drunk, so they add nothing.
+    const withTombstone = [...night, drink(150, { id: 'gone', deleted: true })];
+    expect(buildRecap(withTombstone, profile, ended)!.kcal).toBeCloseTo(expected, 10);
   });
 
   it('ignores deleted drinks', () => {

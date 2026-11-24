@@ -85,6 +85,9 @@ src/app/
   keyed by the app's language, not the browser's: "0,31 ‰" and "klo 00.15" in Finnish, "0.31 ‰" and
   "00:15" in English. Never `toFixed`, `DatePipe` or `toLocaleTimeString` in a template or component.
   Timeline points are deliberately unrounded — rounding them draws the curve as a staircase.
+- **Calories are derived, never stored.** `core/bac/energy.ts` counts alcohol exactly (7 kcal/g)
+  and adds the sugar typical of the drink's kind (`DrinkType.extraKcalPer100Ml`, keyed by icon, with
+  an ABV-band guess for icons that name no kind). No `drinks` column, so nothing to migrate.
 - **One clock drives everything.** `platform/clock.ts` is a signal of `Date.now()`; BAC,
   countdowns, chart and leaderboard are `computed()` off it. Never give a component its own timer.
 - **IndexedDB is the source of truth.** Writes land locally first; Supabase is a replica. Deletes

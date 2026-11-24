@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { standardDrinks } from '../../../core/bac/bac';
+import { drinkKcal } from '../../../core/bac/energy';
 import { I18n } from '../../../core/i18n/i18n.service';
 import { Drink } from '../../../core/models/drink.model';
 import { DEFAULT_STOMACH, UnitSystem } from '../../../core/models/profile.model';
@@ -27,6 +28,9 @@ import { STOMACH_ICONS } from './stomach-picker';
               <span class="row__meta tabular">
                 {{ fmt().volume(drink.volumeMl, units()) }} · {{ fmt().abv(drink.abv) }} ·
                 {{ msg().drinkList.units(fmt().decimal(unitsFor(drink), 1)) }}
+                @if (kcalFor(drink); as kcal) {
+                  · {{ msg().drinkList.kcal(fmt().kcal(kcal)) }}
+                }
                 @if (drink.durationMinutes > 0) {
                   · {{ msg().editor.minutes(drink.durationMinutes) }}
                 }
@@ -74,5 +78,10 @@ export class DrinkList {
 
   protected unitsFor(drink: Drink): number {
     return standardDrinks(drink.volumeMl, drink.abv);
+  }
+
+  /** Zero (a glass of water) reads as noise on the row, so it is left off. */
+  protected kcalFor(drink: Drink): number {
+    return drinkKcal(drink);
   }
 }

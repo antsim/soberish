@@ -3,9 +3,11 @@
 }
 
 dl {
+  /* Two by two on a phone, where the card simply grows; four across "≈ 1 240"
+     and "6 t 3 min" would not fit a 320 px screen. */
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
   margin: 0;
 }
 
@@ -13,7 +15,7 @@ dl {
   display: grid;
   align-content: space-between;
   gap: 0.25rem;
-  padding: 0.75rem 0.4rem;
+  padding: 0.6rem 0.4rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.04);
@@ -34,5 +36,28 @@ dl {
     white-space: nowrap;
     font-weight: 800;
     letter-spacing: -0.02em;
+  }
+}
+
+/* The desktop card has a fixed story shape, so a second row would push the
+   footer out of it. Matches the breakpoint in recap-page.scss. */
+@media (min-width: 560px) and (min-height: 640px) {
+  dl {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+  }
+
+  .stat {
+    padding: 0.65rem 0.25rem;
+
+    dt {
+      font-size: 0.66rem;
+      white-space: normal;
+      letter-spacing: 0.04em;
+    }
+
+    dd {
+      font-size: 1.1rem;
+    }
   }
 }

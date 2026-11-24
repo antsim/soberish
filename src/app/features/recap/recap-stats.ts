@@ -3,7 +3,7 @@ import { NightRecap } from '../../core/bac/recap';
 import { I18n } from '../../core/i18n/i18n.service';
 import { formatDuration } from '../../shared/util/format';
 
-/** How much, how many, how long. */
+/** How much, how many, how long — and what it all came to in calories. */
 @Component({
   selector: 'app-recap-stats',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +32,7 @@ export class RecapStats {
       { label: messages.recap.units, value: this.fmt().decimal(recap.units, 1) },
       { label: messages.recap.drinks, value: `${recap.drinkCount}` },
       { label: messages.recap.duration, value: formatDuration(recap.durationMs, messages.time) },
+      { label: messages.recap.kcal, value: messages.recap.kcalValue(this.fmt().kcal(recap.kcal)) },
     ];
   });
 }

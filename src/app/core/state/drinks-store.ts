@@ -1,7 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Drink, DrinkDraft } from '../models/drink.model';
+import { Drink, DrinkDraft, isDisposableTombstone } from '../models/drink.model';
 import { DEFAULT_STOMACH, isStomachState } from '../models/profile.model';
 import { META_KEYS, SoberishDb } from '../storage/soberish-db';
+import { SupabaseService } from '../supabase/supabase.service';
 
 function newId(): string {
   return crypto.randomUUID();
@@ -17,6 +18,7 @@ function newId(): string {
 @Injectable({ providedIn: 'root' })
 export class DrinksStore {
   readonly #db = inject(SoberishDb);
+  readonly #serverless = !inject(SupabaseService).enabled;
   readonly #all = signal<readonly Drink[]>([]);
   readonly #loaded = signal(false);
 
@@ -48,6 +50,9 @@ export class DrinksStore {
         isStomachState(drink.stomach) ? drink : { ...drink, stomach: legacy },
       ),
     );
+    // Tombstones left by earlier sessions. Not done on remove(): the undo toast
+    // still needs the row.
+    await this.#dropDisposableTombstones();
     this.#loaded.set(true);
   }
 
@@ -60,6 +65,7 @@ export class DrinksStore {
       updatedAt: now,
       deleted: false,
       synced: false,
+      onServer: false,
     };
     await this.#commit([...this.#all(), drink]);
     return drink;
@@ -103,6 +109,8 @@ export class DrinksStore {
     await this.#commit(
       this.#all().map((drink) => tombstones.find((t) => t.id === drink.id) ?? drink),
     );
+    // A cleared night has no undo, so whatever no server needs can go at once.
+    await this.#dropDisposableTombstones();
   }
 
   /** Replaces local state with rows merged from the server. */
@@ -123,7 +131,7 @@ export class DrinksStore {
       } else if (drink.deleted) {
         dropped.push(drink.id);
       } else {
-        kept.push({ ...drink, synced: true });
+        kept.push({ ...drink, synced: true, onServer: true });
       }
     }
     this.#all.set(kept);
@@ -138,6 +146,15 @@ export class DrinksStore {
       .map((drink) => drink.id);
     if (!dropped.length) return;
     this.#all.set(this.#all().filter((drink) => !drink.deleted));
+    await this.#db.removeDrinks(dropped);
+  }
+
+  async #dropDisposableTombstones(): Promise<void> {
+    const dropped = this.#all()
+      .filter((drink) => isDisposableTombstone(drink, this.#serverless))
+      .map((drink) => drink.id);
+    if (!dropped.length) return;
+    this.#all.set(this.#all().filter((drink) => !dropped.includes(drink.id)));
     await this.#db.removeDrinks(dropped);
   }
 

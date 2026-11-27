@@ -30,6 +30,20 @@ export interface Drink {
   readonly deleted: boolean;
   /** False while the row still has changes the server has not acknowledged. */
   readonly synced: boolean;
+  /**
+   * Whether a server may hold a copy. Local only, never a column: it is what lets a
+   * tombstone be dropped without a sync. Absent on rows stored before it existed,
+   * which therefore count as possibly replicated.
+   */
+  readonly onServer?: boolean;
+}
+
+/**
+ * A tombstone nobody will ever ask for: the deployment has no server, or the row
+ * never reached one. Every other tombstone must survive until a push confirms it.
+ */
+export function isDisposableTombstone(drink: Drink, serverless: boolean): boolean {
+  return drink.deleted && (serverless || drink.onServer === false);
 }
 
 /** The user-supplied part of a drink; everything else is derived. */

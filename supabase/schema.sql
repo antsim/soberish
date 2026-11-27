@@ -142,8 +142,39 @@ end $$;
 --   grant select, insert, update, delete on table public.drinks to authenticated;
 --   grant select, insert, update, delete on table public.bac_status to authenticated;
 
--- Optional: schedule with pg_cron to drop replicated tombstones and stale rows.
---   select cron.schedule('soberish-cleanup', '0 5 * * *', $$
---     delete from public.drinks where deleted and updated_at < now() - interval '30 days';
---     delete from public.bac_status where sober_at < now() - interval '2 days';
---   $$);
+
+-- ---------------------------------------------------------------------------
+-- Cleanup — deleted drinks really disappear
+-- ---------------------------------------------------------------------------
+-- A deletion is pushed as a tombstone (`deleted = true`) so the user's other
+-- devices hear about it; nothing in the app ever removes the row, so without
+-- this job the table only grows. A week is plenty for the tombstone to reach
+-- them: a night on any device is wiped 24 h after sobering up anyway. The
+-- 30-day rule catches live rows no device will ever wipe (a lost phone, a push
+-- whose reply never arrived) — no night lasts that long, so nothing on screen
+-- needs them.
+--
+-- The SQL editor runs this file as one transaction, so a failure here would roll
+-- back everything above. Hence the subtransaction: without pg_cron the file
+-- still applies and only says so. Re-running is safe — `cron.schedule` with an
+-- existing name replaces that job.
+do $outer$
+begin
+  begin
+    create extension if not exists pg_cron;
+  exception when others then
+    raise notice 'pg_cron unavailable (%); enable it under Database → Extensions and re-run.', sqlerrm;
+    return;
+  end;
+
+  perform cron.schedule('soberish-cleanup', '17 4 * * *', $job$
+    delete from public.drinks
+    where (deleted and updated_at < now() - interval '7 days')
+       or updated_at < now() - interval '30 days';
+    delete from public.bac_status where sober_at < now() - interval '2 days';
+  $job$);
+end $outer$;
+
+-- Check the job exists, and that it has been running:
+--   select jobname, schedule, active from cron.job where jobname = 'soberish-cleanup';
+--   select status, start_time from cron.job_run_details order by start_time desc limit 5;

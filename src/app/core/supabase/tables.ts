@@ -64,6 +64,7 @@ export function fromDrinkRow(row: DrinkRow): Drink {
     updatedAt: Date.parse(row.updated_at),
     deleted: row.deleted,
     synced: true,
+    onServer: true,
   };
 }
 
